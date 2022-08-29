@@ -1,0 +1,15 @@
+1. Move to HOME
+cd ~
+
+2. git clone lib
+git clone https://github.com/weidai11/cryptopp.git
+
+3. move to directory
+cd cryptopp
+
+4. make
+make
+
+5. make install
+make install
+
