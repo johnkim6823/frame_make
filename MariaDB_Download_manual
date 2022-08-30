@@ -4,6 +4,7 @@ sudo apt-get upgrade
 
 2. Download MariaDB
 sudo apt-get install mariadb-server
+sudo apt-get install default-libmysqlclient-dev 
 
 3. Check MariaDB 
 systemctl status mysql
