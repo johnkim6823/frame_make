@@ -162,7 +162,7 @@ void capture() {
         if(currentFrame.empty())
             continue;
         
-        if (bgr_queue.size() == 5) {
+        if (bgr_queue.size() == 50) {
  
             int ret = pthread_cancel( UpdThread );
             int status;
@@ -327,19 +327,22 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
 
+    unsigned char *video_buffer = new unsigned char[video_bufsize];
+    char *hash_buffer = new char[hash_bufsize];
+    char *cid_buffer = new char[cid_bufsize];
+    
     cout << "total data size : " << total_data_size << endl;
     cout << endl << "---------------------- " << endl;
+    
     int step = 0;
     while(true) {
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
-	cout << "step : " << ++step << endl;
-        unsigned char *video_buffer = new unsigned char[video_bufsize];
-        char *hash_buffer = new char[hash_bufsize];
-        char *cid_buffer = new char[cid_bufsize];
-       
+        cout << "step : " << ++step << endl;
+        
         memset(video_buffer, 0x00, video_bufsize);
 
-	cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+        cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+        
         memcpy(video_buffer, yuv_send.front().data, video_bufsize);
         strcpy(hash_buffer, hash_send.front().c_str());
         strcpy(cid_buffer, cid_send.front().c_str());
@@ -375,10 +378,14 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
             cout << "ClientServerThread return -1!!" << endl;
             exit(0);
         }
-	cout << endl;
+        cout << endl;
         yuv_send.pop();
         hash_send.pop();
         cid_send.pop();
+        
+        free(video_buffer);
+        free(hash_buffer);
+        free(cid_buffer);
     }
     cout << "----SEND END----------------" << endl;
 }
@@ -410,7 +417,8 @@ int main(int, char**) {
     //if you need only one frame for test then use test() not capture();
     cout << "start time : "<<getCID() << endl;
     capture();
-   
+    //test();
+    
     //Convert fames to YUV and Y
     convert_frames(bgr_queue);
     
