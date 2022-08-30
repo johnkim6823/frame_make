@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <sstream>
-#include <mysql.h>
+//#include <mysql.h>
 
 #include "server.h"
 #include "command_parser.h"
