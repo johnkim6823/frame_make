@@ -382,10 +382,6 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
         yuv_send.pop();
         hash_send.pop();
         cid_send.pop();
-        
-        free(video_buffer);
-        free(hash_buffer);
-        free(cid_buffer);
     }
     cout << "----SEND END----------------" << endl;
 }
