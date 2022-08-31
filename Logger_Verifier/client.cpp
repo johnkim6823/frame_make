@@ -182,11 +182,6 @@ int ClientServiceThread(void *arg)
 	fd_set  reads;
 	uint8_t buf[CMD_HDR_SIZE];
 	uint8_t cmd[100]={0,};
-	pthread_t mythread;
-
-	mythread = pthread_self();
-
-	pthread_detach( mythread );
 
 	if(arg == NULL){
 		TRACE_ERR( "arg == NULL\n" );
@@ -208,16 +203,16 @@ int ClientServiceThread(void *arg)
 
 		//make HEADERPACKET
 
-		res = select( fd_max, &reads, NULL, NULL, &tv );
-		if( res == -1 ) {
-			TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
-			usleep(10000);
-			continue;
-		}
-		else if( res == 0 ) {
-			TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
-			goto SERVICE_DONE;
-		}
+		// res = select( fd_max, &reads, NULL, NULL, &tv );
+		// if( res == -1 ) {
+		// 	TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
+		// 	usleep(10000);
+		// 	continue;
+		// }
+		// else if( res == 0 ) {
+		// 	TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
+		// 	goto SERVICE_DONE;
+		// }
 		while(retry_cnt >= 0) {
 			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
 			if(res <= 0 ) {
@@ -242,11 +237,11 @@ int ClientServiceThread(void *arg)
 				TRACE_ERR("connect socket(%d) Command send error\n", fd_socket);
 				goto SERVICE_DONE;
 			}
-			if (buf[2] == CMD_BACKGROUND) {
-				send_retry_cnt = 5;
-				usleep(10000);
-				continue;
-			}
+			// if (buf[2] == CMD_BACKGROUND) {
+			// 	send_retry_cnt = 5;
+			// 	usleep(10000);
+			// 	continue;
+			// }
 			return 1;
 		}
 		send_retry_cnt = 5;

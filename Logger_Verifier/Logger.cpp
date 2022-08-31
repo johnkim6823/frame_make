@@ -388,7 +388,7 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
 
 
 void test() {
-    for(int i = 0; i<30;i++){
+    for(int i = 0; i<1;i++){
         Mat xxx;
         // xxx = Mat(352, 288, CV_8UC1, buf);
         // xxx.data = buf;
@@ -408,12 +408,12 @@ int main(int, char**) {
     }
     
     // main
-    init();
+    //init();
     
     //if you need only one frame for test then use test() not capture();
     cout << "start time : "<<getCID() << endl;
-    capture();
-    //test();
+    //capture();
+    test();
     
     //Convert fames to YUV and Y
     convert_frames(bgr_queue);

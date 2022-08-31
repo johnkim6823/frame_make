@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <sstream>
-//#include <mysql.h>
+#include <mysql.h>
 
 #include "server.h"
 #include "command_parser.h"
@@ -20,26 +20,33 @@
 
 #include <iostream>
 
-
 #define CMD_BACKGROUND 1
 #define Hash_size 64
 #define CID_size 23
 
 using namespace std;
 
+char x;
+
+string get_table_name();
+string table_name = get_table_name();
+
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
-/*
+
 MYSQL *conn;
 MYSQL_RES *res;
 
-
 MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
-void create_table(string table_name);
+void create_table();
 void insert_database(char* CID, char* Hash);
-*/
+
 void closesocket(SOCKET sock_fd);
+
+void cp(string str){
+	cout << str << endl;
+}
 
 string getCID() {
     struct timeb tb;   // <sys/timeb.h>                       
@@ -70,6 +77,26 @@ string getCID() {
     return s_CID;
 }
 
+string get_table_name(){
+	struct timeb tb;   // <sys/timeb.h>                       
+    struct tm tstruct;                      
+    std::ostringstream oss;   
+    
+    string s_CID;                             
+    char buf[128];                                            
+                                                              
+    ftime(&tb);
+    // For Thread safe, use localtime_r
+    if (nullptr != localtime_r(&tb.time, &tstruct)) {         
+        strftime(buf, sizeof(buf), "%Y_%m%d", &tstruct);
+        oss << buf; // YEAR_MMDD
+    }              
+
+    s_CID = oss.str();
+    
+    return s_CID;
+}
+
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 {
 	sendDataPacket.startID = Server; //로거, 검증기, 서버 ...
@@ -78,15 +105,15 @@ void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 	sendDataPacket.dataType = dataType;
 	sendDataPacket.dataSize = dataSize;
 }
-/*
+
 void initDatabase(struct db_user *db_info){
 	db_info->server = DB_IP;
 	db_info->user = "hanium";
 	db_info->password = "1234";
 	db_info->database = "hanium";
-	db_info->table = "1990-01-01";
+	db_info->table = table_name;
 }
-*/
+
 static int __send( IO_PORT *p, HANDLE *pdata, int len )
 {
 	int res = 0;
@@ -290,8 +317,15 @@ static void *ClientServiceThread(void *arg)
 	fd_set  reads;
 	uint8_t buf[CMD_HDR_SIZE];
 	uint8_t cmd[100]={0,};
-	pthread_t mythread;
 
+	string storage_dir_name = "/home/pi/images/" + table_name;
+	x = table_name[8];
+	if(mkdir(storage_dir_name.c_str(), 0777) == -1){
+		cout << "mkdir error" << endl;
+		exit(0);
+	}
+
+	pthread_t mythread;
 	mythread = pthread_self();
 	pthread_detach( mythread );
 
@@ -317,7 +351,6 @@ static void *ClientServiceThread(void *arg)
 		//make HEADERPACKET
 		cout << "end time : " << getCID() << endl;
 		res = select( fd_max, &reads, NULL, NULL, &tv );
-		cout << "selected : " <<  res << " " <<endl;	
 		if( res == -1 ) {
 			TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
 			usleep(10000);
@@ -329,8 +362,6 @@ static void *ClientServiceThread(void *arg)
 		}
 		while(retry_cnt >= 0) {
 			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
-
-
 			if(res <= 0) {
 				if(retry_cnt <= 0){
 					TRACE_ERR("connect socket(%d) Command receive error\n", fd_socket);
@@ -339,7 +370,7 @@ static void *ClientServiceThread(void *arg)
 				retry_cnt--;
 			}
 			else {
-			        cout << "receive data from logger" << endl;	
+			    cout << "receive data from logger" << endl;	
 				break;
 			}
 		}
@@ -472,12 +503,12 @@ int initServer()
 		g_pNetwork->m_socket = INVALID_SOCKET;
 		return -2;
 	}
-	/*
+	
 	//SQL Database connect
 	initDatabase(&g_pNetwork->mysqlID);
 
 	conn = mysql_connection_setup(g_pNetwork->mysqlID);
-	*/
+	
 	res = pthread_create(&g_pNetwork->listenThread, NULL, listenThd, (void*)g_pNetwork);
 
 	if(res<0){
@@ -508,10 +539,10 @@ void termServer()
 		}
 		sleep(3);
 	}
-	/*
+	
 	mysql_free_result(res);
 	mysql_close(conn);
-	*/
+	
 	if(g_pNetwork){
 		free(g_pNetwork);
 	}
@@ -533,11 +564,18 @@ int video_data_send(HEADERPACKET* msg){
 	recv_binary(&g_pNetwork->port, 23, recv_buf);
 	strcpy(CID, (char*)recv_buf);
 
-	const char* file_name = (const char*)recv_buf;
-	if(strlen(file_name) > 23){
-		cout << "file name is too long" << endl;
-		return -1;
+	string str = "/home/pi/images/";
+
+	if(x != recv_buf[9]){
+		table_name = get_table_name();
+		mkdir((str + table_name).c_str(), 0777);
+		create_table();
+		x = recv_buf[9];
 	}
+
+	string str2((const char*)recv_buf);
+	str2 = str + table_name + "/" + str2; 
+	const char* file_name = str2.c_str();
 	file = fopen(file_name, "wb");
 	memset(recv_buf, 0, msg->dataSize);
 
@@ -556,11 +594,11 @@ int video_data_send(HEADERPACKET* msg){
 	makePacket(VIDEO_DATA_RES, 0, 0);
 	send_packet(&g_pNetwork->port, sizeof(HEADERPACKET), &sendDataPacket);
 	
-	//insert_database(CID, Hash);
+	insert_database(CID, Hash);
 
 	return 1;
 }
-/*
+
 MYSQL* mysql_connection_setup(struct db_user sql_user){
   MYSQL *connection = mysql_init(NULL);
 
@@ -573,27 +611,23 @@ MYSQL* mysql_connection_setup(struct db_user sql_user){
 }
 
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
-  while(mysql_query(connection, sql_query)){
-    // printf("MYSQL query error : %s\n", mysql_error(connection));
-    // exit(1);
-	create_table(g_pNetwork->mysqlID.table);
-  }
-
+	while(mysql_query(connection, sql_query) != 0){
+		create_table();
+	}
   return mysql_use_result(connection);
 }
 
 void insert_database(char* CID, char* Hash){
-	string sorder = "INSERT INTO " + g_pNetwork->mysqlID.table + "('" + CID + "', '" + Hash + "', 0)";	
+	string sorder = "INSERT INTO " + g_pNetwork->mysqlID.table + " values('" + CID + "', '" + Hash + "', 0);";	
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	res = mysql_perform_query(conn, order);
 }
 
-void create_table(string table_name){
-	string sorder = "CREATE TABLE " + table_name + "(CID VALCHAR(24), Hash VALCHAR(70), Verified INTEGER, CONSTAINT PRIMARY KEY(CID) );";
+void create_table(){
+	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(70), Verified INTEGER);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	mysql_query(conn, order);
 	res = mysql_use_result(conn);
 }
-*/
