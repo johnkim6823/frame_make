@@ -94,9 +94,9 @@ int init() {
  
 void init_all_settings() {
     cap.release();
-    width = 640;
-    height = 480;
-    FPS = 30;
+    width = DEFUALT_WIDTH;
+    height = DEFAULT_HEIGHT;
+    FPS = DEFAULT_FPS;
     init_queue();
     
     cout << endl << "----Initializing all settings." << endl <<endl;
@@ -162,7 +162,7 @@ void capture() {
         if(currentFrame.empty())
             continue;
         
-        if (bgr_queue.size() == 57) {
+        if (bgr_queue.size() == 50) {
  
             int ret = pthread_cancel( UpdThread );
             int status;
