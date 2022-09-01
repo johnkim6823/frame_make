@@ -24,10 +24,9 @@
 using namespace std;
 using namespace cv;
 
-int width = 640;
-int height = 480;
-int FPS = 30;
-unsigned int frame_count = 0;
+int width = DEFAULT_WIDTH;
+int height = DEFAULT_HEIGHT;
+int FPS = DEFAULT_FPS;
 
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
@@ -43,7 +42,7 @@ queue<string> hash_queue;                       //for hash made by feature vecto
 queue<string> cid_queue;                        //for CID for images
 
 int init();                                                 //Init Camera Setting and OPEN CAP
-void init_all_setting();                                    //Init all settings at the end
+void init_all_settings();                                    //Init all settings at the end
 void init_queue();                                          //Init all datas in queues
 void *UpdateFrame(void *arg);                               //Update frames 
 void capture();                                             //Capture frames;
@@ -87,12 +86,13 @@ int init() {
         cerr << "ERROR! Unable to open camera\n";
         return -1;
     }
-    
-    cout << "----Initalized----------" <<endl;
-    return 0;
+    else { 
+    	cout << "----Initalized----------" <<endl;
+    	return 0;
+    }
 }
  
-void init_all_setting() {
+void init_all_settings() {
     cap.release();
     width = 640;
     height = 480;
@@ -162,7 +162,7 @@ void capture() {
         if(currentFrame.empty())
             continue;
         
-        if (bgr_queue.size() == 50) {
+        if (bgr_queue.size() == 57) {
  
             int ret = pthread_cancel( UpdThread );
             int status;
@@ -401,32 +401,37 @@ void test() {
 }
 
 int main(int, char**) { 
-    
-    if(!initClient()){
-        cout << "init client error!!" << endl;
-        return -1;
-    }
-    
-    // main
-    //init();
-    
-    //if you need only one frame for test then use test() not capture();
-    cout << "start time : "<<getCID() << endl;
-    //capture();
-    test();
-    
-    //Convert fames to YUV and Y
-    convert_frames(bgr_queue);
-    
-    //USE Canny Edge Detection with Y_frames
-    edge_detection(y_queue);
-    
-    // //Make hash by edge_detected datas;
-    make_hash(feature_vector_queue);
 
-    //Send Data to Server
-    send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
-    
-    init_all_setting();
-    return 0;
+    while(true) {
+    	if(init() == -1) {break;}
+
+	else{
+		if(!initClient()){
+			cout << "init client error!!" << endl;
+			return -1;
+		}
+
+		cout << "Logger Start working: " << getCID() << endl;
+
+		//capture frames
+		capture();
+
+		//convert frames to YUV420 and Y
+		convert_frames(bgr_queue);
+
+		//USE Canny Edge Detection with Y_Frames
+		edge_detection(y_queue);
+
+		//make Hash by edge_detected datas
+		make_hash(feature_vector_queue);
+
+		//send Datas to Server
+		send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
+
+		//initialize all settings
+		init_all_settings();
+
+		return 0;
+	}
+    }
 }
