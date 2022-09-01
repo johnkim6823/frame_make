@@ -77,6 +77,17 @@ string getCID() {
     return s_CID;
 }
 
+void mkdir_func(string str){
+	if(mkdir(str.c_str(), 0777) == -1 && errno == EEXIST){
+		if(errno == EEXIST)
+			cout << "directory already exist" << endl;
+		else{
+			fprintf(stderr, "%s directory create error: %s\n", strerror(errno));
+			exit(0);
+		}
+	}
+}
+
 string get_table_name(){
 	struct timeb tb;   // <sys/timeb.h>                       
     struct tm tstruct;                      
@@ -318,12 +329,10 @@ static void *ClientServiceThread(void *arg)
 	uint8_t buf[CMD_HDR_SIZE];
 	uint8_t cmd[100]={0,};
 
+	string y("/home/pi/images");
 	string storage_dir_name = "/home/pi/images/" + table_name;
 	x = table_name[8];
-	if(mkdir(storage_dir_name.c_str(), 0777) == -1){
-		cout << "mkdir error" << endl;
-		exit(0);
-	}
+	mkdir_func(storage_dir_name);
 
 	pthread_t mythread;
 	mythread = pthread_self();
@@ -568,7 +577,7 @@ int video_data_send(HEADERPACKET* msg){
 
 	if(x != recv_buf[9]){
 		table_name = get_table_name();
-		mkdir((str + table_name).c_str(), 0777);
+		mkdir_func((str + table_name).c_str());
 		create_table();
 		x = recv_buf[9];
 	}

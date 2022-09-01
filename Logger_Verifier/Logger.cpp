@@ -388,7 +388,7 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
 
 
 void test() {
-    for(int i = 0; i<1;i++){
+    for(int i = 0; i<60;i++){
         Mat xxx;
         // xxx = Mat(352, 288, CV_8UC1, buf);
         // xxx.data = buf;
