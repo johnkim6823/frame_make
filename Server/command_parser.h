@@ -4,6 +4,8 @@
 #ifndef __CMDPARSERHEADER__
 #define __CMDPARSERHEADER__
 
+#define ThisID Server
+
 #include "server.h"
 
 typedef struct _cmdpdesp

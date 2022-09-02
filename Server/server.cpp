@@ -17,12 +17,11 @@
 #include "command_parser.h"
 #include "command_define_list.h"
 #include "tracex.h"
+#include "cfg.h"
 
 #include <iostream>
 
 #define CMD_BACKGROUND 1
-#define Hash_size 64
-#define CID_size 23
 
 using namespace std;
 
@@ -110,7 +109,7 @@ string get_table_name(){
 
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 {
-	sendDataPacket.startID = Server; //로거, 검증기, 서버 ...
+	sendDataPacket.startID = ThisID; //로거, 검증기, 서버 ...
 	sendDataPacket.destID = Logger;
 	sendDataPacket.command = cmd;
 	sendDataPacket.dataType = dataType;
@@ -119,9 +118,9 @@ void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 
 void initDatabase(struct db_user *db_info){
 	db_info->server = DB_IP;
-	db_info->user = "hanium";
-	db_info->password = "1234";
-	db_info->database = "hanium";
+	db_info->user = DB_user;
+	db_info->password = DB_password;
+	db_info->database = DB_database;
 	db_info->table = table_name;
 }
 
@@ -329,8 +328,8 @@ static void *ClientServiceThread(void *arg)
 	uint8_t buf[CMD_HDR_SIZE];
 	uint8_t cmd[100]={0,};
 
-	string y("/home/pi/images");
-	string storage_dir_name = "/home/pi/images/" + table_name;
+	string s_dir(storage_dir);
+	string storage_dir_name = storage_dir + table_name;
 	x = table_name[8];
 	mkdir_func(storage_dir_name);
 
@@ -517,7 +516,6 @@ int initServer()
 	initDatabase(&g_pNetwork->mysqlID);
 
 	conn = mysql_connection_setup(g_pNetwork->mysqlID);
-	
 	res = pthread_create(&g_pNetwork->listenThread, NULL, listenThd, (void*)g_pNetwork);
 
 	if(res<0){
@@ -573,18 +571,18 @@ int video_data_send(HEADERPACKET* msg){
 	recv_binary(&g_pNetwork->port, 23, recv_buf);
 	strcpy(CID, (char*)recv_buf);
 
-	string str = "/home/pi/images/";
+	string s_dir = storage_dir;
 
 	if(x != recv_buf[9]){
 		table_name = get_table_name();
-		mkdir_func((str + table_name).c_str());
+		mkdir_func((s_dir + table_name).c_str());
 		create_table();
 		x = recv_buf[9];
 	}
 
-	string str2((const char*)recv_buf);
-	str2 = str + table_name + "/" + str2; 
-	const char* file_name = str2.c_str();
+	string frame_dir((const char*)recv_buf);
+	frame_dir = s_dir + table_name + "/" + frame_dir; 
+	const char* file_name = frame_dir.c_str();
 	file = fopen(file_name, "wb");
 	memset(recv_buf, 0, msg->dataSize);
 
@@ -595,16 +593,15 @@ int video_data_send(HEADERPACKET* msg){
 	recv_binary(&g_pNetwork->port, frame_size, recv_buf);
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
+	makePacket(VIDEO_DATA_RES, 0, 0);
+	insert_database(CID, Hash);
 
 	fflush(file);
 	fclose(file);
 	delete [] recv_buf;
-
-	makePacket(VIDEO_DATA_RES, 0, 0);
+	delete [] CID;
+	delete [] Hash;
 	send_packet(&g_pNetwork->port, sizeof(HEADERPACKET), &sendDataPacket);
-	
-	insert_database(CID, Hash);
-
 	return 1;
 }
 

@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
+#include "cfg.h"
+
 #define HANDLE void*
 
 #define TRUE 1
@@ -14,14 +16,6 @@
 #define INVALID_SOCKET -1
 
 #define SOCKET u_int32_t
-
-#define DB_IP "127.0.0.1"
-
-/*Communication protocol*/
-#define CMD_HDR_SIZE 8	
-#define SERVER_PROTOCOL_PORT 8700
-#define ASYNC_BUFSIZE 4096
-#define MAX_USER_CNT 5
 
 #ifndef __SERVERSOCKET_HEADER__
 #define __SERVERSOCKET_HEADER__

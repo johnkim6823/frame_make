@@ -7,8 +7,6 @@
 #include "command_define_list.h"
 #include "tracex.h"
 
-#define ThisID Server
-
 using namespace std;
 int test(HEADERPACKET* msg);
 int video_data_send(HEADERPACKET* msg);

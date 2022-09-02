@@ -203,16 +203,16 @@ int ClientServiceThread(void *arg)
 
 		//make HEADERPACKET
 
-		// res = select( fd_max, &reads, NULL, NULL, &tv );
-		// if( res == -1 ) {
-		// 	TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
-		// 	usleep(10000);
-		// 	continue;
-		// }
-		// else if( res == 0 ) {
-		// 	TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
-		// 	goto SERVICE_DONE;
-		// }
+		res = select( fd_max, &reads, NULL, NULL, &tv );
+		if( res == -1 ) {
+			TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
+			usleep(10000);
+			continue;
+		}
+		else if( res == 0 ) {
+			TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
+			goto SERVICE_DONE;
+		}
 		while(retry_cnt >= 0) {
 			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
 			if(res <= 0 ) {
