@@ -15,4 +15,12 @@ typedef struct _cmdpdesp
 }cmdp_desp;
 
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
+
+/* command fucntions*/
+int test(HEADERPACKET* msg);
+int video_data_send(HEADERPACKET* msg);
+int hash_send(HEADERPACKET* msg);
+int CID_send(HEADERPACKET* msg);
+
+int test(HEADERPACKET* msg);
 #endif

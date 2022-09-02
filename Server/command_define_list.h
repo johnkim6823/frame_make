@@ -18,4 +18,6 @@
 #define VER_RSLT_RES    0xf6
 #define CONFIG_REQ      0x07
 #define CONFIG_RES      0xf7
+
+
 #define TEST_CMD        0xff

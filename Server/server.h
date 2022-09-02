@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
+using namespace std;
+
 #include "cfg.h"
 
 #define HANDLE void*
@@ -78,10 +80,28 @@ typedef struct
 }NETWORK_CONTEXT;
 
 
+
 int initServer();
 void termServer();
 
-int send_binary( IO_PORT *p, long nSize, char *pdata );
-int recv_binary( IO_PORT *p, long size, unsigned char *pdata );
+int send_binary( IO_PORT *p, long nSize, HANDLE *pdata );
+int recv_binary( IO_PORT *p, long size, void *pdata );
 
+string get_table_name();
+void mkdir_func(string str);
+void create_table();
+void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
+void insert_database(char* CID, char* Hash);
+
+#endif
+
+#ifdef THIS_IS_SERVER
+#ifndef PLZ_R_ONE_TIME
+#define PLZ_R_ONE_TIME
+NETWORK_CONTEXT *g_pNetwork;
+HEADERPACKET sendDataPacket;
+
+char x;
+string table_name;
+#endif
 #endif

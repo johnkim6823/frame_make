@@ -13,25 +13,17 @@
 #include <sstream>
 #include <mysql.h>
 
-#include "server.h"
+#define CMD_BACKGROUND 1
+#define THIS_IS_SERVER
+
 #include "command_parser.h"
+#include "server.h"
 #include "command_define_list.h"
 #include "tracex.h"
 #include "cfg.h"
-
-#include <iostream>
-
-#define CMD_BACKGROUND 1
+#include "command_function_list.cpp"
 
 using namespace std;
-
-char x;
-
-string get_table_name();
-string table_name = get_table_name();
-
-NETWORK_CONTEXT *g_pNetwork;
-HEADERPACKET sendDataPacket;
 
 MYSQL *conn;
 MYSQL_RES *res;
@@ -40,6 +32,7 @@ MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 void create_table();
 void insert_database(char* CID, char* Hash);
+int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
 void closesocket(SOCKET sock_fd);
 
@@ -213,39 +206,13 @@ int send_binary( IO_PORT *p, long nSize, HANDLE *pdata )
 	return TRUE;
 }
 
-int send_packet( IO_PORT *p, long nSize, HEADERPACKET *pdata )
-{
-	int nSendBytes;
-
-	if( p == NULL ) {
-		TRACE_ERR("p == NULL\n");
-		return FALSE;
-	}
-
-	//TRACEF("nSize = %d\n", nSize);
-	do {
-		nSendBytes = MIN( ASYNC_BUFSIZE, nSize );
-		nSendBytes = __send( p, (void**)pdata, nSendBytes );
-		if( nSendBytes <= 0 ) {
-			TRACE_ERR( "return FALSE(%d)\n", nSendBytes );
-			return FALSE;
-		}
-
-		pdata += nSendBytes;
-		nSize -= nSendBytes;
-
-	} while( nSize > 0 );
-
-	return TRUE;
-}
-
-int recv_binary( IO_PORT *p, long size, unsigned char *pdata )
+int recv_binary( IO_PORT *p, long size, void *pdata )
 {
 	int remainbytes, recvbytes;
 
 	remainbytes = size;
 	while(remainbytes > 0) {
-		recvbytes = __recv( p, (void*)pdata, remainbytes );
+		recvbytes = __recv( p, pdata, remainbytes );
 		if( recvbytes <= 0 ) {
 			TRACE_ERR( "ERR recv_binary :%d\n", recvbytes );
 			return FALSE;
@@ -290,7 +257,7 @@ int bind_socket( SOCKET s, int port )
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl( INADDR_ANY );
-	addr.sin_port = htons( port );
+	addr.sin_port = htons( SERVER_PORT );
 
 	//set resusing socket address
 	setsockopt( s, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof( opt ) );
@@ -505,13 +472,14 @@ int initServer()
 	pthread_mutex_init(&g_pNetwork->g_mc_mtx, NULL);
 
 	if( bind_socket( 
-		g_pNetwork->m_socket, SERVER_PROTOCOL_PORT ) == FALSE ) {
+		g_pNetwork->m_socket, SERVER_PORT ) == FALSE ) {
 		TRACEF("ERROR cannot bind listen port:%d \n", SERVER_PROTOCOL_PORT );
 		closesocket( g_pNetwork->m_socket);
 		g_pNetwork->m_socket = INVALID_SOCKET;
 		return -2;
 	}
 	
+	table_name = get_table_name();
 	//SQL Database connect
 	initDatabase(&g_pNetwork->mysqlID);
 
@@ -559,52 +527,7 @@ void closesocket(SOCKET sock_fd){
 	close(sock_fd);
 }
 
-int video_data_send(HEADERPACKET* msg){
-	unsigned char *recv_buf = new unsigned char[msg->dataSize];
-	char* CID = new char[CID_size];
-	char* Hash = new char[Hash_size];
-
-	memset(recv_buf, 0, msg->dataSize);
-	int frame_size =  msg->dataSize - CID_size - Hash_size;
-	FILE *file;
-
-	recv_binary(&g_pNetwork->port, 23, recv_buf);
-	strcpy(CID, (char*)recv_buf);
-
-	string s_dir = storage_dir;
-
-	if(x != recv_buf[9]){
-		table_name = get_table_name();
-		mkdir_func((s_dir + table_name).c_str());
-		create_table();
-		x = recv_buf[9];
-	}
-
-	string frame_dir((const char*)recv_buf);
-	frame_dir = s_dir + table_name + "/" + frame_dir; 
-	const char* file_name = frame_dir.c_str();
-	file = fopen(file_name, "wb");
-	memset(recv_buf, 0, msg->dataSize);
-
-	recv_binary(&g_pNetwork->port, 64, recv_buf);
-	strcpy(Hash, (char*)recv_buf);
-	memset(recv_buf, 0, msg->dataSize);
-
-	recv_binary(&g_pNetwork->port, frame_size, recv_buf);
-	fwrite(recv_buf, sizeof(char), frame_size, file);
-
-	makePacket(VIDEO_DATA_RES, 0, 0);
-	insert_database(CID, Hash);
-
-	fflush(file);
-	fclose(file);
-	delete [] recv_buf;
-	delete [] CID;
-	delete [] Hash;
-	send_packet(&g_pNetwork->port, sizeof(HEADERPACKET), &sendDataPacket);
-	return 1;
-}
-
+/* 'bout Database */
 MYSQL* mysql_connection_setup(struct db_user sql_user){
   MYSQL *connection = mysql_init(NULL);
 
@@ -637,3 +560,86 @@ void create_table(){
 	mysql_query(conn, order);
 	res = mysql_use_result(conn);
 }
+/* 'bout Database */
+
+
+/* 'bout command function */
+// int video_data_send(HEADERPACKET* msg){
+// 	unsigned char *recv_buf = new unsigned char[msg->dataSize];
+// 	char* CID = new char[CID_size];
+// 	char* Hash = new char[Hash_size];
+
+// 	memset(recv_buf, 0, msg->dataSize);
+// 	int frame_size =  msg->dataSize - CID_size - Hash_size;
+// 	FILE *file;
+
+// 	recv_binary(&g_pNetwork->port, 23, (void*)recv_buf);
+// 	strcpy(CID, (char*)recv_buf);
+
+// 	string s_dir = storage_dir;
+
+// 	if(x != recv_buf[9]){
+// 		table_name = get_table_name();
+// 		mkdir_func((s_dir + table_name).c_str());
+// 		create_table();
+// 		x = recv_buf[9];
+// 	}
+
+// 	string frame_dir((const char*)recv_buf);
+// 	frame_dir = s_dir + table_name + "/" + frame_dir; 
+// 	const char* file_name = frame_dir.c_str();
+// 	file = fopen(file_name, "wb");
+// 	memset(recv_buf, 0, msg->dataSize);
+
+// 	recv_binary(&g_pNetwork->port, 64, (void*)recv_buf);
+// 	strcpy(Hash, (char*)recv_buf);
+// 	memset(recv_buf, 0, msg->dataSize);
+
+// 	recv_binary(&g_pNetwork->port, frame_size, (void*)recv_buf);
+// 	fwrite(recv_buf, sizeof(char), frame_size, file);
+
+// 	makePacket(VIDEO_DATA_RES, 0, 0);
+// 	insert_database(CID, Hash);
+
+// 	fflush(file);
+// 	fclose(file);
+// 	delete [] recv_buf;
+// 	delete [] CID;
+// 	delete [] Hash;
+// 	void *p_packet = &sendDataPacket;
+// 	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet);
+// 	return 1;
+// }
+
+
+/* This is for Test function. Receive data from recv_buffer, write all to test.txt file.*/
+// int test(HEADERPACKET* msg){
+// 	void* recv_buf;
+// 	FILE *file = fopen("test.txt", "wb");
+
+// 	switch(msg->dataType){
+// 		case 0xa0 : recv_buf = (char *)recv_buf;
+// 					recv_buf = new char[msg->dataSize];
+// 		case 0xa1 : recv_buf = (unsigned char*)recv_buf;
+// 					recv_buf = new unsigned char[msg->dataSize];
+// 		case 0xb0 : recv_buf = (int *)recv_buf;
+// 					recv_buf = new int[msg->dataSize];
+// 		case 0xb1 : recv_buf = (unsigned int*)recv_buf;
+// 					recv_buf = new unsigned int[msg->dataSize];
+// 	}
+	
+// 	if(recv_binary(&g_pNetwork->port, msg->dataSize, recv_buf) == 0){
+// 		cout << "recv_binary fail" << endl;
+// 		return -1;
+// 	}
+	
+// 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	
+// 	fflush(file);
+// 	fclose(file);
+
+// 	delete [] recv_buf;
+
+// 	return 1;
+// }
+/* 'bout command function */

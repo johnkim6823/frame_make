@@ -8,11 +8,6 @@
 #include "tracex.h"
 
 using namespace std;
-int test(HEADERPACKET* msg);
-int video_data_send(HEADERPACKET* msg);
-int hash_send(HEADERPACKET* msg);
-int CID_send(HEADERPACKET* msg);
-
 
 cmdp_desp parser_desp[] =
 {
@@ -69,12 +64,6 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	return 0;
 }
 #endif
-
-//For test function
-int test(HEADERPACKET* msg){
-	cout << "test function" << endl;
-	return 1;
-}
 
 
 
