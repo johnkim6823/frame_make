@@ -17,6 +17,7 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
+#include "sign_verify.cpp"
 #include "merkle_tree.h"
 #include "client.cpp"
 #include "command_define_list.h"
@@ -41,6 +42,8 @@ queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
 queue<string> hash_queue;                       //for hash made by feature vector
 queue<string> cid_queue;                        //for CID for images
 
+int key_generation();                                      //make privatKey and PublicKey
+int send_pubKey_to_server();
 int init();                                                 //Init Camera Setting and OPEN CAP
 void init_all_settings();                                    //Init all settings at the end
 void init_queue();                                          //Init all datas in queues
@@ -62,6 +65,29 @@ int make_merkle_tree();
 * 1. MAKE PUBLIC KEY, PRIVATE KEY
 * 2. SEND PUBLIC KEY to SERVER 
 */
+
+int key_generation(){
+    RSA * privateRSA = genPrivateRSA();
+	publicKey = genPubicRAS(privateRSA);
+    
+    cout << "----Key Geneartion-------" << endl;
+    cout << "PRIKEY and PUBKEY are made" << endl;
+    
+    return 0;
+}
+
+int send_pubKey_to_server() {
+    
+    int pubKey_bufsize = publicKey.capacity();
+	std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
+	
+	char *pubKey_buffer = new char[pubKey_bufsize];
+    strcpy(pubKey_buffer, publicKey.c_str());
+    
+    
+
+}
+
 
 
 int init() {
@@ -268,7 +294,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
-	cout << "hash: " << sha_result << endl;
+        cout << "hash: " << sha_result << endl;
         hash_queue.push(sha_result);
     }
     
@@ -319,8 +345,8 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     cout << "CID data QUEUE size: " << cid_send.size() << endl;
 
     int total_data_size = 0;
-    int hash_bufsize = hash_send.front().size();
-    int cid_bufsize = cid_send.front().size();
+    int hash_bufsize = hash_send.front().capacity();
+    int cid_bufsize = cid_send.front().capacity();
     int video_rows = yuv_send.front().rows;
     int video_cols = yuv_send.front().cols;
     int video_channels = yuv_send.front().channels();
@@ -401,37 +427,44 @@ void test() {
 }
 
 int main(int, char**) { 
+    
+    key_generation();
+    
 
+    
+    
+    /*
     while(true) {
     	if(init() == -1) {break;}
+        
+        else{
+            if(!initClient()){
+                cout << "init client error!!" << endl;
+                return -1;
+            }   
 
-	else{
-		if(!initClient()){
-			cout << "init client error!!" << endl;
-			return -1;
-		}
+            cout << "Logger Start working: " << getCID() << endl;
+    
+            //capture frames
+            capture();
 
-		cout << "Logger Start working: " << getCID() << endl;
+            //convert frames to YUV420 and Y
+            convert_frames(bgr_queue);
 
-		//capture frames
-		capture();
+            //USE Canny Edge Detection with Y_Frames
+            edge_detection(y_queue);
 
-		//convert frames to YUV420 and Y
-		convert_frames(bgr_queue);
+            //make Hash by edge_detected datas
+            make_hash(feature_vector_queue);
 
-		//USE Canny Edge Detection with Y_Frames
-		edge_detection(y_queue);
+            //send Datas to Server
+            send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
 
-		//make Hash by edge_detected datas
-		make_hash(feature_vector_queue);
+            //initialize all settings
+            init_all_settings();
 
-		//send Datas to Server
-		send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
-
-		//initialize all settings
-		init_all_settings();
-
-		return 0;
-	}
+            return 0;
+        }
     }
+    */
 }

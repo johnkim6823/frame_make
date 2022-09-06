@@ -7,7 +7,7 @@ Logger_Verifier: Logger, Verifier folder.
 Server: Server Folder
 
 # How to Use
-0. prerequisite
++ 0. prerequisite
 
 RPI -> 32 bit
 
