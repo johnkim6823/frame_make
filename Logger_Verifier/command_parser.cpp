@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "iostream"
+#include <iostream>
 
 #include "command_parser.h"
 #include "command_define_list.h"
@@ -74,7 +74,7 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 }
 #endif
 
-//For test function
+//Meaning-less function
 int test(HEADERPACKET* msg){
 	cout << "test function" << endl;
 	return 1;

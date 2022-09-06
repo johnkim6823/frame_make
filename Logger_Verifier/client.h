@@ -69,13 +69,17 @@ typedef struct
 
 }NETWORK_CONTEXT;
 
-//NETWORK_CONTEXT *g_pNetwork;
-
 int initClient();
 void termClient();
 
 int send_binary( IO_PORT *p, long nSize, void *pdata );
 int recv_binary( IO_PORT *p, long size, char *pdata );
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
+int ClientServiceThread(void *arg);
+
+HEADERPACKET sendDataPacket;
+NETWORK_CONTEXT *g_pNetwork;
 
 #endif
+
+

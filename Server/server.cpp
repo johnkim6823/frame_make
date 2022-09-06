@@ -345,7 +345,6 @@ static void *ClientServiceThread(void *arg)
 				retry_cnt--;
 			}
 			else {
-			    cout << "receive data from logger" << endl;	
 				break;
 			}
 		}
@@ -357,8 +356,6 @@ static void *ClientServiceThread(void *arg)
 			continue;
 		}
 		else{
-			cout << "cmd_parsing" << endl;
-			cout << "-------------------------------------------" << endl << endl;
 			send_retry_cnt--;
 			if(send_retry_cnt == 0) {
 				TRACE_ERR("connect socket(%d) Command send error\n", fd_socket);

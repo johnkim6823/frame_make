@@ -79,8 +79,6 @@ typedef struct
 
 }NETWORK_CONTEXT;
 
-
-
 int initServer();
 void termServer();
 
@@ -98,10 +96,11 @@ void insert_database(char* CID, char* Hash);
 #ifdef THIS_IS_SERVER
 #ifndef PLZ_R_ONE_TIME
 #define PLZ_R_ONE_TIME
+
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
-
 char x;
 string table_name;
+
 #endif
 #endif

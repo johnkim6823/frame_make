@@ -18,7 +18,7 @@
 #include <sys/timeb.h> 
 
 #include "merkle_tree.h"
-#include "client.cpp"
+#include "client.h"
 #include "command_define_list.h"
 
 using namespace std;
@@ -94,7 +94,7 @@ int init() {
  
 void init_all_settings() {
     cap.release();
-    width = DEFUALT_WIDTH;
+    width = DEFAULT_WIDTH;
     height = DEFAULT_HEIGHT;
     FPS = DEFAULT_FPS;
     init_queue();
@@ -301,19 +301,17 @@ string getCID() {
     return s_CID;
 }
 
-
-
 void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
-    cout << endl << "----SEND DATAS to SERVER" << endl;
+    // cout << endl << "----SEND DATAS to SERVER" << endl;
 
     queue<cv::Mat> yuv_send(YUV420_QUEUE);
     queue<string> hash_send(HASH_QUEUE);
     queue<string> cid_send(CID_QUEUE);
 
-    cout << "------------------------" << endl << endl;
-    cout << "VIDEO data QUEUE size: " << yuv_send.size() << endl;
-    cout << "HASH data QUEUE size: " << hash_send.size() << endl;
-    cout << "CID data QUEUE size: " << cid_send.size() << endl;
+    // cout << "------------------------" << endl << endl;
+    // cout << "VIDEO data QUEUE size: " << yuv_send.size() << endl;
+    // cout << "HASH data QUEUE size: " << hash_send.size() << endl;
+    // cout << "CID data QUEUE size: " << cid_send.size() << endl;
 
     int total_data_size = 0;
     int hash_bufsize = hash_send.front().size();
@@ -331,9 +329,6 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     char *hash_buffer = new char[hash_bufsize];
     char *cid_buffer = new char[cid_bufsize];
     
-    cout << "total data size : " << total_data_size << endl;
-    cout << endl << "---------------------- " << endl;
-    
     int step = 0;
     while(true) {
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
@@ -341,7 +336,7 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
         
         memset(video_buffer, 0x00, video_bufsize);
 
-        cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+        // cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
         
         memcpy(video_buffer, yuv_send.front().data, video_bufsize);
         strcpy(hash_buffer, hash_send.front().c_str());
@@ -349,7 +344,8 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
 
         makePacket(VIDEO_DATA_SND, 0, total_data_size);
 
-        if(!send_packet(&g_pNetwork->port, sizeof(HEADERPACKET), &sendDataPacket)){
+        void *p_packet = &sendDataPacket;
+        if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet)){
             cout << "Packet send Error!!" << endl;
             break;
         }
@@ -372,7 +368,6 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
         if(!send_binary(&g_pNetwork->port, video_bufsize, (void*)video_buffer)){
             cout << "Image send Error!!" << endl;
         }
-        cout << "sent a buffer " << endl;
 
         if(ClientServiceThread((void*)&g_pNetwork->port) == -1){
             cout << "ClientServerThread return -1!!" << endl;
@@ -386,9 +381,16 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     cout << "----SEND END----------------" << endl;
 }
 
+void pk_send_test(char *str, uint8_t datatype, int str_size){
+    makePacket(TEST_CMD, datatype, str_size);
+    void* p_packet = &sendDataPacket;
+    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet);
+    send_binary(&g_pNetwork->port, 100, (void**)str);
+}
+
 
 void test() {
-    for(int i = 0; i<60;i++){
+    for(int i = 0; i<30;i++){
         Mat xxx;
         // xxx = Mat(352, 288, CV_8UC1, buf);
         // xxx.data = buf;
@@ -402,19 +404,21 @@ void test() {
 
 int main(int, char**) { 
 
-    while(true) {
-    	if(init() == -1) {break;}
+    //while(true) {
+    //if(init() == -1) {break;}
 
-	else{
+	//else{
 		if(!initClient()){
 			cout << "init client error!!" << endl;
 			return -1;
 		}
 
-		cout << "Logger Start working: " << getCID() << endl;
+		cout << "Image preprocessing start: " << getCID() << endl;
 
 		//capture frames
-		capture();
+		//capture();
+
+        test();
 
 		//convert frames to YUV420 and Y
 		convert_frames(bgr_queue);
@@ -425,13 +429,25 @@ int main(int, char**) {
 		//make Hash by edge_detected datas
 		make_hash(feature_vector_queue);
 
+        cout << "Image preprocessing finish : " << getCID() << endl;
 		//send Datas to Server
 		send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
+        
+        /* public key send function. public key must (char*) or (unsigned char*) or (int *) or (unsigned int*) type,  */
+        /* Server-define datatype
+            0xa0 char
+            0xa1 unsigned char
+            0xb0 int
+            0xb1 unsigned int
+        */
+        const char* test_str = "hellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohello";
+        char *str = (char*) test_str;
+        int str_size = 100;
+        pk_send_test(str, 0xa0, str_size);
 
 		//initialize all settings
 		init_all_settings();
 
 		return 0;
-	}
-    }
+    //}
 }

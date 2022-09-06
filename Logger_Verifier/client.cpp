@@ -16,13 +16,12 @@
 #include "tracex.h"
 #include "command_define_list.h"
 #include "command_parser.h"
+#include "command_function_list.cpp"
 
 #include <iostream>
 
 #define CMD_BACKGROUND 1
-#define SERVER_IP "127.0.0.1"
-HEADERPACKET sendDataPacket;
-NETWORK_CONTEXT *g_pNetwork;
+#define THIS_IS_SERVER
 
 using namespace std;
 
@@ -98,32 +97,6 @@ static int __recv( IO_PORT *p, HANDLE pdata, int len )
 		}
 	}
 	return recv( p->s, pdata, len, 0 );
-}
-
-int send_packet( IO_PORT *p, long nSize, HEADERPACKET *pdata )
-{
-	int nSendBytes;
-
-	if( p == NULL ) {
-		TRACE_ERR("p == NULL\n");
-		return FALSE;
-	}
-
-	//TRACEF("nSize = %d\n", nSize);
-	do {
-		nSendBytes = MIN( ASYNC_BUFSIZE, nSize );
-		nSendBytes = __send( p, (void*)pdata, nSendBytes );
-		if( nSendBytes <= 0 ) {
-			TRACE_ERR( "return FALSE(%d)\n", nSendBytes );
-			return FALSE;
-		}
-
-		pdata += nSendBytes;
-		nSize -= nSendBytes;
-
-	} while( nSize > 0 );
-
-	return TRUE;
 }
 
 int send_binary( IO_PORT *p, long nSize, void *pdata )
@@ -203,16 +176,16 @@ int ClientServiceThread(void *arg)
 
 		//make HEADERPACKET
 
-		res = select( fd_max, &reads, NULL, NULL, &tv );
-		if( res == -1 ) {
-			TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
-			usleep(10000);
-			continue;
-		}
-		else if( res == 0 ) {
-			TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
-			goto SERVICE_DONE;
-		}
+		// res = select( fd_max, &reads, NULL, NULL, &tv );
+		// if( res == -1 ) {
+		// 	TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
+		// 	usleep(10000);
+		// 	continue;
+		// }
+		// else if( res == 0 ) {
+		// 	TRACEF( "socket(%d) >>>> Select Time Out...\n", fd_socket);
+		// 	goto SERVICE_DONE;
+		// }
 		while(retry_cnt >= 0) {
 			res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
 			if(res <= 0 ) {
@@ -316,7 +289,4 @@ void closesocket(SOCKET sock_fd){
 }
 
 
-int video_data_response(HEADERPACKET* msg){
-	cout << "video data response recv" << endl;
-	return 1;
-}
+
