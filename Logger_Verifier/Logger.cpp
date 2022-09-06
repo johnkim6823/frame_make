@@ -148,20 +148,22 @@ void capture() {
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
         pthread_mutex_unlock(&frameLocker);
+	    
+	if(currentFrame.empty()) {
+		cout << "Frame is empty" << endl;
+	}
+	
+	else {
+        	//cout << CID.back() << endl;
+        	bgr_queue.push(currentFrame);
+        	capture_count++;
         
-        //cout << CID.back() << endl;
-        bgr_queue.push(currentFrame);
-        capture_count++;
-        
-        //Make CID for FRAMES
-        string s_cid = getCID();
-        cout << capture_count << ": " << s_cid << endl;
-        
-        cid_queue.push(s_cid);
-        
-        if(currentFrame.empty())
-            continue;
-        
+        	//Make CID for FRAMES
+        	string s_cid = getCID();
+        	cout << capture_count << ": " << s_cid << endl;
+        	cid_queue.push(s_cid);
+	}
+	    
         if (bgr_queue.size() == 50) {
  
             int ret = pthread_cancel( UpdThread );
