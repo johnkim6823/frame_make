@@ -53,6 +53,15 @@ int video_data_send(HEADERPACKET* msg){
 	return 1;
 }
 
+/*
+ This function is for test. Receive data and write down .txt file. 
+
+ commmad : 0xff
+ dataType : 0xa0 = char
+			0xa1 = unsigned char
+			0xb0 = int
+			0xb1 = unsigned int
+*/
 int test(HEADERPACKET* msg){
 	void* recv_buf;
 	FILE *file = fopen("test.txt", "wb");
