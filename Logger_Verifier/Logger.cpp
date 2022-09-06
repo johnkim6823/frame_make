@@ -83,8 +83,6 @@ int send_pubKey_to_server() {
 	
 	char *pubKey_buffer = new char[pubKey_bufsize];
     strcpy(pubKey_buffer, publicKey.c_str());
-    
-    
 
 }
 
@@ -429,7 +427,7 @@ void test() {
 int main(int, char**) { 
     
     key_generation();
-    
+    send_pubKey_to_server();
 
     
     
