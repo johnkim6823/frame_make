@@ -94,7 +94,7 @@ int init() {
  
 void init_all_settings() {
     cap.release();
-    width = DEFUALT_WIDTH;
+    width = DEFAULT_WIDTH;
     height = DEFAULT_HEIGHT;
     FPS = DEFAULT_FPS;
     init_queue();
@@ -266,6 +266,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
+	cout << "hash: " << sha_result << endl;
         hash_queue.push(sha_result);
     }
     
@@ -326,22 +327,19 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     total_data_size += video_bufsize;
     total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
-
-    unsigned char *video_buffer = new unsigned char[video_bufsize];
-    char *hash_buffer = new char[hash_bufsize];
-    char *cid_buffer = new char[cid_bufsize];
     
     cout << "total data size : " << total_data_size << endl;
+    cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
     cout << endl << "---------------------- " << endl;
     
     int step = 0;
     while(true) {
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
         cout << "step : " << ++step << endl;
-        
-        memset(video_buffer, 0x00, video_bufsize);
-
-        cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+      	
+	unsigned char *video_buffer = new unsigned char[video_bufsize];
+        char *hash_buffer = new char[hash_bufsize];
+        char *cid_buffer = new char[cid_bufsize];
         
         memcpy(video_buffer, yuv_send.front().data, video_bufsize);
         strcpy(hash_buffer, hash_send.front().c_str());
