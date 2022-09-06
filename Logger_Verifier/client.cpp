@@ -23,6 +23,9 @@
 #define CMD_BACKGROUND 1
 #define THIS_IS_SERVER
 
+HEADERPACKET sendDataPacket;
+NETWORK_CONTEXT *g_pNetwork;
+
 using namespace std;
 
 void closesocket(SOCKET sock_fd);

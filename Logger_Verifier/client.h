@@ -77,9 +77,6 @@ int recv_binary( IO_PORT *p, long size, char *pdata );
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int ClientServiceThread(void *arg);
 
-HEADERPACKET sendDataPacket;
-NETWORK_CONTEXT *g_pNetwork;
-
 #endif
 
 

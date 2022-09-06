@@ -17,9 +17,11 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
+#include "sign_verify.cpp"
 #include "merkle_tree.h"
-#include "client.h"
+#include "client.cpp"
 #include "command_define_list.h"
+#include "cfg.h"
 
 using namespace std;
 using namespace cv;
@@ -41,6 +43,8 @@ queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
 queue<string> hash_queue;                       //for hash made by feature vector
 queue<string> cid_queue;                        //for CID for images
 
+int key_generation();                                      //make privatKey and PublicKey
+int send_pubKey_to_server();
 int init();                                                 //Init Camera Setting and OPEN CAP
 void init_all_settings();                                    //Init all settings at the end
 void init_queue();                                          //Init all datas in queues
@@ -62,6 +66,36 @@ int make_merkle_tree();
 * 1. MAKE PUBLIC KEY, PRIVATE KEY
 * 2. SEND PUBLIC KEY to SERVER 
 */
+
+int key_generation(){
+    RSA * privateRSA = genPrivateRSA();
+	publicKey = genPubicRAS(privateRSA);
+    
+    cout << "----Key Geneartion-------" << endl;
+    cout << "PRIKEY and PUBKEY are made" << endl;
+    
+    return 0;
+}
+
+int send_pubKey_to_server() {
+    
+    int pubKey_bufsize = publicKey.capacity();
+	std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
+	
+	char *pubKey_buffer = new char[pubKey_bufsize];
+    strcpy(pubKey_buffer, publicKey.c_str());
+
+    makePacket(0xff, 0xa0, strlen(pubKey_buffer));
+    void *p_packet = &sendDataPacket;
+    if(!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet)){
+        cout << "CID send Error!!" << endl;
+    }
+    if(!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void*)pubKey_buffer)){
+        cout << "CID send Error!!" << endl;
+    }
+    
+}
+
 
 
 int init() {
@@ -148,20 +182,22 @@ void capture() {
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
         pthread_mutex_unlock(&frameLocker);
+	    
+	if(currentFrame.empty()) {
+		cout << "Frame is empty" << endl;
+	}
+	
+	else {
+        	//cout << CID.back() << endl;
+        	bgr_queue.push(currentFrame);
+        	capture_count++;
         
-        //cout << CID.back() << endl;
-        bgr_queue.push(currentFrame);
-        capture_count++;
-        
-        //Make CID for FRAMES
-        string s_cid = getCID();
-        cout << capture_count << ": " << s_cid << endl;
-        
-        cid_queue.push(s_cid);
-        
-        if(currentFrame.empty())
-            continue;
-        
+        	//Make CID for FRAMES
+        	string s_cid = getCID();
+        	cout << capture_count << ": " << s_cid << endl;
+        	cid_queue.push(s_cid);
+	}
+	    
         if (bgr_queue.size() == 50) {
  
             int ret = pthread_cancel( UpdThread );
@@ -266,6 +302,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
+        cout << "hash: " << sha_result << endl;
         hash_queue.push(sha_result);
     }
     
@@ -314,8 +351,8 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     // cout << "CID data QUEUE size: " << cid_send.size() << endl;
 
     int total_data_size = 0;
-    int hash_bufsize = hash_send.front().size();
-    int cid_bufsize = cid_send.front().size();
+    int hash_bufsize = hash_send.front().capacity();
+    int cid_bufsize = cid_send.front().capacity();
     int video_rows = yuv_send.front().rows;
     int video_cols = yuv_send.front().cols;
     int video_channels = yuv_send.front().channels();
@@ -324,19 +361,19 @@ void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEU
     total_data_size += video_bufsize;
     total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
-
-    unsigned char *video_buffer = new unsigned char[video_bufsize];
-    char *hash_buffer = new char[hash_bufsize];
-    char *cid_buffer = new char[cid_bufsize];
+    
+    cout << "total data size : " << total_data_size << endl;
+    cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+    cout << endl << "---------------------- " << endl;
     
     int step = 0;
     while(true) {
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
         cout << "step : " << ++step << endl;
-        
-        memset(video_buffer, 0x00, video_bufsize);
-
-        // cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+      	
+	unsigned char *video_buffer = new unsigned char[video_bufsize];
+        char *hash_buffer = new char[hash_bufsize];
+        char *cid_buffer = new char[cid_bufsize];
         
         memcpy(video_buffer, yuv_send.front().data, video_bufsize);
         strcpy(hash_buffer, hash_send.front().c_str());
@@ -403,51 +440,44 @@ void test() {
 }
 
 int main(int, char**) { 
+    
+    key_generation();
 
-    //while(true) {
-    //if(init() == -1) {break;}
-
-	//else{
-		if(!initClient()){
-			cout << "init client error!!" << endl;
-			return -1;
-		}
-
-		cout << "Image preprocessing start: " << getCID() << endl;
-
-		//capture frames
-		//capture();
-
-        test();
-
-		//convert frames to YUV420 and Y
-		convert_frames(bgr_queue);
-
-		//USE Canny Edge Detection with Y_Frames
-		edge_detection(y_queue);
-
-		//make Hash by edge_detected datas
-		make_hash(feature_vector_queue);
-
-        cout << "Image preprocessing finish : " << getCID() << endl;
-		//send Datas to Server
-		send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
+    
+    
+    
+    while(true) {
+    	if(init() == -1) {break;}
         
-        /* public key send function. public key must (char*) or (unsigned char*) or (int *) or (unsigned int*) type,  */
-        /* Server-define datatype
-            0xa0 char
-            0xa1 unsigned char
-            0xb0 int
-            0xb1 unsigned int
-        */
-        const char* test_str = "hellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohello";
-        char *str = (char*) test_str;
-        int str_size = 100;
-        pk_send_test(str, 0xa0, str_size);
+        else{
+            if(!initClient()){
+                cout << "init client error!!" << endl;
+                return -1;
+            }   
 
-		//initialize all settings
-		init_all_settings();
+            send_pubKey_to_server();
+            cout << "Logger Start working: " << getCID() << endl;
+    
+            //capture frames
+            capture();
 
-		return 0;
-    //}
+            //convert frames to YUV420 and Y
+            convert_frames(bgr_queue);
+
+            //USE Canny Edge Detection with Y_Frames
+            edge_detection(y_queue);
+
+            //make Hash by edge_detected datas
+            make_hash(feature_vector_queue);
+
+            //send Datas to Server
+            send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
+
+            //initialize all settings
+            init_all_settings();
+
+            return 0;
+        }
+    }
+    
 }
