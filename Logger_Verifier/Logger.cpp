@@ -17,7 +17,7 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
-#include "sign_verify.cpp"
+#include "sign.cpp"
 #include "merkle_tree.h"
 #include "client.cpp"
 #include "command_define_list.h"
@@ -60,40 +60,44 @@ void make_hash(queue<cv::Mat> &FV_QUEUE);                   //make hash using fe
 string getCID();                                            //Make CID for each frames 
 unsigned char* reshape_yuv(cv::Mat mat);                    //Reshape yuv420 row size to 1 and return char
 void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE);   //send datas to Server
-int make_merkle_tree();
 
 /*/NEED to make
-* 1. MAKE PUBLIC KEY, PRIVATE KEY
-* 2. SEND PUBLIC KEY to SERVER 
+* 1. GET CAMERA CONFIG from SERVER
 */
 
 int key_generation(){
-    RSA * privateRSA = genPrivateRSA();
+    cout << "----Key Geneartion----" << endl;
+    
+	RSA * privateRSA = genPrivateRSA();
 	publicKey = genPubicRAS(privateRSA);
     
-    cout << "----Key Geneartion-------" << endl;
     cout << "PRIKEY and PUBKEY are made" << endl;
-    
-    return 0;
+    cout << "----GENERATION END-------" << endl << endl;
+	return 0;
 }
 
 int send_pubKey_to_server() {
     
-    int pubKey_bufsize = publicKey.capacity();
+    cout << "----SEND PUBKEY to SERVER----" << endl;
+	int pubKey_bufsize = publicKey.capacity();
 	std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
 	
 	char *pubKey_buffer = new char[pubKey_bufsize];
     strcpy(pubKey_buffer, publicKey.c_str());
-
+    
     makePacket(0xff, 0xa0, strlen(pubKey_buffer));
     void *p_packet = &sendDataPacket;
+   
+    
     if(!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet)){
-        cout << "CID send Error!!" << endl;
-    }
-    if(!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void*)pubKey_buffer)){
-        cout << "CID send Error!!" << endl;
+        	cout << "PubKey send Error!!" << endl;
     }
     
+    if(!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void*)pubKey_buffer)){
+        	cout << "PubKey send Error!!" << endl;
+    }
+    
+    cout << "----SEND END----------------" << endl << endl;
 }
 
 
@@ -302,8 +306,12 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
-        cout << "hash: " << sha_result << endl;
-        hash_queue.push(sha_result);
+        
+        //sign_HASH
+        string signed_hash = signMessage(privateKey, sha_result);
+        
+        //cout << "hash: " << signed_hash << endl;
+        hash_queue.push(signed_hash);
     }
     
     cout << "    hash made : " << hash_queue.size() << endl;
@@ -339,7 +347,7 @@ string getCID() {
 }
 
 void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
-    // cout << endl << "----SEND DATAS to SERVER" << endl;
+    cout << endl << "----SEND DATAS to SERVER" << endl;
 
     queue<cv::Mat> yuv_send(YUV420_QUEUE);
     queue<string> hash_send(HASH_QUEUE);
@@ -363,7 +371,9 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     total_data_size += cid_bufsize;
     
     cout << "total data size : " << total_data_size << endl;
-    cout << "size of video data : " << yuv_send.front().rows * yuv_send.front().cols * yuv_send.front().channels() << endl;
+    cout << "size of hash data: " << hash_bufsize << endl;
+    cout << "size of CID data: " << cid_bufsize << endl;
+    cout << "size of video data: " << video_bufsize << endl;
     cout << endl << "---------------------- " << endl;
     
     int step = 0;
@@ -441,21 +451,22 @@ void test() {
 
 int main(int, char**) { 
     
+    //key GEN
     key_generation();
-
     
+    //Init Client
+   
+    if(!initClient()){
+        cout << "init client error!!" << endl;
+        return -1;
+    }
     
+    send_pubKey_to_server();
     
     while(true) {
     	if(init() == -1) {break;}
         
         else{
-            if(!initClient()){
-                cout << "init client error!!" << endl;
-                return -1;
-            }   
-
-            send_pubKey_to_server();
             cout << "Logger Start working: " << getCID() << endl;
     
             //capture frames
@@ -475,9 +486,9 @@ int main(int, char**) {
 
             //initialize all settings
             init_all_settings();
-
+        
             return 0;
         }
     }
-    
+
 }

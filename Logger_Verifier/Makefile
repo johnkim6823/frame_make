@@ -31,7 +31,7 @@ node.o: src/node.cpp
 Verifier.o: ./Verifier.cpp
 	${CXX} ${CFLAGS} -c $< -o $@ $(LIBS)
 
-sign_verify.o: ./sign_verify.cpp
+sign_verify.o: ./sign.cpp
 	${CXX} -c $< -o $@ $(SIGN_VER_FLAGS)
 
 Logger.o: ./Logger.cpp
