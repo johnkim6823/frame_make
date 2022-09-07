@@ -66,24 +66,60 @@ RSA* createPublicRSA(std::string key) {
 	return rsa;
 }
 
+void Base64Encode( const unsigned char* buffer,
+                   size_t length,
+                   char** base64Text) {
+  BIO *bio, *b64;
+  BUF_MEM *bufferPtr;
 
-/*
-int main() {
+  b64 = BIO_new(BIO_f_base64());
+  bio = BIO_new(BIO_s_mem());
+  bio = BIO_push(b64, bio);
 
-	// Private keygen
-	RSA * privateRSA = genPrivateRSA();
-	publicKey = genPubicRAS(privateRSA);
+  BIO_write(bio, buffer, length);
+  BIO_flush(bio);
+  BIO_get_mem_ptr(bio, &bufferPtr);
+  BIO_set_close(bio, BIO_NOCLOSE);
+  BIO_free_all(bio);
 
-	std::cout << "privateKey----" << std::endl << privateKey << std::endl;
-	std::cout << "privateKey size(byte): " << privateKey.capacity() << std::endl;
-	std::cout << "publicKey----" << std::endl << publicKey << std::endl;
-	std::cout << "publicKey size(byte): " << publicKey.capacity() << std::endl;
-	
-	int pubKey_bufsize = publicKey.capacity();
-	std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
-	
-	char *pubKey_buffer = new char[pubKey_bufsize];
-    strcpy(pubKey_buffer, publicKey.c_str());
-	
+  *base64Text=(*bufferPtr).data;
 }
-*/
+
+size_t calcDecodeLength(const char* b64input) {
+  size_t len = strlen(b64input), padding = 0;
+
+  if (b64input[len-1] == '=' && b64input[len-2] == '=') //last two chars are =
+    padding = 2;
+  else if (b64input[len-1] == '=') //last char is =
+    padding = 1;
+  return (len*3)/4 - padding;
+}
+
+void Base64Decode(const char* b64message, unsigned char** buffer, size_t* length) {
+  BIO *bio, *b64;
+
+  int decodeLen = calcDecodeLength(b64message);
+  *buffer = (unsigned char*)malloc(decodeLen + 1);
+  (*buffer)[decodeLen] = '\0';
+
+  bio = BIO_new_mem_buf(b64message, -1);
+  b64 = BIO_new(BIO_f_base64());
+  bio = BIO_push(b64, bio);
+
+  *length = BIO_read(bio, *buffer, strlen(b64message));
+  BIO_free_all(bio);
+}
+
+
+char* signMessage(std::string privateKey, std::string plainText) {
+  RSA* privateRSA = createPrivateRSA(privateKey); 
+  //RSA* privateRSA = createPrivateRSA(); 
+
+  unsigned char* encMessage;
+  char* base64Text;
+  size_t encMessageLength;
+  RSASign(privateRSA, (unsigned char*) plainText.c_str(), plainText.length(), &encMessage, &encMessageLength);
+  Base64Encode(encMessage, encMessageLength, &base64Text);
+  free(encMessage);
+  return base64Text;
+}
