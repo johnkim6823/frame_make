@@ -55,6 +55,10 @@ Verifier: GET DATAS from SERVER and CHECK for video data's integrity
 ```
 ./Verifiy
 ```
-# 2022 09 01 changes -by MJ
+## 2022 09 01 changes -by MJ
 Camera settings are moved to cfg.h. No changes are needed.
 
+## 2022 09 07 changes -by MJ
+Private Key and Public Key generation added
+
+-> sign.cpp: codes for generating Key and sign hash
