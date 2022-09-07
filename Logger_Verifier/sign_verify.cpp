@@ -95,21 +95,6 @@ size_t calcDecodeLength(const char* b64input) {
   return (len*3)/4 - padding;
 }
 
-void Base64Decode(const char* b64message, unsigned char** buffer, size_t* length) {
-  BIO *bio, *b64;
-
-  int decodeLen = calcDecodeLength(b64message);
-  *buffer = (unsigned char*)malloc(decodeLen + 1);
-  (*buffer)[decodeLen] = '\0';
-
-  bio = BIO_new_mem_buf(b64message, -1);
-  b64 = BIO_new(BIO_f_base64());
-  bio = BIO_push(b64, bio);
-
-  *length = BIO_read(bio, *buffer, strlen(b64message));
-  BIO_free_all(bio);
-}
-
 
 char* signMessage(std::string privateKey, std::string plainText) {
   RSA* privateRSA = createPrivateRSA(privateKey); 
