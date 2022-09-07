@@ -59,7 +59,7 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE);               //Edge detact by y f
 void make_hash(queue<cv::Mat> &FV_QUEUE);                   //make hash using feature vector
 string getCID();                                            //Make CID for each frames 
 unsigned char* reshape_yuv(cv::Mat mat);                    //Reshape yuv420 row size to 1 and return char
-void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE);   //send datas to Server
+void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE);   //send datas to Server
 int make_merkle_tree();
 
 /*/NEED to make
@@ -338,7 +338,7 @@ string getCID() {
     return s_CID;
 }
 
-void send_datas_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
+void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
     // cout << endl << "----SEND DATAS to SERVER" << endl;
 
     queue<cv::Mat> yuv_send(YUV420_QUEUE);
@@ -471,7 +471,7 @@ int main(int, char**) {
             make_hash(feature_vector_queue);
 
             //send Datas to Server
-            send_datas_to_server(yuv420_queue, hash_queue, cid_queue);
+            send_data_to_server(yuv420_queue, hash_queue, cid_queue);
 
             //initialize all settings
             init_all_settings();
