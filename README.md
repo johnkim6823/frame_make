@@ -10,16 +10,17 @@ Server: Server Folder
 + prerequisite
 
 RPI -> 32 bit
-
+```
 OpenCV 4.5.1 required -> See OpenCV_Download_manual.
 
 Cryptopp required -> See Cryptopp_Download_manual.
 
 MariaDB required -> See MariaDB_Download_manual.
 
-After git clone plese mv Logger_Verifier to hanium_2022
+After git clone please mv Logger_Verifier to hanium_2022
 
 mv Logger_Verifier hanium_2022
+```
 
 1. Logger configuration Change needed.
 ```
