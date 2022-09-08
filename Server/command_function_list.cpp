@@ -6,25 +6,71 @@ using namespace std;
 
 #include "server.h"
 
+void* p_packet = &sendDataPacket;
+void* recv_buf;
+char* CID = new char[CID_size];
+char* Hash = new char[Hash_size];
+FILE* file;
+
+void reshape_buffer(int type, int datasize){
+	switch(type){
+		case 0xa0 : case 0xc0 : 
+					recv_buf = (char *)recv_buf;
+					recv_buf = new char[datasize];
+					break;
+		case 0xa1 : recv_buf = (unsigned char*)recv_buf;
+					recv_buf = new unsigned char[datasize];
+					break;
+		case 0xb0 : recv_buf = (int *)recv_buf;
+					recv_buf = new int[datasize];
+					break;
+		case 0xb1 : recv_buf = (unsigned int*)recv_buf;
+					recv_buf = new unsigned int[datasize];
+					break;
+	}
+}
+
+/*------------------public key send & response----------------------------*/
+int public_key_send(HEADERPACKET* msg){
+	void* recv_buf;
+	reshape_buffer(msg->dataType, msg->dataSize);
+
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
+	file = fopen("public_key.txt", "wb");
+	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	fflush(file);
+
+	delete [] recv_buf;
+	fclose(file);
+}
+int public_key_response(HEADERPACKET* msg){
+	makePacket(PUBKEY_RES, 0xa0, 0);
+	
+	return send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet);
+}
+/*------------------------------------------------------------------------*/
+
+/*-------------------video data send & response---------------------------*/
 int video_data_send(HEADERPACKET* msg){
-	unsigned char *recv_buf = new unsigned char[msg->dataSize];
-	char* CID = new char[CID_size];
-	char* Hash = new char[Hash_size];
+	reshape_buffer(msg->dataType, msg->dataSize);
 
 	memset(recv_buf, 0, msg->dataSize);
+	memset(CID, 0, CID_size);
+	memset(Hash, 0, Hash_size);
+
 	int frame_size =  msg->dataSize - CID_size - Hash_size;
-	FILE *file;
+	//FILE *file;
 
 	recv_binary(&g_pNetwork->port, 23, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
 
 	string s_dir = storage_dir;
 
-	if(x != recv_buf[9]){
+	if(x != CID[9]){
 		table_name = get_table_name();
 		mkdir_func((s_dir + table_name).c_str());
 		create_table();
-		x = recv_buf[9];
+		x = CID[9];
 	}
 
 	string frame_dir((const char*)recv_buf);
@@ -44,14 +90,19 @@ int video_data_send(HEADERPACKET* msg){
 	insert_database(CID, Hash);
 
 	fflush(file);
-	fclose(file);
+	// fclose(file);
 	delete [] recv_buf;
 	delete [] CID;
 	delete [] Hash;
-	void *p_packet = &sendDataPacket;
- 	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet);
+ 	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 	return 1;
 }
+int video_data_response(HEADERPACKET* msg){
+	cout << "video data response recv" << endl;
+	return 1;
+}
+/*------------------------------------------------------------------------*/
+
 
 /*
  This function is for test. Receive data and write down .txt file. 
@@ -63,19 +114,8 @@ int video_data_send(HEADERPACKET* msg){
 			0xb1 = unsigned int
 */
 int test(HEADERPACKET* msg){
-	void* recv_buf;
 	FILE *file = fopen("test.txt", "wb");
-
-	switch(msg->dataType){
-		case 0xa0 : recv_buf = (char *)recv_buf;
-					recv_buf = new char[msg->dataSize];
-		case 0xa1 : recv_buf = (unsigned char*)recv_buf;
-					recv_buf = new unsigned char[msg->dataSize];
-		case 0xb0 : recv_buf = (int *)recv_buf;
-					recv_buf = new int[msg->dataSize];
-		case 0xb1 : recv_buf = (unsigned int*)recv_buf;
-					recv_buf = new unsigned int[msg->dataSize];
-	}
+	reshape_buffer(msg->dataType, msg->dataSize);
 	
 	if(recv_binary(&g_pNetwork->port, msg->dataSize, recv_buf) == 0){
 		cout << "recv_binary fail" << endl;

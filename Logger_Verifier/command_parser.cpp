@@ -5,23 +5,17 @@
 
 #include "command_parser.h"
 #include "command_define_list.h"
-
 #include "tracex.h"
 
 #define ThisID Logger
 
 using namespace std;
-int test(HEADERPACKET* msg);
-int video_data_send(HEADERPACKET* msg);
-int video_data_response(HEADERPACKET* msg);
-int hash_send(HEADERPACKET* msg);
-int CID_send(HEADERPACKET* msg);
 
 
 cmdp_desp parser_desp[] =
 {
-	// {PUBKEY_SND					, public_key_send		},
-	// {PUBKEY_RES					, public_key_response	},
+	//{PUBKEY_SND					, public_key_send		},
+	{PUBKEY_RES					, public_key_response	},
 	// {PRIKEY_SND					, private_key_send		},
 	// {PRIKEY_RES					, private_key_response	},
 	//{VIDEO_DATA_SND				, video_data_send		},
@@ -38,7 +32,7 @@ cmdp_desp parser_desp[] =
 	// {CONFIG_RES					, configuration_response},
 
 	// Testing command
-	{TEST_CMD					, test					},
+	//{TEST_CMD					, test					},
 };
 
 //-----------------------------------------------------------------------------
@@ -73,12 +67,3 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	return 1;
 }
 #endif
-
-//Meaning-less function
-int test(HEADERPACKET* msg){
-	cout << "test function" << endl;
-	return 1;
-}
-
-
-

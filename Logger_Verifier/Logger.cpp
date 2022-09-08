@@ -17,6 +17,8 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
+#define THIS_IS_SERVER
+
 #include "sign_verify.cpp"
 #include "merkle_tree.h"
 #include "client.cpp"
@@ -93,10 +95,7 @@ int send_pubKey_to_server() {
     if(!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void*)pubKey_buffer)){
         cout << "CID send Error!!" << endl;
     }
-    
 }
-
-
 
 int init() {
     cout << "----Initalizing----------" << endl << endl;
@@ -442,9 +441,6 @@ void test() {
 int main(int, char**) { 
     
     key_generation();
-
-    
-    
     
     while(true) {
     	if(init() == -1) {break;}

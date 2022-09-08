@@ -11,8 +11,9 @@
 #include <arpa/inet.h>
 #include <cstdint>
 
+#define THIS_IS_SERVER
+
 #include "client.h"
-#include "cfg.h"
 #include "tracex.h"
 #include "command_define_list.h"
 #include "command_parser.h"
@@ -21,10 +22,7 @@
 #include <iostream>
 
 #define CMD_BACKGROUND 1
-#define THIS_IS_SERVER
 
-HEADERPACKET sendDataPacket;
-NETWORK_CONTEXT *g_pNetwork;
 
 using namespace std;
 

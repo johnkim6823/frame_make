@@ -11,12 +11,12 @@ using namespace std;
 
 cmdp_desp parser_desp[] =
 {
-	// {PUBKEY_SND					, public_key_send		},
-	// {PUBKEY_RES					, public_key_response	},
+	{PUBKEY_SND					, public_key_send		},
+	{PUBKEY_RES					, public_key_response	},
 	// {PRIKEY_SND					, private_key_send		},
 	// {PRIKEY_RES					, private_key_response	},
 	{VIDEO_DATA_SND				, video_data_send		},
-	//{VIDEO_DATA_RES				, video_data_response	},
+	{VIDEO_DATA_RES				, video_data_response	},
 	// {HASH_REQ					, hash_request			},
 	// {HASH_SND					, hash_send				},
 	// {NEW_HASH_SND				, new_hash_send			},

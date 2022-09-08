@@ -82,8 +82,8 @@ typedef struct
 int initServer();
 void termServer();
 
-int send_binary( IO_PORT *p, long nSize, HANDLE *pdata );
-int recv_binary( IO_PORT *p, long size, void *pdata );
+int send_binary( IO_PORT *p, long nSize, HANDLE pdata );
+int recv_binary( IO_PORT *p, long size, HANDLE pdata );
 
 string get_table_name();
 void mkdir_func(string str);

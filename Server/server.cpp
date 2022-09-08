@@ -20,7 +20,6 @@
 #include "server.h"
 #include "command_define_list.h"
 #include "tracex.h"
-#include "cfg.h"
 #include "command_function_list.cpp"
 
 using namespace std;
@@ -117,7 +116,7 @@ void initDatabase(struct db_user *db_info){
 	db_info->table = table_name;
 }
 
-static int __send( IO_PORT *p, HANDLE *pdata, int len )
+static int __send( IO_PORT *p, HANDLE pdata, int len )
 {
 	int res = 0;
 	int i = 0;
@@ -180,7 +179,7 @@ static int __recv( IO_PORT *p, HANDLE pdata, int len )
 	return recv( p->s, pdata, len, 0 );
 }
 
-int send_binary( IO_PORT *p, long nSize, HANDLE *pdata )
+int send_binary( IO_PORT *p, long nSize, HANDLE pdata )
 {
 	int nSendBytes;
 
@@ -206,7 +205,7 @@ int send_binary( IO_PORT *p, long nSize, HANDLE *pdata )
 	return TRUE;
 }
 
-int recv_binary( IO_PORT *p, long size, void *pdata )
+int recv_binary( IO_PORT *p, long size, HANDLE pdata )
 {
 	int remainbytes, recvbytes;
 

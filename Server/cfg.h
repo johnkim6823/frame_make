@@ -17,5 +17,7 @@
 #define ASYNC_BUFSIZE       4096
 #define MAX_USER_CNT        5
 
+#define ThisID Server
+
 
 #endif

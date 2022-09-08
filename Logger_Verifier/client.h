@@ -5,6 +5,8 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
+#include "cfg.h"
+
 #define HANDLE void*
 
 #define TRUE 1
@@ -72,11 +74,21 @@ typedef struct
 int initClient();
 void termClient();
 
-int send_binary( IO_PORT *p, long nSize, void *pdata );
-int recv_binary( IO_PORT *p, long size, char *pdata );
+int send_binary( IO_PORT *p, long nSize, HANDLE pdata );
+int recv_binary( IO_PORT *p, long size,  HANDLE pdata );
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int ClientServiceThread(void *arg);
 
 #endif
 
+#ifdef THIS_IS_SERVER
+#ifndef PLZ_R_ONE_TIME
+#define PLZ_R_ONE_TIME
 
+NETWORK_CONTEXT *g_pNetwork;
+HEADERPACKET sendDataPacket;
+char x;
+string table_name;
+
+#endif
+#endif

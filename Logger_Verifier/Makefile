@@ -7,7 +7,7 @@ SIGN_VER_FLAGS = -lssl -lcrypto -L /usr/local/opt/openssl/lib
 CFLAGS = -Wall -g -I ./include
 
 #--sources----
-SOURCES :=  Logger.cpp command_parser.cpp 
+SOURCES :=   command_parser.cpp Logger.cpp
 
 #--Object files----
 OBJS = $(SOURCES:.cpp=.o)
@@ -35,7 +35,7 @@ sign_verify.o: ./sign_verify.cpp
 	${CXX} -c $< -o $@ $(SIGN_VER_FLAGS)
 
 Logger.o: ./Logger.cpp
-	${CXX} ${CFLAGS} -c $< -o $@ $(LIBS) 
+	${CXX} -c ${CFLAGS} -o $@  $< $(LIBS) 
 
 clean:
 	$(RM) *.o Verifier Logger sign_verify privkey PubkeyBase64.key
