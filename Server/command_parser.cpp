@@ -42,6 +42,12 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 	int ack, i=0, len;
 	len = sizeof(parser_desp) / sizeof(parser_desp[0]);
 
+	cout << hex << (int)pmsg->startID << endl;
+	cout << (int)pmsg->destID << endl;
+	cout << (int)pmsg->command << endl;
+	cout << (int)pmsg->dataType << endl;
+	cout << dec << (int)pmsg->dataSize << endl;
+
 	if(pmsg->destID != ThisID){
 		cout << "wrong destination!! " << endl;
 		return -1; //"wrong send";

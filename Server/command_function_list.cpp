@@ -40,7 +40,6 @@ int public_key_send(HEADERPACKET* msg){
 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 	fflush(file);
 
-	delete [] recv_buf;
 	fclose(file);
 }
 int public_key_response(HEADERPACKET* msg){
@@ -59,7 +58,7 @@ int video_data_send(HEADERPACKET* msg){
 	memset(Hash, 0, Hash_size);
 
 	int frame_size =  msg->dataSize - CID_size - Hash_size;
-	//FILE *file;
+	FILE *file;
 
 	recv_binary(&g_pNetwork->port, 23, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
@@ -79,7 +78,7 @@ int video_data_send(HEADERPACKET* msg){
 	file = fopen(file_name, "wb");
 	memset(recv_buf, 0, msg->dataSize);
 
-	recv_binary(&g_pNetwork->port, 64, (void*)recv_buf);
+	recv_binary(&g_pNetwork->port, Hash_size, (void*)recv_buf);
 	strcpy(Hash, (char*)recv_buf);
 	memset(recv_buf, 0, msg->dataSize);
 
@@ -90,11 +89,10 @@ int video_data_send(HEADERPACKET* msg){
 	insert_database(CID, Hash);
 
 	fflush(file);
-	// fclose(file);
-	delete [] recv_buf;
-	delete [] CID;
-	delete [] Hash;
+	fclose(file);
+
  	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
+	
 	return 1;
 }
 int video_data_response(HEADERPACKET* msg){
@@ -126,8 +124,6 @@ int test(HEADERPACKET* msg){
 	
 	fflush(file);
 	fclose(file);
-
-	delete [] recv_buf;
 
 	return 1;
 }

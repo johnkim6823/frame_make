@@ -17,13 +17,7 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
-<<<<<<< HEAD
-#define THIS_IS_SERVER
-
-#include "sign_verify.cpp"
-=======
 #include "sign.cpp"
->>>>>>> a4b70358f8959d44ecf4fb983be966133b473d59
 #include "merkle_tree.h"
 #include "client.cpp"
 #include "command_define_list.h"
@@ -102,11 +96,6 @@ int send_pubKey_to_server() {
     if(!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void*)pubKey_buffer)){
         	cout << "PubKey send Error!!" << endl;
     }
-<<<<<<< HEAD
-=======
-    
-    cout << "----SEND END----------------" << endl << endl;
->>>>>>> a4b70358f8959d44ecf4fb983be966133b473d59
 }
 
 int init() {
@@ -396,7 +385,13 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
         strcpy(hash_buffer, hash_send.front().c_str());
         strcpy(cid_buffer, cid_send.front().c_str());
 
-        makePacket(VIDEO_DATA_SND, 0, total_data_size);
+        makePacket(VIDEO_DATA_SND, 0xa1, total_data_size);
+
+        cout << hex << (int)sendDataPacket.startID << endl;
+        cout << (int)sendDataPacket.destID << endl;
+        cout << (int)sendDataPacket.command << endl;
+        cout << (int)sendDataPacket.dataType << endl;
+        cout << dec << (int)sendDataPacket.dataSize << endl;
 
         void *p_packet = &sendDataPacket;
         if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet)){
@@ -457,45 +452,44 @@ void test() {
 }
 
 int main(int, char**) { 
-    
+
     //key GEN
     key_generation();
-    
+
     //Init Client
-   
+
     if(!initClient()){
         cout << "init client error!!" << endl;
         return -1;
     }
-    
+
     send_pubKey_to_server();
-    
+
     while(true) {
-    	if(init() == -1) {break;}
+        // if(init() == -1) {break;}
         
-        else{
-            cout << "Logger Start working: " << getCID() << endl;
+        // else{
+        //     cout << "Logger Start working: " << getCID() << endl;
+
+        //     //capture frames
+        //     capture();
+        test();
+
+        //convert frames to YUV420 and Y
+        convert_frames(bgr_queue);
+
+        //USE Canny Edge Detection with Y_Frames
+        edge_detection(y_queue);
+
+        //make Hash by edge_detected datas
+        make_hash(feature_vector_queue);
+
+        //send Datas to Server
+        send_data_to_server(yuv420_queue, hash_queue, cid_queue);
+
+        //initialize all settings
+        init_all_settings();
     
-            //capture frames
-            capture();
-
-            //convert frames to YUV420 and Y
-            convert_frames(bgr_queue);
-
-            //USE Canny Edge Detection with Y_Frames
-            edge_detection(y_queue);
-
-            //make Hash by edge_detected datas
-            make_hash(feature_vector_queue);
-
-            //send Datas to Server
-            send_data_to_server(yuv420_queue, hash_queue, cid_queue);
-
-            //initialize all settings
-            init_all_settings();
-        
-            return 0;
-        }
+        return 0;
     }
-
 }

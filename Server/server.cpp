@@ -550,7 +550,7 @@ void insert_database(char* CID, char* Hash){
 }
 
 void create_table(){
-	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(70), Verified INTEGER);";
+	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(350), Verified INTEGER);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	mysql_query(conn, order);

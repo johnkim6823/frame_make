@@ -9,7 +9,7 @@
 # define storage_dir        "/home/pi/images/"
 
 // Deafault values for datasize
-# define Hash_size          64
+# define Hash_size          350
 # define CID_size           23
 
 // Communication protocol
