@@ -249,7 +249,8 @@ SOCKET create_socket()
 
 int initClient()
 {
-	cout << "initClient start" << endl;
+	cout << "----Client Initializing----" << endl;
+
 
 	g_pNetwork = (NETWORK_CONTEXT*) malloc(sizeof(NETWORK_CONTEXT));
 	g_pNetwork->m_socket = create_socket();
@@ -274,6 +275,8 @@ int initClient()
 	// 	TRACE_ERR( "ERROR create ptt client service thread\n" );
 	// 	return FALSE;
 	// }
+	
+	cout << "----Initializing END----" << endl << endl;
 
 	return TRUE;
 }

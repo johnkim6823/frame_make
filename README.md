@@ -7,15 +7,20 @@ Logger_Verifier: Logger, Verifier folder.
 Server: Server Folder
 
 # How to Use
-+ 0. prerequisite
++ prerequisite
 
 RPI -> 32 bit
-
+```
 OpenCV 4.5.1 required -> See OpenCV_Download_manual.
 
 Cryptopp required -> See Cryptopp_Download_manual.
 
 MariaDB required -> See MariaDB_Download_manual.
+
+After git clone please mv Logger_Verifier to hanium_2022
+
+mv Logger_Verifier hanium_2022
+```
 
 1. Logger configuration Change needed.
 ```
@@ -51,6 +56,12 @@ Verifier: GET DATAS from SERVER and CHECK for video data's integrity
 ```
 ./Verifiy
 ```
-# 2022 09 01 changes -by MJ
+## 2022 09 01 changes -by MJ
 Camera settings are moved to cfg.h. No changes are needed.
 
+## 2022 09 07 changes -by MJ
+Private Key and Public Key generation added
+
+-> sign.cpp: codes for generating Key and sign hash
+
+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
