@@ -302,11 +302,10 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
+        cout << "hash: " << sha_result << endl;
         
         //sign_HASH
         string signed_hash = signMessage(privateKey, sha_result);
-        
-        //cout << "hash: " << signed_hash << endl;
         hash_queue.push(signed_hash);
     }
     
@@ -457,7 +456,6 @@ int main(int, char**) {
     key_generation();
 
     //Init Client
-
     if(!initClient()){
         cout << "init client error!!" << endl;
         return -1;
@@ -466,30 +464,31 @@ int main(int, char**) {
     send_pubKey_to_server();
 
     while(true) {
-        // if(init() == -1) {break;}
+	    if(init() == -1) {break;}
         
-        // else{
-        //     cout << "Logger Start working: " << getCID() << endl;
+	    else{
+		    cout << "Logger Start working: " << getCID() << endl;
+		    
+		    //capture frames
+		    capture();
+		    //test();
 
-        //     //capture frames
-        //     capture();
-        test();
+		    //convert frames to YUV420 and Y
+		    convert_frames(bgr_queue);
 
-        //convert frames to YUV420 and Y
-        convert_frames(bgr_queue);
+		    //USE Canny Edge Detection with Y_Frames
+		    edge_detection(y_queue);
 
-        //USE Canny Edge Detection with Y_Frames
-        edge_detection(y_queue);
+		    //make Hash by edge_detected datas
+		    make_hash(feature_vector_queue);
 
-        //make Hash by edge_detected datas
-        make_hash(feature_vector_queue);
+		    //send Datas to Server
+		    send_data_to_server(yuv420_queue, hash_queue, cid_queue);
 
-        //send Datas to Server
-        send_data_to_server(yuv420_queue, hash_queue, cid_queue);
-
-        //initialize all settings
-        init_all_settings();
-    
-        return 0;
+		    //initialize all settings
+		    init_all_settings();
+		    
+		    return 0;
+	    }
     }
 }

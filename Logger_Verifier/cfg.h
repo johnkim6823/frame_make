@@ -3,7 +3,7 @@
 # define SERVER_PORT 8700
 
 // Deafault values for datasize
-# define Hash_size          64
+# define Hash_size          350
 # define CID_size           23
 
 //Default values for Camera Settings
