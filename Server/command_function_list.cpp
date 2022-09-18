@@ -32,15 +32,22 @@ void reshape_buffer(int type, int datasize){
 
 /*------------------public key send & response----------------------------*/
 int public_key_send(HEADERPACKET* msg){
-	void* recv_buf;
+	int res;
 	reshape_buffer(msg->dataType, msg->dataSize);
 
 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
 	file = fopen("public_key.txt", "wb");
-	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	res = fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+
+	if(res != msg->dataSize){
+		cout << "fwrite";
+		return -1;
+	}
 	fflush(file);
 
 	fclose(file);
+
+	return 1;
 }
 int public_key_response(HEADERPACKET* msg){
 	makePacket(PUBKEY_RES, 0xa0, 0);
@@ -60,7 +67,7 @@ int video_data_send(HEADERPACKET* msg){
 	int frame_size =  msg->dataSize - CID_size - Hash_size;
 	FILE *file;
 
-	recv_binary(&g_pNetwork->port, 23, (void*)recv_buf);
+	recv_binary(&g_pNetwork->port, CID_size, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
 
 	string s_dir = storage_dir;
@@ -100,6 +107,59 @@ int video_data_response(HEADERPACKET* msg){
 	return 1;
 }
 /*------------------------------------------------------------------------*/
+
+/*-----------------------Verify request & response------------------------*/
+int verify_request(HEADERPACKET* msg){
+	reshape_buffer(msg->dataType, msg->dataSize / 2);
+	recv_binary(&g_pNetwork->port, msg->dataSize / 2, (void*)recv_buf);
+	CIDINFO cid1;
+	memcpy(&cid1, (CIDINFO* )recv_buf, sizeof(CIDINFO));
+
+	recv_binary(&g_pNetwork->port, msg->dataSize / 2, (void*)recv_buf);
+	CIDINFO cid2;
+	memcpy(&cid2, (CIDINFO* )recv_buf, sizeof(CIDINFO));
+
+	cout << cid1.Year << " " << cid1.Month << " " << cid1.Day << endl;
+	cout << cid2.Year << " " << cid2.Month << " " << cid2.Day << endl;
+
+	// sorder = "select Hash from " + sorder.substr(9) + " where CID like '%" + sorder.substr(9, -1) + "%';";
+	// char *order = new char[sorder.length() + 1];
+	// strcpy(order, sorder.c_str());
+	// res = mysql_perform_query(conn, order);
+	// while((row = mysql_fetch_row(res)) != NULL)
+	// 	cout << row[0] << endl;
+
+	return 1;
+}
+int verify_response(HEADERPACKET* msg){
+	
+}
+/*------------------------------------------------------------------------*/
+
+/*--------------------------Verify result send----------------------------*/
+int verified_result_send(HEADERPACKET* msg){
+
+}
+int verified_result_response(HEADERPACKET* msg){
+
+}
+/*------------------------------------------------------------------------*/
+
+
+/*-------------------------Hash request & response------------------------*/
+int hash_request(HEADERPACKET* msg){
+	makePacket(HASH_REQ, 0, 0);
+	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
+
+	return 1;
+}
+
+int hash_send(HEADERPACKET* msg){
+	cout << "hash request receive";
+	return 1;
+}
+/*------------------------------------------------------------------------*/
+
 
 
 /*

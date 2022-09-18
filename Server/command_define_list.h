@@ -2,6 +2,11 @@
 #define Verifier 0x11
 #define Server 0x12
 
+#define Char 0xa0
+#define Uchar 0xa1
+#define Int 0xb0
+#define Uint 0xb1
+
 #define PUBKEY_SND      0x00
 #define PUBKEY_RES      0xf0
 #define PRIKEY_SND      0x01
@@ -14,10 +19,12 @@
 #define NEW_HASH_RES    0xf4
 #define CID_REQ         0x05
 #define CID_SND         0xf5
-#define VER_RSLT_SND    0x06
-#define VER_RSLT_RES    0xf6
-#define CONFIG_REQ      0x07
-#define CONFIG_RES      0xf7
+#define VER_REQ         0x06
+#define VER_RES         0xf6    
+#define VER_RSLT_SND    0x07
+#define VER_RSLT_RES    0xf7
+#define CONFIG_REQ      0x08
+#define CONFIG_RES      0xf8
 
 
 #define TEST_CMD        0xff

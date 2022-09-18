@@ -16,12 +16,20 @@ typedef struct _cmdpdesp
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);
 
 /* command fucntions*/
-int video_data_send(HEADERPACKET* msg);
-int video_data_response(HEADERPACKET* msg);
-int hash_send(HEADERPACKET* msg);
-int CID_send(HEADERPACKET* msg);
-int public_key_send(HEADERPACKET* msg);
-int public_key_response(HEADERPACKET* msg);
+int public_key_send(HEADERPACKET* msg);			//PUBKET_SND
+int public_key_response(HEADERPACKET* msg);		//PUBKEY_RES
+int video_data_send(HEADERPACKET* msg);			//VIDEO_DATA_SND
+int video_data_response(HEADERPACKET* msg);		//VIDEO_DATA_RES
+int hash_request(HEADERPACKET* msg);			//HASH_REQ
+int hash_send(HEADERPACKET* msg);				//HASH_SND
+int CID_REQ(HEADERPACKET* msg);					//CID_REQ
+int CID_send(HEADERPACKET* msg);				//CID_SND
+int verify_request(HEADERPACKET* msg);			//VER_REQ
+int verify_response(HEADERPACKET* msg);			//VER_RES
+int verified_result_send(HEADERPACKET* msg);	//VER_RSLT_SND
+int verified_result_response(HEADERPACKET* msg);//VER_RSLT_RES
+int configuration_send(HEADERPACKET* msg);		//CONFIG_SND
+int configuration_response(HEADERPACKET* msg);	//CONFIG_RES
 
 int test(HEADERPACKET* msg);
 #endif

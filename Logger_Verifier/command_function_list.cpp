@@ -32,18 +32,18 @@ void reshape_buffer(int type, int datasize){
 }
 
 /*------------------public key send & response----------------------------*/
-// int public_key_send(HEADERPACKET* msg){
-// 	void* recv_buf;
-// 	reshape_buffer(msg->dataType, msg->dataSize);
+int public_key_send(HEADERPACKET* msg){
+	void* recv_buf;
+	reshape_buffer(msg->dataType, msg->dataSize);
 
-// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
-// 	file = fopen("public_key.txt", "wb");
-// 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
-// 	fflush(file);
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
+	file = fopen("public_key.txt", "wb");
+	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	fflush(file);
 
-// 	delete [] recv_buf;
-// 	fclose(file);
-// }
+	delete [] recv_buf;
+	fclose(file);
+}
 int public_key_response(HEADERPACKET* msg){
 	makePacket(PUBKEY_RES, 0xa0, 0);
 	
@@ -95,13 +95,64 @@ int public_key_response(HEADERPACKET* msg){
 // 	delete [] recv_buf;
 // 	delete [] CID;
 // 	delete [] Hash;
-//  	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
+
+//  send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 // 	return 1;
 // }
 int video_data_response(HEADERPACKET* msg){
 	cout << "video data response recv" << endl;
 	return 1;
 }
+/*------------------------------------------------------------------------*/
+
+// /*-----------------------Verify request & response------------------------*/
+// int verify_request(HEADERPACKET* msg){
+// 	reshape_buffer(msg->dataType, msg->dataSize);
+// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
+
+// 	string sorder(recv_buf);
+// 	sorder = "select Hash from " + sorder.substr(9) + " where CID like '%" + sorder.substr(9, -1) + "%';";
+// 	char *order = new char[sorder.length() + 1];
+// 	strcpy(order, sorder.c_str());
+// 	res = mysql_perform_query(conn, order);
+// 	while((row = mysql_fetch_row(res)) != NULL)
+// 		cout << row[0] << endl;
+
+// 	return 1;
+// }
+// int verify_response(HEADERPACKET* msg){
+	
+// }
+// /*------------------------------------------------------------------------*/
+
+// /*--------------------------Verify result send----------------------------*/
+// int verified_result_send(HEADERPACKET* msg){
+
+// }
+// int verified_result_response(HEADERPACKET* msg){
+
+// }
+// /*------------------------------------------------------------------------*/
+
+/*-------------------------Hash request & response------------------------*/
+// int hash_request(HEADERPACKET* msg){
+// 	reshape_buffer(msg->dataType, msg->dataSize);
+// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
+
+// 	string sorder;
+// 	//sorder = "select Hash from (table) where CID like '%" + recv_buf + "%';";
+
+// 	makePacket(HASH_REQ, Uchar, CID_size);
+// 	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
+
+// 	//recv_binary(&g_pNetwork->port, HASH_size, )
+// 	return 1;
+// }
+
+// int hash_send(HEADERPACKET* msg){
+// 	cout << "hash request receive";
+// 	return 1;
+// }
 /*------------------------------------------------------------------------*/
 
 
@@ -114,21 +165,21 @@ int video_data_response(HEADERPACKET* msg){
 			0xb0 = int
 			0xb1 = unsigned int
 */
-// int test(HEADERPACKET* msg){
-// 	FILE *file = fopen("test.txt", "wb");
-// 	reshape_buffer(msg->dataType, msg->dataSize);
+int test(HEADERPACKET* msg){
+	FILE *file = fopen("test.txt", "wb");
+	reshape_buffer(msg->dataType, msg->dataSize);
 	
-// 	if(recv_binary(&g_pNetwork->port, msg->dataSize, recv_buf) == 0){
-// 		cout << "recv_binary fail" << endl;
-// 		return -1;
-// 	}
+	if(recv_binary(&g_pNetwork->port, msg->dataSize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
+		return -1;
+	}
 	
-// 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 	
-// 	fflush(file);
-// 	fclose(file);
+	fflush(file);
+	fclose(file);
 
-// 	delete [] recv_buf;
+	delete [] recv_buf;
 
-// 	return 1;
-// }
+	return 1;
+}

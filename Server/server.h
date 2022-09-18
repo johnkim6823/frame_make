@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <mysql.h>
 
 using namespace std;
 
@@ -32,13 +33,14 @@ struct db_user {
 
 typedef struct
 {
-    u_int8_t Year;
-    u_int8_t Month;
-    u_int8_t Day;
-    u_int8_t Hour;
-    u_int8_t Min;
-    u_int8_t Sec;
-    u_int8_t MSec;
+	char* Year;
+    char* Month;
+    char* Day;
+    char* Hour;
+    char* Min;
+    char* Sec;
+    char* MSec;
+
 } CIDINFO;
 
 typedef struct
@@ -90,6 +92,8 @@ void mkdir_func(string str);
 void create_table();
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 void insert_database(char* CID, char* Hash);
+MYSQL* mysql_connection_setup(struct db_user sql_user);
+MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 
 #endif
 
@@ -101,6 +105,9 @@ NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
 char x;
 string table_name;
+MYSQL *conn;
+MYSQL_RES *res;
+MYSQL_ROW row;
 
 #endif
 #endif

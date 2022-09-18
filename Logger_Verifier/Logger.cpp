@@ -450,10 +450,16 @@ void test() {
     }
 }
 
+void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
+    makePacket(command, datatype, datasize);
+    void* p_packet = &sendDataPacket;
+    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet);
+}
+
 int main(int, char**) { 
 
     //key GEN
-    key_generation();
+    //key_generation();
 
     //Init Client
     if(!initClient()){
@@ -461,34 +467,43 @@ int main(int, char**) {
         return -1;
     }
 
-    send_pubKey_to_server();
+    CIDINFO cid1 = {"2022", "09", "16", "16", "16", "31", "0"};
+    CIDINFO cid2 = {"2022", "09", "16", "16", "16", "32", "0"};
 
-    while(true) {
-	    if(init() == -1) {break;}
+    packet_testing_func(VER_REQ, Char, sizeof(CIDINFO) * 2);
+    void* p_struct = &cid1;
+    send_binary(&g_pNetwork->port, sizeof(CIDINFO), p_struct);
+    p_struct = &cid2;
+    send_binary(&g_pNetwork->port, sizeof(CIDINFO), p_struct);
+
+    // send_pubKey_to_server();
+
+    // while(true) {
+	//     if(init() == -1) {break;}
         
-	    else{
-		    cout << "Logger Start working: " << getCID() << endl;
+	//     else{
+	// 	    cout << "Logger Start working: " << getCID() << endl;
 		    
-		    //capture frames
-		    capture();
-		    //test();
+	// 	    //capture frames
+	// 	    capture();
+	// 	    //test();
 
-		    //convert frames to YUV420 and Y
-		    convert_frames(bgr_queue);
+	// 	    //convert frames to YUV420 and Y
+	// 	    convert_frames(bgr_queue);
 
-		    //USE Canny Edge Detection with Y_Frames
-		    edge_detection(y_queue);
+	// 	    //USE Canny Edge Detection with Y_Frames
+	// 	    edge_detection(y_queue);
 
-		    //make Hash by edge_detected datas
-		    make_hash(feature_vector_queue);
+	// 	    //make Hash by edge_detected datas
+	// 	    make_hash(feature_vector_queue);
 
-		    //send Datas to Server
-		    send_data_to_server(yuv420_queue, hash_queue, cid_queue);
+	// 	    //send Datas to Server
+	// 	    send_data_to_server(yuv420_queue, hash_queue, cid_queue);
 
-		    //initialize all settings
-		    init_all_settings();
+	// 	    //initialize all settings
+	// 	    init_all_settings();
 		    
-		    return 0;
-	    }
-    }
+	// 	    return 0;
+	//     }
+    // }
 }

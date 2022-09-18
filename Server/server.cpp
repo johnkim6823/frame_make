@@ -24,11 +24,6 @@
 
 using namespace std;
 
-MYSQL *conn;
-MYSQL_RES *res;
-
-MYSQL* mysql_connection_setup(struct db_user sql_user);
-MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 void create_table();
 void insert_database(char* CID, char* Hash);
 int cmd_parser(IO_PORT port, HEADERPACKET *pmsg);

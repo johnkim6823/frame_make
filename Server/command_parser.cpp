@@ -13,8 +13,6 @@ cmdp_desp parser_desp[] =
 {
 	{PUBKEY_SND					, public_key_send		},
 	{PUBKEY_RES					, public_key_response	},
-	// {PRIKEY_SND					, private_key_send		},
-	// {PRIKEY_RES					, private_key_response	},
 	{VIDEO_DATA_SND				, video_data_send		},
 	{VIDEO_DATA_RES				, video_data_response	},
 	// {HASH_REQ					, hash_request			},
@@ -23,10 +21,13 @@ cmdp_desp parser_desp[] =
 	// {NEW_HASH_RES				, new_hash_response		},
 	// {CID_REQ						, CID_request			},
 	// {CID_SND						, CID_send				},
-	// {VER_RSLT_SND				, verified_result_send	},
-	// {VER_RSLT_RES				, verified_result_response},
-	// {CONFIG_REQ					, configuration_request	},
+	{VER_REQ					, verify_request		},
+	{VER_RES					, verify_response		},
+	{VER_RSLT_SND				, verified_result_send	},
+	{VER_RSLT_RES				, verified_result_response},
+	// {CONFIG_SND					, configuration_send	},
 	// {CONFIG_RES					, configuration_response},
+
 
 	// Testing command
 	{TEST_CMD					, test					},
@@ -58,8 +59,13 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 			ack = parser_desp[i].callback(pmsg);
 		}
 	}
-	if(ack == -1) {
+	if(ack == -3) {
+		cout << "Somethings Wrong... callback function return -3;;";
 		return -1;
+	}
+	else if(ack == -1){
+		cout << " doesn't work;" << endl;
+		return 0;
 	}
 	return 0;
 }

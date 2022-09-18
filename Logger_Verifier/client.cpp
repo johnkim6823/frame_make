@@ -126,7 +126,7 @@ int send_binary( IO_PORT *p, long nSize, void *pdata )
 	return TRUE;
 }
 
-int recv_binary( IO_PORT *p, long size, char *pdata )
+int recv_binary( IO_PORT *p, long size, void *pdata )
 {
 	int remainbytes, recvbytes;
 

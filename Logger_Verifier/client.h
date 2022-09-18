@@ -26,13 +26,14 @@
 
 typedef struct
 {
-    u_int8_t Year;
-    u_int8_t Month;
-    u_int8_t Day;
-    u_int8_t Hour;
-    u_int8_t Min;
-    u_int8_t Sec;
-    u_int8_t MSec;
+    char* Year;
+    char* Month;
+    char* Day;
+    char* Hour;
+    char* Min;
+    char* Sec;
+    char* MSec;
+	
 } CIDINFO;
 
 typedef struct
@@ -75,7 +76,7 @@ int initClient();
 void termClient();
 
 int send_binary( IO_PORT *p, long nSize, HANDLE pdata );
-int recv_binary( IO_PORT *p, long size,  HANDLE pdata );
+int recv_binary( IO_PORT *p, long size,  void* pdata );
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int ClientServiceThread(void *arg);
 
