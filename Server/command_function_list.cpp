@@ -52,7 +52,7 @@ int public_key_send(HEADERPACKET* msg){
 	return 1;
 }
 int public_key_response(HEADERPACKET* msg){
-	makePacket(PUBKEY_RES, 0xa0, 0);
+	makePacket(Logger, PUBKEY_RES, 0xa0, 0);
 	
 	return send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet);
 }
@@ -94,7 +94,7 @@ int video_data_send(HEADERPACKET* msg){
 	recv_binary(&g_pNetwork->port, frame_size, (void*)recv_buf);
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
-	makePacket(VIDEO_DATA_RES, 0, 0);
+	makePacket(Logger, VIDEO_DATA_RES, 0, 0);
 	insert_database(CID, Hash);
 
 	fflush(file);
@@ -182,43 +182,43 @@ int verify_request(HEADERPACKET* msg){
 			frame_list[i][n++] = (unsigned char)c;
 		}
 	}
-	makePacket(Verifier, VIDEO_DATA_SND, 0xa1, CID_size + Hash_size + strlen((char*)frame_list[0]));
+	// makePacket(Verifier, VIDEO_DATA_SND, 0xa1, CID_size + Hash_size + strlen((char*)frame_list[0]));
 
-	for(int i=0; i<cid_list.size(); i++){
-		unsigned char* cid = new unsigned char[CID_size];
-		unsigned char* hash = new unsigned char[Hash_size];
-		unsigned char* buf = new unsigned char[CMD_HDR_SIZE];
-		strcpy((char*)cid, cid_list[i].c_str());
-		strcpy((char*)hash, hash_list[i].c_str());
-		int res;
+	// for(int i=0; i<cid_list.size(); i++){
+	// 	unsigned char* cid = new unsigned char[CID_size];
+	// 	unsigned char* hash = new unsigned char[Hash_size];
+	// 	unsigned char* buf = new unsigned char[CMD_HDR_SIZE];
+	// 	strcpy((char*)cid, cid_list[i].c_str());
+	// 	strcpy((char*)hash, hash_list[i].c_str());
+	// 	int res;
 
-		void* p_packet = &sendDataPacket;
+	// 	void* p_packet = &sendDataPacket;
 
-		if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet)){
-            cout << "Packet send Error!!" << endl;
-            break;
-        }
-		if(!send_binary(&g_pNetwork->port, CID_size, (void*)cid_buffer)){
-            cout << "CID send Error!!" << endl;
-        }
+	// 	if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet)){
+    //         cout << "Packet send Error!!" << endl;
+    //         break;
+    //     }
+	// 	if(!send_binary(&g_pNetwork->port, CID_size, (void*)cid)){
+    //         cout << "CID send Error!!" << endl;
+    //     }
 
-        if(!send_binary(&g_pNetwork->port, Hash_size, (void*)hash_buffer)){
-            cout << "hash send Error!!" << endl;
-        }
+    //     if(!send_binary(&g_pNetwork->port, Hash_size, (void*)hash)){
+    //         cout << "hash send Error!!" << endl;
+    //     }
 
-        if(!send_binary(&g_pNetwork->port, strlen((char*)frame_list[0]), (void*)frame_list[i])){
-            cout << "Image send Error!!" << endl;
-        }
+    //     if(!send_binary(&g_pNetwork->port, strlen((char*)frame_list[0]), (void*)frame_list[i])){
+    //         cout << "Image send Error!!" << endl;
+    //     }
 
-		if(recv(&g_pNetwork->port.s, buf, CMD_HDR_SIZE, 0) > 0){
-			if((HEADERPACKET*)buf->command == VIDEO_DATA_RES){
-				continue;
-			}
-			else{
-				return -1;
-			}
-		}
-	}
+		// if(recv((int)&g_pNetwork->port.s, buf, CMD_HDR_SIZE, 0) > 0){
+		// 	// if((HEADERPACKET*)buf->command == VIDEO_DATA_RES){
+		// 	// 	continue;
+		// 	// }
+		// 	else{
+		// 		return -1;
+		// 	}
+		// }
+	//}
 	// FILE* file1 = fopen("test", "wb");
 	// fwrite(frame_list[23], sizeof(char), strlen((char*)frame_list[23]), file1);	
 	// fflush(file1);
@@ -253,7 +253,7 @@ int verified_result_response(HEADERPACKET* msg){
 
 /*-------------------------Hash request & response------------------------*/
 int hash_request(HEADERPACKET* msg){
-	makePacket(HASH_REQ, 0, 0);
+	makePacket(Logger, HASH_REQ, 0, 0);
 	send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 
 	return 1;
