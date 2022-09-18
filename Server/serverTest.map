@@ -1,114 +1,13 @@
-         U abort@GLIBC_2.4
-         U accept@GLIBC_2.4
-         U __aeabi_atexit@CXXABI_ARM_1.3.3
-         U __aeabi_unwind_cpp_pr1@GCC_3.5
-00017bd4 r all_implied_fbits
-000181a0 r all_implied_fbits
-         U bind@GLIBC_2.4
-000292e4 B __bss_end__
-000292e4 B _bss_end__
-000291e4 B __bss_start
-000291e4 B __bss_start__
-000120c0 t call_weak_fn
 000292d0 B CID
-         U close@GLIBC_2.4
-00029290 b completed.0
-000292c0 B conn
-         U __cxa_begin_catch@CXXABI_1.3
-         U __cxa_end_catch@CXXABI_1.3
-         U __cxa_end_cleanup@CXXABI_1.3
-         U __cxa_rethrow@CXXABI_1.3
-         U __cxa_throw_bad_array_new_length@CXXABI_1.3.8
-00029190 D __data_start
-00029190 W data_start
-000120e4 t deregister_tm_clones
-00012148 t __do_global_dtors_aux
-00028ef4 d __do_global_dtors_aux_fini_array_entry
-00029194 D __dso_handle
+000292d4 B Hash
 00028ef8 d _DYNAMIC
-000291e4 D _edata
-000292e4 B __end__
-000292e4 B _end
-         U __errno_location@GLIBC_2.4
-         U exit@GLIBC_2.4
-         U fclose@GLIBC_2.4
-         U fflush@GLIBC_2.4
-         U fgetc@GLIBC_2.4
-000292d8 B file
-00017bc8 T _fini
-         U fopen@GLIBC_2.4
-         U fprintf@GLIBC_2.4
-00012170 t frame_dummy
-00028ee4 d __frame_dummy_init_array_entry
-00018a0c r __FRAME_END__
-         U free@GLIBC_2.4
-         U fseek@GLIBC_2.4
-         U ftell@GLIBC_2.4
-         U ftime@GLIBC_2.4
-         U fwrite@GLIBC_2.4
 00029000 d _GLOBAL_OFFSET_TABLE_
 000161c4 t _GLOBAL__sub_I_g_pNetwork
 00017b48 t _GLOBAL__sub_I_main
 00012400 t _GLOBAL__sub_I_parser_desp
-         w __gmon_start__
-00029298 B g_pNetwork
-         U __gxx_personality_v0@CXXABI_1.3
-000292d4 B Hash
-         U htonl@GLIBC_2.4
-         U htons@GLIBC_2.4
-00011be4 T _init
-00028ef4 d __init_array_end
-00028ee4 d __init_array_start
 00017bd0 R _IO_stdin_used
          w _ITM_deregisterTMCloneTable
          w _ITM_registerTMCloneTable
-00017bc4 T __libc_csu_fini
-00017b64 T __libc_csu_init
-         U __libc_start_main@GLIBC_2.4
-         U listen@GLIBC_2.4
-         U localtime_r@GLIBC_2.4
-00017a78 T main
-         U malloc@GLIBC_2.4
-         U memcpy@GLIBC_2.4
-         U memset@GLIBC_2.4
-         U mkdir@GLIBC_2.4
-         U mysql_close@libmysqlclient_18
-         U mysql_error@libmysqlclient_18
-         U mysql_fetch_row@libmysqlclient_18
-         U mysql_free_result@libmysqlclient_18
-         U mysql_init@libmysqlclient_18
-         U mysql_query@libmysqlclient_18
-         U mysql_real_connect@libmysqlclient_18
-         U mysql_use_result@libmysqlclient_18
-00029198 D parser_desp
-000291e0 D p_packet
-         U printf@GLIBC_2.4
-         U pthread_create@GLIBC_2.4
-         U pthread_detach@GLIBC_2.4
-         U pthread_join@GLIBC_2.4
-         U pthread_mutex_init@GLIBC_2.4
-         U pthread_self@GLIBC_2.4
-000292cc B recv_buf
-         U recv@GLIBC_2.4
-00012110 t register_tm_clones
-000292c4 B res
-000292c8 B row
-         U select@GLIBC_2.4
-0002929c B sendDataPacket
-         U send@GLIBC_2.4
-         U setsockopt@GLIBC_2.4
-         U sleep@GLIBC_2.4
-         U socket@GLIBC_2.4
-00012084 T _start
-000291f0 B stderr@GLIBC_2.4
-0002928c B stdout@GLIBC_2.4
-         U strcpy@GLIBC_2.4
-         U strerror@GLIBC_2.4
-         U strftime@GLIBC_2.4
-         U strlen@GLIBC_2.4
-000291e4 D __TMC_END__
-         U usleep@GLIBC_2.4
-000292a4 B x
 00012174 T _Z10cmd_parser7IO_PORTP12HEADERPACKET
 00015838 T _Z10initServerv
 00014358 T _Z10makePackethhhj
@@ -143,7 +42,6 @@
 00013e74 T _Z4testP12HEADERPACKET
 00013fb8 T _Z6getCIDB5cxx11v
 00013e40 T _Z9hash_sendP12HEADERPACKET
-         U _ZdlPvj@CXXABI_1.3.9
 00014d28 t _ZL19ClientServiceThreadPv
 000145cc t _ZL6__recvP7IO_PORTPvi
 00014440 t _ZL6__sendP7IO_PORTPvi
@@ -167,7 +65,6 @@
 00016ff0 W _ZN9__gnu_cxx17__normal_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEC2ERKS7_
 00018180 r _ZN9__gnu_cxxL21__default_lock_policyE
 00017144 W _ZN9__gnu_cxxmiIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEEENS_17__normal_iteratorIT_T0_E15difference_typeERKSE_SH_
-         U _Znaj@GLIBCXX_3.4
 000176f0 W _ZNK9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE11_M_max_sizeEv
 000178a4 W _ZNK9__gnu_cxx13new_allocatorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEE8max_sizeEv
 00017244 W _ZNK9__gnu_cxx17__normal_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESt6vectorIS6_SaIS6_EEE4baseEv
@@ -183,16 +80,16 @@
          U _ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6lengthEv@GLIBCXX_3.4.21
          U _ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6substrEjj@GLIBCXX_3.4.21
          U _ZNKSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEE3strEv@GLIBCXX_3.4.21
-         U _ZNSaIcEC1ERKS_@GLIBCXX_3.4
-         U _ZNSaIcEC1Ev@GLIBCXX_3.4
-         U _ZNSaIcED1Ev@GLIBCXX_3.4
 00016858 W _ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC1Ev
 00016858 W _ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2Ev
 00016618 W _ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEED1Ev
 00016618 W _ZNSaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEED2Ev
-         U _ZNSolsEi@GLIBCXX_3.4
+         U _ZNSaIcEC1ERKS_@GLIBCXX_3.4
+         U _ZNSaIcEC1Ev@GLIBCXX_3.4
+         U _ZNSaIcED1Ev@GLIBCXX_3.4
          U _ZNSolsEPFRSoS_E@GLIBCXX_3.4
          U _ZNSolsEPFRSt8ios_baseS0_E@GLIBCXX_3.4
+         U _ZNSolsEi@GLIBCXX_3.4
          U _ZNSolsEt@GLIBCXX_3.4
 00016208 W _ZNSt11char_traitsIcE6lengthEPKc
 00016f4c W _ZNSt12_Destroy_auxILb0EE9__destroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEvT_S9_
@@ -212,12 +109,12 @@
 00017600 W _ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC1ES6_
 00017600 W _ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEC2ES6_
 0001795c W _ZNSt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEppEv
-00016a24 W _ZNSt16allocator_traitsISaIcEE37select_on_container_copy_constructionERKS0_
 00016a74 W _ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE10deallocateERS6_PS5_j
 000172bc W _ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE7destroyIS5_EEvRS6_PT_
 000173b0 W _ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE8allocateERS6_j
 00017680 W _ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE8max_sizeERKS6_
 00016af8 W _ZNSt16allocator_traitsISaINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEE9constructIS5_JS5_EEEvRS6_PT_DpOT0_
+00016a24 W _ZNSt16allocator_traitsISaIcEE37select_on_container_copy_constructionERKS0_
 000177e8 W _ZNSt20__uninitialized_copyILb0EE13__uninit_copyISt13move_iteratorIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEES9_EET0_T_SC_SB_
 000174b8 W _ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE11_S_max_sizeERKS6_
 00017200 W _ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EE11_S_relocateEPS5_S8_S8_RS6_
@@ -238,22 +135,20 @@
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6appendEPKcj@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6appendERKS4_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7reserveEj@GLIBCXX_3.4.21
-         U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEOS4_@GLIBCXX_3.4.21
-         U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSERKS4_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EOS4_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1EPKcRKS3_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1ERKS3_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1ERKS4_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1Ev@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev@GLIBCXX_3.4.21
+         U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEOS4_@GLIBCXX_3.4.21
+         U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSERKS4_@GLIBCXX_3.4.21
          U _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEixEj@GLIBCXX_3.4.21
          U _ZNSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEEC1Ev@GLIBCXX_3.4.26
          U _ZNSt7__cxx1119basic_ostringstreamIcSt11char_traitsIcESaIcEED1Ev@GLIBCXX_3.4.21
          U _ZNSt8ios_base4InitC1Ev@GLIBCXX_3.4
          U _ZNSt8ios_base4InitD1Ev@GLIBCXX_3.4
 0001252c W _ZNSt8ios_base4setfESt13_Ios_FmtflagsS0_
-         U _Znwj@GLIBCXX_3.4
-000161e0 W _ZnwjPv
 000179bc W _ZSt10_ConstructINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEJS5_EEvPT_DpOT0_
 000172e8 W _ZSt11__addressofINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEPT_RS6_
 00017718 W _ZSt12__niter_baseIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEET_S7_
@@ -278,10 +173,6 @@
 0001730c W _ZSt8_DestroyINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEvPT_
 00016aa8 W _ZSt8_DestroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEvT_S7_
 00016954 W _ZSt8_DestroyIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES5_EvT_S7_RSaIT0_E
-000124e8 W _ZStaNRSt13_Ios_FmtflagsS_
-0001241c W _ZStanSt13_Ios_FmtflagsS_
-0001247c W _ZStcoSt13_Ios_Fmtflags
-00017a08 W _ZSteqIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_
 00018184 r _ZStL13allocator_arg
 00017c64 r _ZStL19piecewise_construct
 00017cc4 r _ZStL19piecewise_construct
@@ -290,8 +181,12 @@
 00029294 b _ZStL8__ioinit
 000292dc b _ZStL8__ioinit
 000292e0 b _ZStL8__ioinit
-         U _ZStlsIcSt11char_traitsIcESaIcEERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_stringIS4_S5_T1_EE@GLIBCXX_3.4.21
+000124e8 W _ZStaNRSt13_Ios_FmtflagsS_
+0001241c W _ZStanSt13_Ios_FmtflagsS_
+0001247c W _ZStcoSt13_Ios_Fmtflags
+00017a08 W _ZSteqIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_
          U _ZStlsISt11char_traitsIcEERSt13basic_ostreamIcT_ES5_PKc@GLIBCXX_3.4
+         U _ZStlsIcSt11char_traitsIcESaIcEERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_stringIS4_S5_T1_EE@GLIBCXX_3.4.21
 00017924 W _ZStneIPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEbRKSt13move_iteratorIT_ESB_
 000124a4 W _ZStoRRSt13_Ios_FmtflagsS_
 0001244c W _ZStorSt13_Ios_FmtflagsS_
@@ -300,3 +195,108 @@
 0001650c W _ZStplIcSt11char_traitsIcESaIcEENSt7__cxx1112basic_stringIT_T0_T1_EEPKS5_RKS8_
 000163dc W _ZStplIcSt11char_traitsIcESaIcEENSt7__cxx1112basic_stringIT_T0_T1_EERKS8_PKS5_
 00016428 W _ZStplIcSt11char_traitsIcESaIcEENSt7__cxx1112basic_stringIT_T0_T1_EERKS8_SA_
+         U _ZdlPvj@CXXABI_1.3.9
+         U _Znaj@GLIBCXX_3.4
+         U _Znwj@GLIBCXX_3.4
+000161e0 W _ZnwjPv
+00018a0c r __FRAME_END__
+000291e4 D __TMC_END__
+         U __aeabi_atexit@CXXABI_ARM_1.3.3
+         U __aeabi_unwind_cpp_pr1@GCC_3.5
+000292e4 B __bss_end__
+000291e4 B __bss_start
+000291e4 B __bss_start__
+         U __cxa_begin_catch@CXXABI_1.3
+         U __cxa_end_catch@CXXABI_1.3
+         U __cxa_end_cleanup@CXXABI_1.3
+         U __cxa_rethrow@CXXABI_1.3
+         U __cxa_throw_bad_array_new_length@CXXABI_1.3.8
+00029190 D __data_start
+00012148 t __do_global_dtors_aux
+00028ef4 d __do_global_dtors_aux_fini_array_entry
+00029194 D __dso_handle
+000292e4 B __end__
+         U __errno_location@GLIBC_2.4
+00028ee4 d __frame_dummy_init_array_entry
+         w __gmon_start__
+         U __gxx_personality_v0@CXXABI_1.3
+00028ef4 d __init_array_end
+00028ee4 d __init_array_start
+00017bc4 T __libc_csu_fini
+00017b64 T __libc_csu_init
+         U __libc_start_main@GLIBC_2.4
+000292e4 B _bss_end__
+000291e4 D _edata
+000292e4 B _end
+00017bc8 T _fini
+00011be4 T _init
+00012084 T _start
+         U abort@GLIBC_2.4
+         U accept@GLIBC_2.4
+00017bd4 r all_implied_fbits
+000181a0 r all_implied_fbits
+         U bind@GLIBC_2.4
+000120c0 t call_weak_fn
+         U close@GLIBC_2.4
+00029290 b completed.0
+000292c0 B conn
+00029190 W data_start
+000120e4 t deregister_tm_clones
+         U exit@GLIBC_2.4
+         U fclose@GLIBC_2.4
+         U fflush@GLIBC_2.4
+         U fgetc@GLIBC_2.4
+000292d8 B file
+         U fopen@GLIBC_2.4
+         U fprintf@GLIBC_2.4
+00012170 t frame_dummy
+         U free@GLIBC_2.4
+         U fseek@GLIBC_2.4
+         U ftell@GLIBC_2.4
+         U ftime@GLIBC_2.4
+         U fwrite@GLIBC_2.4
+00029298 B g_pNetwork
+         U htonl@GLIBC_2.4
+         U htons@GLIBC_2.4
+         U listen@GLIBC_2.4
+         U localtime_r@GLIBC_2.4
+00017a78 T main
+         U malloc@GLIBC_2.4
+         U memcpy@GLIBC_2.4
+         U memset@GLIBC_2.4
+         U mkdir@GLIBC_2.4
+         U mysql_close@libmysqlclient_18
+         U mysql_error@libmysqlclient_18
+         U mysql_fetch_row@libmysqlclient_18
+         U mysql_free_result@libmysqlclient_18
+         U mysql_init@libmysqlclient_18
+         U mysql_query@libmysqlclient_18
+         U mysql_real_connect@libmysqlclient_18
+         U mysql_use_result@libmysqlclient_18
+000291e0 D p_packet
+00029198 D parser_desp
+         U printf@GLIBC_2.4
+         U pthread_create@GLIBC_2.4
+         U pthread_detach@GLIBC_2.4
+         U pthread_join@GLIBC_2.4
+         U pthread_mutex_init@GLIBC_2.4
+         U pthread_self@GLIBC_2.4
+         U recv@GLIBC_2.4
+000292cc B recv_buf
+00012110 t register_tm_clones
+000292c4 B res
+000292c8 B row
+         U select@GLIBC_2.4
+         U send@GLIBC_2.4
+0002929c B sendDataPacket
+         U setsockopt@GLIBC_2.4
+         U sleep@GLIBC_2.4
+         U socket@GLIBC_2.4
+000291f0 B stderr@GLIBC_2.4
+0002928c B stdout@GLIBC_2.4
+         U strcpy@GLIBC_2.4
+         U strerror@GLIBC_2.4
+         U strftime@GLIBC_2.4
+         U strlen@GLIBC_2.4
+         U usleep@GLIBC_2.4
+000292a4 B x

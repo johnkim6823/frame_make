@@ -1,5 +1,5 @@
 // CHANGE SERVER_IP_ADDR to RPI's IP that working as SERVER
-# define SERVER_IP_ADDR     "192.168.123.105"
+# define SERVER_IP_ADDR     "192.168.35.148"
 # define SERVER_PORT        8700
 # define storage_dir        "/home/pi/images/"
 

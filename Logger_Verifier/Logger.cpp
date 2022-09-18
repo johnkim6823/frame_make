@@ -33,9 +33,6 @@ int FPS = DEFAULT_FPS;
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
 
-pthread_mutex_t frameLocker;
-pthread_t UpdThread;  
- 
 queue<cv::Mat> bgr_queue;                       //for original frame(BGR)Mat queue
 queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;                         //for y_frame Mat queue
@@ -48,7 +45,6 @@ int send_pubKey_to_server();
 int init();                                                 //Init Camera Setting and OPEN CAP
 void init_all_settings();                                    //Init all settings at the end
 void init_queue();                                          //Init all datas in queues
-void *UpdateFrame(void *arg);                               //Update frames 
 void capture();                                             //Capture frames;
 void convert_frames(queue<cv::Mat> &BGR_QUEUE);             //Convert saved frames;
 void show_frames_bgr(queue<cv::Mat> &BGR_QUEUE);            //show frames by bgr
@@ -87,7 +83,6 @@ int send_pubKey_to_server() {
     
     makePacket(0xff, 0xa0, strlen(pubKey_buffer));
     void *p_packet = &sendDataPacket;
-   
     
     if(!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet)){
         	cout << "PubKey send Error!!" << endl;
@@ -153,41 +148,19 @@ void init_queue() {
     cid_queue = queue<string>();                          //for CID for frames
 }
 
-
-void *UpdateFrame(void *arg) {
-    while(true) {
-        cv::Mat tempFrame(cv::Size(width, height), CV_8UC3);
-        cap >> tempFrame;
- 
-        pthread_mutex_lock(&frameLocker);
-        frame = tempFrame;
-        pthread_mutex_unlock(&frameLocker);
-    }
- 
-    pthread_exit( (void *)0 );
-}
-
-
 void capture() {
-    sleep(1);
-    pthread_mutex_init(&frameLocker,NULL);  
-    pthread_create(&UpdThread, NULL, UpdateFrame, NULL);
-    
     cout << endl << "----Starting Capturing" << endl << endl;
     unsigned int capture_count = 0;
     
     while(true){
         cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
-        
-        pthread_mutex_lock(&frameLocker);
-        currentFrame = frame;
-        pthread_mutex_unlock(&frameLocker);
+        cap.read(currentFrame);
 	    
-	if(currentFrame.empty()) {
-		cout << "Frame is empty" << endl;
-	}
+        if(currentFrame.empty()) {
+            cout << "Frame is empty" << endl;
+        }
 	
-	else {
+        else {
         	//cout << CID.back() << endl;
         	bgr_queue.push(currentFrame);
         	capture_count++;
@@ -196,28 +169,9 @@ void capture() {
         	string s_cid = getCID();
         	cout << capture_count << ": " << s_cid << endl;
         	cid_queue.push(s_cid);
-	}
-	    
-        if (bgr_queue.size() == 50) {
- 
-            int ret = pthread_cancel( UpdThread );
-            int status;
-            cv::destroyAllWindows();
-            break;
- 
-            if (ret == 0 )
-            {
-                //Fored termination
-                ret = pthread_join( UpdThread, (void **)&status );
-                if ( ret == 0 )
-                    //if the thred Forced to terminate then -1 return
-                    cout << "thread end successfully" << status << endl;
-                else
-                    cout << "thread end error" << ret << endl;
- 
-                break;
-            }
         }
+	    
+        if (bgr_queue.size() == 50) {break;}
     
         
         //if ESC is pressed, then force thread to end
@@ -455,19 +409,18 @@ void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
     send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 }
 
-void 
-
 int main(int, char**) { 
 
     //key GEN
-    //key_generation();
+    key_generation();
 
     //Init Client
     if(!initClient()){
         cout << "init client error!!" << endl;
         return -1;
     }
-
+   
+    //CID SEND TEST
     string r_cid1("20220918150714");
     string r_cid2("20220918150715");
     unsigned char* cid1 = new unsigned char[r_cid1.length() + 1];
@@ -478,36 +431,37 @@ int main(int, char**) {
     packet_testing_func(VER_REQ, Uchar, r_cid1.length() + 1);
     send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid1);
     send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid2);
-
-    // 
-    // send_pubKey_to_server();
-
-    // while(true) {
-	//     if(init() == -1) {break;}
+   
+    
+    send_pubKey_to_server();
+    /*
+    while(true) {
+	     if(init() == -1) {break;}
         
-	//     else{
-	// 	    cout << "Logger Start working: " << getCID() << endl;
+	     else{
+	 	    cout << "Logger Start working: " << getCID() << endl;
 		    
-	// 	    //capture frames
-	// 	    capture();
-	// 	    //test();
+	 	    //capture frames
+	 	    capture();
+	 	    //test();
 
-	// 	    //convert frames to YUV420 and Y
-	// 	    convert_frames(bgr_queue);
+		    //convert frames to YUV420 and Y
+	 	    convert_frames(bgr_queue);
 
-	// 	    //USE Canny Edge Detection with Y_Frames
-	// 	    edge_detection(y_queue);
+	 	    //USE Canny Edge Detection with Y_Frames
+	 	    edge_detection(y_queue);
 
-	// 	    //make Hash by edge_detected datas
-	// 	    make_hash(feature_vector_queue);
+	 	    //make Hash by edge_detected datas
+	 	    make_hash(feature_vector_queue);
 
-	// 	    //send Datas to Server
-	// 	    send_data_to_server(yuv420_queue, hash_queue, cid_queue);
+	 	    //send Datas to Server
+	 	    send_data_to_server(yuv420_queue, hash_queue, cid_queue);
 
-	// 	    //initialize all settings
-	// 	    init_all_settings();
+            //initialize all settings
+	 	    init_all_settings();
 		    
-	// 	    return 0;
-	//     }
-    // }
+		    return 0;
+        }
+    }
+    * */
 }
