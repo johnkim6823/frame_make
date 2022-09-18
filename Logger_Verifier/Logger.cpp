@@ -386,18 +386,11 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 
         makePacket(VIDEO_DATA_SND, 0xa1, total_data_size);
 
-        cout << hex << (int)sendDataPacket.startID << endl;
-        cout << (int)sendDataPacket.destID << endl;
-        cout << (int)sendDataPacket.command << endl;
-        cout << (int)sendDataPacket.dataType << endl;
-        cout << dec << (int)sendDataPacket.dataSize << endl;
-
-        void *p_packet = &sendDataPacket;
-        if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet)){
-            cout << "Packet send Error!!" << endl;
-            break;
-        }
-        
+        // cout << hex << (int)sendDataPacket.startID << endl;
+        // cout << (int)sendDataPacket.destID << endl;
+        // cout << (int)sendDataPacket.command << endl;
+        // cout << (int)sendDataPacket.dataType << endl;
+        // cout << dec << (int)sendDataPacket.dataSize << endl;
         // cout << endl << "----------------------------------------------------------" << endl << endl;
         // cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
         // cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
@@ -405,6 +398,12 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
         // cout << "CID: " << cid_buffer << endl ;//<< "size: " << strlen(cid_buffer) * sizeof(char) << endl;
         // cout << endl << "----------------------------------------------------------" << endl << endl;
 
+        void *p_packet = &sendDataPacket;
+        if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet)){
+            cout << "Packet send Error!!" << endl;
+            break;
+        }
+        
         if(!send_binary(&g_pNetwork->port, cid_bufsize, (void*)cid_buffer)){
             cout << "CID send Error!!" << endl;
         }
@@ -421,7 +420,7 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
             cout << "ClientServerThread return -1!!" << endl;
             exit(0);
         }
-        cout << endl;
+        
         yuv_send.pop();
         hash_send.pop();
         cid_send.pop();
@@ -455,6 +454,8 @@ void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
     void* p_packet = &sendDataPacket;
     send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 }
+
+void 
 
 int main(int, char**) { 
 

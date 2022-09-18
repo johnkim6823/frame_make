@@ -89,7 +89,7 @@ int recv_binary( IO_PORT *p, long size, HANDLE pdata );
 string get_table_name();
 void mkdir_func(string str);
 void create_table();
-void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
+void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 void insert_database(char* CID, char* Hash);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);

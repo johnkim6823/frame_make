@@ -94,10 +94,10 @@ string get_table_name(){
     return s_CID;
 }
 
-void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize)
+void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 {
 	sendDataPacket.startID = ThisID; //로거, 검증기, 서버 ...
-	sendDataPacket.destID = Logger;
+	sendDataPacket.destID = destID;
 	sendDataPacket.command = cmd;
 	sendDataPacket.dataType = dataType;
 	sendDataPacket.dataSize = dataSize;
