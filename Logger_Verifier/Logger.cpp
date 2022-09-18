@@ -376,7 +376,7 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
         cout << "step : " << ++step << endl;
       	
-	unsigned char *video_buffer = new unsigned char[video_bufsize];
+	    unsigned char *video_buffer = new unsigned char[video_bufsize];
         char *hash_buffer = new char[hash_bufsize];
         char *cid_buffer = new char[cid_bufsize];
         
@@ -453,7 +453,7 @@ void test() {
 void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
     makePacket(command, datatype, datasize);
     void* p_packet = &sendDataPacket;
-    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet);
+    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 }
 
 int main(int, char**) { 
@@ -467,15 +467,18 @@ int main(int, char**) {
         return -1;
     }
 
-    CIDINFO cid1 = {"2022", "09", "16", "16", "16", "31", "0"};
-    CIDINFO cid2 = {"2022", "09", "16", "16", "16", "32", "0"};
+    string r_cid1("20220918150714");
+    string r_cid2("20220918150715");
+    unsigned char* cid1 = new unsigned char[r_cid1.length() + 1];
+    unsigned char* cid2 = new unsigned char[r_cid2.length() + 1];
+    strcpy((char*)cid1, r_cid1.c_str());
+    strcpy((char*)cid2, r_cid2.c_str());
 
-    packet_testing_func(VER_REQ, Char, sizeof(CIDINFO) * 2);
-    void* p_struct = &cid1;
-    send_binary(&g_pNetwork->port, sizeof(CIDINFO), p_struct);
-    p_struct = &cid2;
-    send_binary(&g_pNetwork->port, sizeof(CIDINFO), p_struct);
+    packet_testing_func(VER_REQ, Uchar, r_cid1.length() + 1);
+    send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid1);
+    send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid2);
 
+    // 
     // send_pubKey_to_server();
 
     // while(true) {

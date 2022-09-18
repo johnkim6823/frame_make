@@ -76,7 +76,7 @@ int initClient();
 void termClient();
 
 int send_binary( IO_PORT *p, long nSize, HANDLE pdata );
-int recv_binary( IO_PORT *p, long size,  void* pdata );
+int recv_binary( IO_PORT *p, long size,  HANDLE pdata );
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 int ClientServiceThread(void *arg);
 

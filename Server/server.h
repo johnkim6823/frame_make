@@ -33,13 +33,12 @@ struct db_user {
 
 typedef struct
 {
-	char* Year;
-    char* Month;
-    char* Day;
-    char* Hour;
-    char* Min;
-    char* Sec;
-    char* MSec;
+	string Year;
+    string Month;
+    string Day;
+    string Hour;
+    string Min;
+    string Sec;
 
 } CIDINFO;
 

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <typeinfo>
 
 using namespace std;
 #define THIS_IS_SERVER
@@ -110,29 +112,97 @@ int video_data_response(HEADERPACKET* msg){
 
 /*-----------------------Verify request & response------------------------*/
 int verify_request(HEADERPACKET* msg){
-	reshape_buffer(msg->dataType, msg->dataSize / 2);
-	recv_binary(&g_pNetwork->port, msg->dataSize / 2, (void*)recv_buf);
-	CIDINFO cid1;
-	memcpy(&cid1, (CIDINFO* )recv_buf, sizeof(CIDINFO));
+	unsigned char* cid1 = new unsigned char[msg->dataSize];
+	unsigned char* cid2 = new unsigned char[msg->dataSize];	
 
-	recv_binary(&g_pNetwork->port, msg->dataSize / 2, (void*)recv_buf);
-	CIDINFO cid2;
-	memcpy(&cid2, (CIDINFO* )recv_buf, sizeof(CIDINFO));
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid1);
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid2);
 
-	cout << cid1.Year << " " << cid1.Month << " " << cid1.Day << endl;
-	cout << cid2.Year << " " << cid2.Month << " " << cid2.Day << endl;
+	string s_cid((char*)cid1);
+	string e_cid((char*)cid2);
 
-	// sorder = "select Hash from " + sorder.substr(9) + " where CID like '%" + sorder.substr(9, -1) + "%';";
-	// char *order = new char[sorder.length() + 1];
-	// strcpy(order, sorder.c_str());
-	// res = mysql_perform_query(conn, order);
-	// while((row = mysql_fetch_row(res)) != NULL)
-	// 	cout << row[0] << endl;
+	CIDINFO start_cid = 
+	{
+		s_cid.substr(0, 4),
+		s_cid.substr(4, 2),
+		s_cid.substr(6, 2),
+		s_cid.substr(8, 2),
+		s_cid.substr(10, 2),
+		s_cid.substr(12),
+	};
+
+	CIDINFO end_cid = 
+	{
+		e_cid.substr(0, 4),
+		e_cid.substr(4, 2),
+		e_cid.substr(6, 2),
+		e_cid.substr(8, 2),
+		e_cid.substr(10, 2),
+		e_cid.substr(12),
+	};
+
+	string s_time = start_cid.Year + "-" + start_cid.Month + "-" + start_cid.Day + "_" + start_cid.Hour + ":" + start_cid.Min + ":" + start_cid.Sec + ".500";
+	string e_time = end_cid.Year + "-" + end_cid.Month + "-" + end_cid.Day + "_" + end_cid.Hour + ":" + end_cid.Min + ":" + end_cid.Sec + ".500";
+	string t_name = start_cid.Year + "_" + start_cid.Month + start_cid.Day;
+	string sorder = "select CID, Hash from " + t_name + " where CID between '" + s_time + "' and '" + e_time + "' order by CID;";
+
+	cout << s_time << endl;
+	cout << e_time << endl;
+	cout << t_name << endl;
+	cout << sorder << endl;
+	char *order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	res = mysql_perform_query(conn, order);
+
+	vector<string> cid_list;
+	vector<string> hash_list;
+
+	while((row = mysql_fetch_row(res)) != NULL){
+		cid_list.push_back(row[0]);
+		hash_list.push_back(row[1]);
+	}
+
+	unsigned char** frame_list = new unsigned char* [cid_list.size()];
+
+	string frame_dir = "/home/pi/images/" + table_name + "/";
+	size_t n;
+	int c;
+	for(int i=0; i < cid_list.size(); i++){
+		n = 0;
+		string frame_name = frame_dir + cid_list[i];
+		const char* frame = frame_name.c_str();
+		FILE* file = fopen(frame, "rb");
+
+		fseek(file, 0, SEEK_END);
+		int size = ftell(file);
+		frame_list[i] = new unsigned char[size];
+		fseek(file,0,0);
+
+		while((c = fgetc(file)) != EOF){
+			frame_list[i][n++] = (unsigned char)c;
+		}
+	}
+	FILE* file1 = fopen("test", "wb");
+	fwrite(frame_list[23], sizeof(char), strlen((char*)frame_list[23]), file1);	
+	fflush(file1);
+	fclose(file1);
+	
+	// for(int i=0;i<cid_list.size();i++){
+	// 	cout << cid_list[i] << endl;
+	// }
+
+	// for(int i=0;i<hash_list.size();i++){
+	// 	cout << hash_list[i] << endl;
+	// }
 
 	return 1;
 }
+
 int verify_response(HEADERPACKET* msg){
-	
+	reshape_buffer(msg->dataType, msg->dataSize);
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
+
+
 }
 /*------------------------------------------------------------------------*/
 
