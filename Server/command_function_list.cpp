@@ -194,15 +194,13 @@ int verify_request(HEADERPACKET* msg){
 	// for(int i=0;i<hash_list.size();i++){
 	// 	cout << hash_list[i] << endl;
 	// }
-
+	
 	return 1;
 }
 
 int verify_response(HEADERPACKET* msg){
 	reshape_buffer(msg->dataType, msg->dataSize);
 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
-
-
 }
 /*------------------------------------------------------------------------*/
 
