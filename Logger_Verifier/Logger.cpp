@@ -68,13 +68,15 @@ int key_generation(){
 	publicKey = genPubicRAS(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
-    cout << "----GENERATION END-------" << endl << endl;
+    cout << "END: " << getCID() << endl;
+
 	return 0;
 }
 
 int send_pubKey_to_server() {
     
     cout << "----SEND PUBKEY to SERVER----" << endl;
+    
 	int pubKey_bufsize = publicKey.capacity();
 	std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
 	
@@ -91,11 +93,12 @@ int send_pubKey_to_server() {
     if(!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void*)pubKey_buffer)){
         	cout << "PubKey send Error!!" << endl;
     }
+    cout << "----SENDING PUBKEY to SERVER END----"  << endl;
 }
 
 int init() {
     cout << "----Initalizing----------" << endl << endl;
-
+    
     //open the default camera using default API
     int deviceID = 0;             // 0 = open default camera
     int apiID = cv::CAP_V4L2;      // use V4L2
@@ -115,21 +118,20 @@ int init() {
         cerr << "ERROR! Unable to open camera\n";
         return -1;
     }
-    else { 
+    else {
     	cout << "----Initalized----------" <<endl;
     	return 0;
     }
+    
 }
  
 void init_all_settings() {
-    cap.release();
     width = DEFAULT_WIDTH;
     height = DEFAULT_HEIGHT;
     FPS = DEFAULT_FPS;
     init_queue();
     
     cout << endl << "----Initializing all settings." << endl <<endl;
-    cout << "    cap closed." <<endl;
     cout << "    bgr queue size: " << bgr_queue.size() << endl;
     cout << "    yuv420 queue size: " << yuv420_queue.size() << endl;
     cout << "    y_frame queue size: " << y_queue.size() << endl;
@@ -161,13 +163,11 @@ void capture() {
         }
 	
         else {
-        	//cout << CID.back() << endl;
         	bgr_queue.push(currentFrame);
         	capture_count++;
         
         	//Make CID for FRAMES
         	string s_cid = getCID();
-        	cout << capture_count << ": " << s_cid << endl;
         	cid_queue.push(s_cid);
         }
 	    
@@ -183,7 +183,6 @@ void capture() {
 void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
     
     cout << endl << "----Start to convert Frames into YUV420 and Y----" << endl << endl;
-    
     queue<cv::Mat> BGR_queue(BGR_QUEUE);
     
     while(true){
@@ -214,7 +213,6 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE) {
     queue<cv::Mat> Y_queue(Y_QUEUE);
     
     cout << "----Building feature vectors." << endl;
-    
     int cnt = 0;
     
     while(true) {
@@ -238,7 +236,6 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
     queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
     
     cout << endl << "----Make HASH from feature vectors." << endl << endl;
-    
     while(true) {
         if(Feature_Vector_queue.size() == 0) {break;}
         cv::Mat temp = Feature_Vector_queue.front();
@@ -256,13 +253,11 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
-        cout << "hash: " << sha_result << endl;
         
         //sign_HASH
         string signed_hash = signMessage(privateKey, sha_result);
         hash_queue.push(signed_hash);
     }
-    
     cout << "    hash made : " << hash_queue.size() << endl;
 }
 
@@ -296,16 +291,11 @@ string getCID() {
 }
 
 void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
-    cout << endl << "----SEND DATAS to SERVER" << endl;
-
+    cout << endl << "----SEND DATA to SERVER" << endl;
+    
     queue<cv::Mat> yuv_send(YUV420_QUEUE);
     queue<string> hash_send(HASH_QUEUE);
     queue<string> cid_send(CID_QUEUE);
-
-    // cout << "------------------------" << endl << endl;
-    // cout << "VIDEO data QUEUE size: " << yuv_send.size() << endl;
-    // cout << "HASH data QUEUE size: " << hash_send.size() << endl;
-    // cout << "CID data QUEUE size: " << cid_send.size() << endl;
 
     int total_data_size = 0;
     int hash_bufsize = hash_send.front().capacity();
@@ -419,7 +409,8 @@ int main(int, char**) {
         cout << "init client error!!" << endl;
         return -1;
     }
-   
+    
+    /*
     //CID SEND TEST
     string r_cid1("20220918150714");
     string r_cid2("20220918150715");
@@ -431,10 +422,10 @@ int main(int, char**) {
     packet_testing_func(VER_REQ, Uchar, r_cid1.length() + 1);
     send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid1);
     send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid2);
-   
+    */
     
     send_pubKey_to_server();
-    /*
+    
     while(true) {
 	     if(init() == -1) {break;}
         
@@ -443,7 +434,6 @@ int main(int, char**) {
 		    
 	 	    //capture frames
 	 	    capture();
-	 	    //test();
 
 		    //convert frames to YUV420 and Y
 	 	    convert_frames(bgr_queue);
@@ -459,9 +449,7 @@ int main(int, char**) {
 
             //initialize all settings
 	 	    init_all_settings();
-		    
-		    return 0;
         }
     }
-    * */
+    return 0;
 }
