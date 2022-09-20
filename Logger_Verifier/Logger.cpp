@@ -33,6 +33,9 @@ int FPS = DEFAULT_FPS;
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
 
+pthread_mutex_t frameLocker;
+pthread_t UpdThread;
+
 queue<cv::Mat> bgr_queue;                       //for original frame(BGR)Mat queue
 queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;                         //for y_frame Mat queue
@@ -45,6 +48,7 @@ int send_pubKey_to_server();
 int init();                                                 //Init Camera Setting and OPEN CAP
 void init_all_settings();                                    //Init all settings at the end
 void init_queue();                                          //Init all datas in queues
+void *UpdateFrame(void *arg);                                //Update Frames
 void capture();                                             //Capture frames;
 void convert_frames(queue<cv::Mat> &BGR_QUEUE);             //Convert saved frames;
 void show_frames_bgr(queue<cv::Mat> &BGR_QUEUE);            //show frames by bgr
@@ -68,7 +72,6 @@ int key_generation(){
 	publicKey = genPubicRAS(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
-    cout << "END: " << getCID() << endl;
 
 	return 0;
 }
@@ -150,32 +153,93 @@ void init_queue() {
     cid_queue = queue<string>();                          //for CID for frames
 }
 
+void *UpdateFrame(void *arg)
+{
+    while(true) {
+        Mat tempFrame;
+        cap >> tempFrame;
+ 
+        pthread_mutex_lock(&frameLocker);
+        frame = tempFrame;
+        pthread_mutex_unlock(&frameLocker);
+    }
+ 
+    pthread_exit( (void *)0 );
+}
+
 void capture() {
     cout << endl << "----Starting Capturing" << endl << endl;
-    unsigned int capture_count = 0;
+    
+    pthread_mutex_init(&frameLocker,NULL);  
+    pthread_create(&UpdThread, NULL, UpdateFrame, NULL);
     
     while(true){
         cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
-        cap.read(currentFrame);
 	    
+        pthread_mutex_lock(&frameLocker);
+        currentFrame = frame;
+        pthread_mutex_unlock(&frameLocker);
+
+        int sum1 = (int)sum(currentFrame)[0];
+        int sum2 = (int)sum(currentFrame)[1];
+        int sum3 = (int)sum(currentFrame)[2];
+        int elementmean = (sum1+sum2+sum3)/3;
+        
         if(currentFrame.empty()) {
             cout << "Frame is empty" << endl;
         }
-	
-        else {
-        	bgr_queue.push(currentFrame);
-        	capture_count++;
+        
+        else if(elementmean != 0) {
+            bgr_queue.push(currentFrame);
         
         	//Make CID for FRAMES
         	string s_cid = getCID();
         	cid_queue.push(s_cid);
         }
+	
+        else {
+        	cout << "lamping time" << endl;
+        }
 	    
-        if (bgr_queue.size() == 50) {break;}
-    
+       
+        if (bgr_queue.size() == 50) {
+            cout << bgr_queue.size() << endl;
+            int ret = pthread_cancel( UpdThread );
+            int status;
+ 
+            if (ret == 0 )
+            {
+                //auto END  
+                ret = pthread_join( UpdThread, (void **)&status );
+                if ( ret == 0 )
+                    //AUTO END = STATUS= -1
+                    cout << "Capture End Successfully." << status << endl;
+                else
+                    cout << "Thread End Error!" << ret << endl;
+                
+                break;
+            }
+        }
         
         //if ESC is pressed, then force thread to end
-        if (cv::waitKey(20) == 27 ) {break;}
+        if (cv::waitKey(20) == 27 ) {
+            cout << bgr_queue.size() << endl;
+            int ret = pthread_cancel( UpdThread );
+            int status;
+ 
+            if (ret == 0 )
+            {
+                //auto END  
+                ret = pthread_join( UpdThread, (void **)&status );
+                if ( ret == 0 )
+                    //AUTO END = STATUS= -1
+                    cout << "Capture End Successfully." << status << endl;
+                else
+                    cout << "Thread End Error!" << ret << endl;
+                
+                break;
+            }
+        }
     }
 }
 
