@@ -394,17 +394,17 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 
         makePacket(VIDEO_DATA_SND, 0xa1, total_data_size);
 
-        cout << hex << (int)sendDataPacket.startID << endl;
-        cout << (int)sendDataPacket.destID << endl;
-        cout << (int)sendDataPacket.command << endl;
-        cout << (int)sendDataPacket.dataType << endl;
-        cout << dec << (int)sendDataPacket.dataSize << endl;
-        cout << endl << "----------------------------------------------------------" << endl << endl;
-        cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
-        cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
-	cout << "hash: " << hash_buffer << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
-	cout << "CID: " << cid_buffer << endl << "size: " << strlen(cid_buffer) * sizeof(char) << endl;
-	cout << endl << "----------------------------------------------------------" << endl << endl;
+        //cout << hex << (int)sendDataPacket.startID << endl;
+        //cout << (int)sendDataPacket.destID << endl;
+        //cout << (int)sendDataPacket.command << endl;
+        //cout << (int)sendDataPacket.dataType << endl;
+        //cout << dec << (int)sendDataPacket.dataSize << endl;
+        //cout << endl << "----------------------------------------------------------" << endl << endl;
+        //cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
+        //cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
+	//cout << "hash: " << hash_buffer << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
+	//cout << "CID: " << cid_buffer << endl << "size: " << strlen(cid_buffer) * sizeof(char) << endl;
+	//cout << endl << "----------------------------------------------------------" << endl << endl;
 
         void *p_packet = &sendDataPacket;
 
