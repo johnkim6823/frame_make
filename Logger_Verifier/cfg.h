@@ -28,6 +28,6 @@ struct msg_data{
 	unsigned char data_buff[BUFF_SIZE];
 };
 
-#define ThisID Server
+#define ThisID Logger
 
 #endif
