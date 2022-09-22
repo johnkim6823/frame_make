@@ -16,14 +16,15 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timeb.h> 
+
 #include "Logger_function_list.h"
 #include "sign.cpp"
 #include "merkle_tree.h"
 #include "client.cpp"
 #include "command_define_list.h"
 #include "cfg.h"
-#include "msq_receiver.cpp"
-#include "msq_sender.cpp"
+#include "msg_receiver.cpp"
+#include "msg_sender.cpp"
 
 using namespace std;
 using namespace cv;
@@ -45,25 +46,6 @@ queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
 queue<string> hash_queue;                       //for hash made by feature vector
 queue<string> hash_signed_queue;
 queue<string> cid_queue;                        //for CID for images
-
-int key_generation();                                      //make privatKey and PublicKey
-int send_pubKey_to_server();
-int init();                                                 //Init Camera Setting and OPEN CAP
-void init_all_settings();                                    //Init all settings at the end
-void init_queue();                                          //Init all datas in queues
-void *UpdateFrame(void *arg);                                //Update Frames
-void capture();                                             //Capture frames;
-void convert_frames(queue<cv::Mat> &BGR_QUEUE);             //Convert saved frames;
-void show_frames_bgr(queue<cv::Mat> &BGR_QUEUE);            //show frames by bgr
-void show_frames_yuv(queue<cv::Mat> &YUV420_QUEUE);         //show frames by yuv
-void show_frames_y(queue<cv::Mat> &Y_QUEUE);                //show frames by y
-void show_frames_feature_vector(queue<cv::Mat> &FV_QUEUE);  //show frames by feature vector
-void edge_detection(queue<cv::Mat> &Y_QUEUE);               //Edge detact by y frames
-void make_hash(queue<cv::Mat> &FV_QUEUE);                   //make hash using feature vector
-void sign_hash(queue<string> &HASH_QUEUE);
-string getCID();                                            //Make CID for each frames 
-unsigned char* reshape_yuv(cv::Mat mat);                    //Reshape yuv420 row size to 1 and return char
-void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE);   //send datas to Server
 
 /*/NEED to make
 * 1. GET CAMERA CONFIG from SERVER
@@ -207,7 +189,7 @@ void capture() {
 	    
        
         if (bgr_queue.size() == 50) {
-            cout << bgr_queue.size() << endl;
+
             int ret = pthread_cancel( UpdThread );
             int status;
  
@@ -217,7 +199,7 @@ void capture() {
                 ret = pthread_join( UpdThread, (void **)&status );
                 if ( ret == 0 )
                     //AUTO END = STATUS= -1
-                    cout << "Capture End Successfully." << status << endl;
+                    cout << "Capture End Successfully." << endl;
                 else
                     cout << "Thread End Error!" << ret << endl;
                 
@@ -227,7 +209,7 @@ void capture() {
         
         //if ESC is pressed, then force thread to end
         if (cv::waitKey(20) == 27 ) {
-            cout << bgr_queue.size() << endl;
+
             int ret = pthread_cancel( UpdThread );
             int status;
  
@@ -237,7 +219,7 @@ void capture() {
                 ret = pthread_join( UpdThread, (void **)&status );
                 if ( ret == 0 )
                     //AUTO END = STATUS= -1
-                    cout << "Capture End Successfully." << status << endl;
+                    cout << "Capture End Successfully." << endl;
                 else
                     cout << "Thread End Error!" << ret << endl;
                 
@@ -303,7 +285,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
     
     queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
     cout << endl << "----Make HASH from feature vectors." << endl << endl;
-    cout << "start: " << getCID() << endl;
+    
     while(true) {
         if(Feature_Vector_queue.size() == 0) {break;}
         cv::Mat temp = Feature_Vector_queue.front();
@@ -321,12 +303,11 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
-	cout << "hash: " << sha_result << endl;
+	
         //sign_HASH
         //string signed_hash = signMessage(privateKey, sha_result);
         hash_queue.push(sha_result);
     }
-    cout << "end: " << getCID() << endl;
     cout << "    hash made : " << hash_queue.size() << endl;
 }
 
@@ -334,17 +315,14 @@ void sign_hash(queue<string> &HASH_QUEUE) {
     queue<string> sign(HASH_QUEUE);
 
     cout << "----Signing Hash by private Key" << endl << endl;
-    cout << "StartL " << getCID() << endl << endl;
 
     while(true){
 	    if(sign.size() == 0) {break;}
 	    string signed_hash = signMessage(privateKey, sign.front());
-	    cout << "signed hash: " << signed_hash << endl;
 	    hash_signed_queue.push(signed_hash);
 	    sign.pop();
     }
-    cout << "signed hash made: " << hash_signed_queue.size() << endl;
-    cout << "End: " << getCID() << endl;
+    cout << "Signed Hash made: " << hash_signed_queue.size() << endl << endl;
 }
 
 string getCID() {
@@ -406,7 +384,7 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
         cout << "step : " << ++step << endl;
       	
-	    unsigned char *video_buffer = new unsigned char[video_bufsize];
+	unsigned char *video_buffer = new unsigned char[video_bufsize];
         char *hash_buffer = new char[hash_bufsize];
         char *cid_buffer = new char[cid_bufsize];
         
@@ -416,19 +394,20 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 
         makePacket(VIDEO_DATA_SND, 0xa1, total_data_size);
 
-        // cout << hex << (int)sendDataPacket.startID << endl;
-        // cout << (int)sendDataPacket.destID << endl;
-        // cout << (int)sendDataPacket.command << endl;
-        // cout << (int)sendDataPacket.dataType << endl;
-        // cout << dec << (int)sendDataPacket.dataSize << endl;
-        // cout << endl << "----------------------------------------------------------" << endl << endl;
-        // cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
-        // cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
-        // cout << "hash: " << hash_buffer << endl << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
-        // cout << "CID: " << cid_buffer << endl ;//<< "size: " << strlen(cid_buffer) * sizeof(char) << endl;
-        // cout << endl << "----------------------------------------------------------" << endl << endl;
+        cout << hex << (int)sendDataPacket.startID << endl;
+        cout << (int)sendDataPacket.destID << endl;
+        cout << (int)sendDataPacket.command << endl;
+        cout << (int)sendDataPacket.dataType << endl;
+        cout << dec << (int)sendDataPacket.dataSize << endl;
+        cout << endl << "----------------------------------------------------------" << endl << endl;
+        cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
+        cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
+	cout << "hash: " << hash_buffer << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
+	cout << "CID: " << cid_buffer << endl << "size: " << strlen(cid_buffer) * sizeof(char) << endl;
+	cout << endl << "----------------------------------------------------------" << endl << endl;
 
         void *p_packet = &sendDataPacket;
+
         if(!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet)){
             cout << "Packet send Error!!" << endl;
             break;
@@ -491,10 +470,10 @@ int main(int, char**) {
     key_generation();
 
     //Init Client
-    //if(!initClient()){
-    //    cout << "init client error!!" << endl;
-    //    return -1;
-    //}
+    if(!initClient()){
+        cout << "init client error!!" << endl;
+        return -1;
+    }
     
     /*
     //CID SEND TEST
@@ -510,7 +489,7 @@ int main(int, char**) {
     send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid2);
     */
     
-    //send_pubKey_to_server();
+    send_pubKey_to_server();
     
     
     while(true) {
@@ -531,8 +510,9 @@ int main(int, char**) {
 	 	    //make Hash by edge_detected datas
 	 	    make_hash(feature_vector_queue);
 		    sign_hash(hash_queue);
+
 	 	    //send Datas to Server
-	 	    //send_data_to_server(yuv420_queue, hash_queue, cid_queue);
+	 	    send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
 
             	    //initialize all settings
 	 	    init_all_settings();

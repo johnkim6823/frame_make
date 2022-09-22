@@ -4,6 +4,8 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
+using namespace std;
+
 int key_generation();                                      //make privatKey and PublicKey
 int send_pubKey_to_server();
 int init();                                                 //Init Camera Setting and OPEN CAP
