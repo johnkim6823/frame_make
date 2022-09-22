@@ -14,7 +14,6 @@ int msq_sender(void)
 	msg_data   data;
 	int fps = 30;
 	unsigned char size, format;
-
 	size = 0x01;
 	format = 0x21;
 	
