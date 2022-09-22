@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int msq_receiver( void)
+int msq_receiver(void)
 {
 	int      msqid;
 	msg_data   data;
