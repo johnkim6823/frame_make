@@ -22,6 +22,8 @@
 #include "client.cpp"
 #include "command_define_list.h"
 #include "cfg.h"
+#include "msq_receiver.cpp"
+#include "msq_sender.cpp"
 
 using namespace std;
 using namespace cv;
@@ -41,6 +43,7 @@ queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat que
 queue<cv::Mat> y_queue;                         //for y_frame Mat queue
 queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
 queue<string> hash_queue;                       //for hash made by feature vector
+queue<string> hash_signed_queue;
 queue<string> cid_queue;                        //for CID for images
 
 int key_generation();                                      //make privatKey and PublicKey
@@ -57,6 +60,7 @@ void show_frames_y(queue<cv::Mat> &Y_QUEUE);                //show frames by y
 void show_frames_feature_vector(queue<cv::Mat> &FV_QUEUE);  //show frames by feature vector
 void edge_detection(queue<cv::Mat> &Y_QUEUE);               //Edge detact by y frames
 void make_hash(queue<cv::Mat> &FV_QUEUE);                   //make hash using feature vector
+void sign_hash(queue<string> &HASH_QUEUE);
 string getCID();                                            //Make CID for each frames 
 unsigned char* reshape_yuv(cv::Mat mat);                    //Reshape yuv420 row size to 1 and return char
 void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE);   //send datas to Server
@@ -298,8 +302,8 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE) {
 void make_hash(queue<cv::Mat> &FV_QUEUE) {
     
     queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
-    
     cout << endl << "----Make HASH from feature vectors." << endl << endl;
+    cout << "start: " << getCID() << endl;
     while(true) {
         if(Feature_Vector_queue.size() == 0) {break;}
         cv::Mat temp = Feature_Vector_queue.front();
@@ -317,12 +321,30 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         
         sha_result = hash_sha256(mat_data);
-        
+	cout << "hash: " << sha_result << endl;
         //sign_HASH
-        string signed_hash = signMessage(privateKey, sha_result);
-        hash_queue.push(signed_hash);
+        //string signed_hash = signMessage(privateKey, sha_result);
+        hash_queue.push(sha_result);
     }
+    cout << "end: " << getCID() << endl;
     cout << "    hash made : " << hash_queue.size() << endl;
+}
+
+void sign_hash(queue<string> &HASH_QUEUE) {
+    queue<string> sign(HASH_QUEUE);
+
+    cout << "----Signing Hash by private Key" << endl << endl;
+    cout << "StartL " << getCID() << endl << endl;
+
+    while(true){
+	    if(sign.size() == 0) {break;}
+	    string signed_hash = signMessage(privateKey, sign.front());
+	    cout << "signed hash: " << signed_hash << endl;
+	    hash_signed_queue.push(signed_hash);
+	    sign.pop();
+    }
+    cout << "signed hash made: " << hash_signed_queue.size() << endl;
+    cout << "End: " << getCID() << endl;
 }
 
 string getCID() {
@@ -469,10 +491,10 @@ int main(int, char**) {
     key_generation();
 
     //Init Client
-    if(!initClient()){
-        cout << "init client error!!" << endl;
-        return -1;
-    }
+    //if(!initClient()){
+    //    cout << "init client error!!" << endl;
+    //    return -1;
+    //}
     
     /*
     //CID SEND TEST
@@ -488,7 +510,8 @@ int main(int, char**) {
     send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid2);
     */
     
-    send_pubKey_to_server();
+    //send_pubKey_to_server();
+    
     
     while(true) {
 	     if(init() == -1) {break;}
@@ -507,13 +530,13 @@ int main(int, char**) {
 
 	 	    //make Hash by edge_detected datas
 	 	    make_hash(feature_vector_queue);
-
+		    sign_hash(hash_queue);
 	 	    //send Datas to Server
-	 	    send_data_to_server(yuv420_queue, hash_queue, cid_queue);
+	 	    //send_data_to_server(yuv420_queue, hash_queue, cid_queue);
 
-            //initialize all settings
+            	    //initialize all settings
 	 	    init_all_settings();
+		    return 0;
         }
     }
-    return 0;
 }

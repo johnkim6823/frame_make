@@ -1,3 +1,5 @@
+#ifndef LOGGER_H_
+#define LOGGER_H_
 // CHANGE SERVER_IP_ADDR to RPI's IP that working as SERVER
 # define SERVER_IP_ADDR     "127.0.0.1"
 # define SERVER_PORT        8700
@@ -17,9 +19,15 @@
 #define ASYNC_BUFSIZE       4096
 #define MAX_USER_CNT        5
 
-// CAMERA_CONFIG_TYPE
-#define TYPE_SIZE           1
-#define TYPE_FPS            2
-#define TYPE_FORMAT         3
+// Define CAMERA_CONFIG SETTINGS
+#define TYPE_CAMERA_CFG    1
+#define BUFF_SIZE          6
+
+struct msg_data{
+	long data_type;
+	unsigned char data_buff[BUFF_SIZE];
+};
 
 #define ThisID Server
+
+#endif
