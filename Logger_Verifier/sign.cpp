@@ -22,6 +22,7 @@ RSA* createPrivateRSA(std::string key) {
 		return 0;
 	}
 	rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa,NULL, NULL);
+	
 	return rsa;
 }
  
@@ -36,6 +37,7 @@ RSA* genPrivateRSA() {
 	BIO_read(bio, pem_pkey, pem_pkey_size);
 	// global variable 
 	privateKey = pem_pkey;
+	
 	return rsa;
 }
 
@@ -64,6 +66,7 @@ RSA* createPublicRSA(std::string key) {
 		return 0;
 	}
 	rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);
+	
 	return rsa;
 }
 
@@ -89,6 +92,7 @@ bool RSASign( RSA* rsa,
 		return false;
 	}
 	EVP_MD_CTX_free(m_RSASignCtx);
+	
 	return true;
 }
 
@@ -118,6 +122,7 @@ size_t calcDecodeLength(const char* b64input) {
 		padding = 2;
  	else if (b64input[len-1] == '=') //last char is =
     		padding = 1;
+	
   	return (len*3)/4 - padding;
 }
 
@@ -132,5 +137,6 @@ char* signMessage(std::string privateKey, std::string plainText) {
   	RSASign(privateRSA, (unsigned char*) plainText.c_str(), plainText.length(), &encMessage, &encMessageLength);
   	Base64Encode(encMessage, encMessageLength, &base64Text);
   	free(encMessage);
+	
  	return base64Text;
 }
