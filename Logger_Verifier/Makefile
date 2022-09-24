@@ -38,4 +38,4 @@ Logger.o: ./Logger.cpp
 	${CXX} -c ${CFLAGS} -o $@  $< $(LIBS) 
 
 clean:
-	$(RM) *.o Verifier Logger sign_verify privkey PubkeyBase64.key
+	$(RM) *.o Verifier Logger

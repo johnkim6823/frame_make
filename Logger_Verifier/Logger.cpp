@@ -24,14 +24,13 @@
 #include "command_define_list.h"
 #include "cfg.h"
 #include "msg_receiver.cpp"
-#include "msg_sender.cpp"
 
 using namespace std;
 using namespace cv;
 
 int width = DEFAULT_WIDTH;
 int height = DEFAULT_HEIGHT;
-int FPS = DEFAULT_FPS;
+int fps = DEFAULT_FPS;
 
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
@@ -47,29 +46,23 @@ queue<string> hash_queue;                       //for hash made by feature vecto
 queue<string> hash_signed_queue;
 queue<string> cid_queue;                        //for CID for images
 
-/*/NEED to make
-* 1. GET CAMERA CONFIG from SERVER
-*/
 
 int key_generation(){
     cout << "----Key Geneartion----" << endl;
-    
-	RSA * privateRSA = genPrivateRSA();
-	publicKey = genPubicRAS(privateRSA);
+    RSA * privateRSA = genPrivateRSA();
+    publicKey = genPubicRAS(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
-
-	return 0;
+    return 0;
 }
 
 int send_pubKey_to_server() {
     
     cout << "----SEND PUBKEY to SERVER----" << endl;
-    
-	int pubKey_bufsize = publicKey.capacity();
-	std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
+    int pubKey_bufsize = publicKey.capacity();
+    std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
 	
-	char *pubKey_buffer = new char[pubKey_bufsize];
+    char *pubKey_buffer = new char[pubKey_bufsize];
     strcpy(pubKey_buffer, publicKey.c_str());
     
     makePacket(0xff, 0xa0, strlen(pubKey_buffer));
@@ -86,22 +79,24 @@ int send_pubKey_to_server() {
 }
 
 int init() {
-    cout << "----Initalizing----------" << endl << endl;
+    cout << "----Initalizing---------" << endl << endl;
     
     //open the default camera using default API
     int deviceID = 0;             // 0 = open default camera
     int apiID = cv::CAP_V4L2;      // use V4L2
-    
     // open selected camera using selected API
     cap.open(deviceID, apiID);
+
+    msg_receiver(width, height, fps);
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
-    cap.set(cv::CAP_PROP_FPS, FPS);
+    cap.set(cv::CAP_PROP_FPS, fps);
 
-    cout << "    FPS: " << FPS << endl;
-    cout << "    Frame Size: " << "WIDHT = " << width << "  HEIGHT = " << height << endl << endl;
 
-    
+    cout << "    FPS: " << fps << endl;
+    cout << "    width: "<< width << " height: " << height << endl << endl;
+
+
     //--- If Cap is opened
     if (!cap.isOpened()) {
         cerr << "ERROR! Unable to open camera\n";
@@ -115,9 +110,6 @@ int init() {
 }
  
 void init_all_settings() {
-    width = DEFAULT_WIDTH;
-    height = DEFAULT_HEIGHT;
-    FPS = DEFAULT_FPS;
     init_queue();
     
     cout << endl << "----Initializing all settings." << endl <<endl;
@@ -131,12 +123,13 @@ void init_all_settings() {
 }
 
 void init_queue() {         
-    yuv420_queue = queue<cv::Mat>();                    //for original frame(yuv)Mat queue
-    bgr_queue = queue<cv::Mat>();                    //for original frame(BGR)Mat queue
-    y_queue = queue<cv::Mat>();                        //for y_frame Mat queue
-    feature_vector_queue = queue<cv::Mat>();                  //for edge detection Canny
-    hash_queue = queue<string>();          //for hash made by feature vector
-    cid_queue = queue<string>();                          //for CID for frames
+    yuv420_queue = queue<cv::Mat>();            //for original frame(yuv)Mat queue
+    bgr_queue = queue<cv::Mat>();               //for original frame(BGR)Mat queue
+    y_queue = queue<cv::Mat>();                 //for y_frame Mat queue
+    feature_vector_queue = queue<cv::Mat>();    //for edge detection Canny
+    hash_queue = queue<string>();               //for hash made by feature vector
+    cid_queue = queue<string>();                //for CID for frames
+    hash_signed_queue = queue<string>();        //for hash signed
 }
 
 void *UpdateFrame(void *arg)
@@ -384,7 +377,7 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
         cout << "step : " << ++step << endl;
       	
-	unsigned char *video_buffer = new unsigned char[video_bufsize];
+        unsigned char *video_buffer = new unsigned char[video_bufsize];
         char *hash_buffer = new char[hash_bufsize];
         char *cid_buffer = new char[cid_bufsize];
         
@@ -402,9 +395,9 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
         //cout << endl << "----------------------------------------------------------" << endl << endl;
         //cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
         //cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
-	//cout << "hash: " << hash_buffer << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
-	//cout << "CID: " << cid_buffer << endl << "size: " << strlen(cid_buffer) * sizeof(char) << endl;
-	//cout << endl << "----------------------------------------------------------" << endl << endl;
+        //cout << "hash: " << hash_buffer << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
+        //cout << "CID: " << cid_buffer << endl << "size: " << strlen(cid_buffer) * sizeof(char) << endl;
+        //cout << endl << "----------------------------------------------------------" << endl << endl;
 
         void *p_packet = &sendDataPacket;
 
@@ -496,8 +489,6 @@ int main(int, char**) {
 	     if(init() == -1) {break;}
         
 	     else{
-	 	    cout << "Logger Start working: " << getCID() << endl;
-		    
 	 	    //capture frames
 	 	    capture();
 
@@ -513,10 +504,8 @@ int main(int, char**) {
 
 	 	    //send Datas to Server
 	 	    send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
-
-            	    //initialize all settings
-	 	    init_all_settings();
-		    return 0;
-        }
+            //initialize all settings
+		    init_all_settings();
+	     }
     }
 }
