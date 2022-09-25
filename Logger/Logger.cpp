@@ -33,7 +33,7 @@ int height = DEFAULT_HEIGHT;
 int fps = DEFAULT_FPS;
 
 cv::VideoCapture cap;
-cv::Mat frame(cv::Size(width, height), CV_8UC3);
+cv::Mat frame(cv::Size(height, width), CV_8UC3);
 
 pthread_mutex_t frameLocker;
 pthread_t UpdThread;
@@ -88,13 +88,20 @@ int init() {
     cap.open(deviceID, apiID);
 
     msg_receiver(width, height, fps);
+    
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
+    
+    int w = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+    int h = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+    int f = cap.get(cv::CAP_PROP_FPS);
 
+    cv::Mat img(cv::Size(h, w), CV_8UC3);
+    frame = img.clone();
 
-    cout << "    FPS: " << fps << endl;
-    cout << "    width: "<< width << " height: " << height << endl << endl;
+    cout << "    FPS: " << f << endl;
+    cout << "    width: "<< w << " height: " << h << endl << endl;
 
 
     //--- If Cap is opened
@@ -135,7 +142,7 @@ void init_queue() {
 void *UpdateFrame(void *arg)
 {
     while(true) {
-        Mat tempFrame;
+	cv::Mat tempFrame;
         cap >> tempFrame;
  
         pthread_mutex_lock(&frameLocker);
@@ -153,7 +160,7 @@ void capture() {
     pthread_create(&UpdThread, NULL, UpdateFrame, NULL);
     
     while(true){
-        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
+        cv::Mat currentFrame;
 	    
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
@@ -228,13 +235,15 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
     cout << endl << "----Start to convert Frames into YUV420 and Y----" << endl << endl;
     queue<cv::Mat> BGR_queue(BGR_QUEUE);
     
+    cout << "    frame width: " << BGR_queue.front().rows << "    frame height: " << BGR_queue.front().cols << endl;
+
     while(true){
         
         if(BGR_queue.size() == 0) {break;}
         
         cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame(cv::Size(height*3/2, width), CV_8UC1);
-        cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
+        cv::Mat yuv_frame;
+        cv::Mat y_frame;
         BGR_queue.pop();
 
         //CONVERT BGR To YUV420 and YUV420 to Y
@@ -362,6 +371,8 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     int video_channels = yuv_send.front().channels();
     int video_bufsize = video_rows * video_cols * video_channels;
 
+    cout << " video_rows: " << video_rows << endl;
+    cout << " video_cols: " << video_cols << endl;
     total_data_size += video_bufsize;
     total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
@@ -504,7 +515,7 @@ int main(int, char**) {
 
 	 	    //send Datas to Server
 	 	    send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
-            //initialize all settings
+            	    //initialize all settings
 		    init_all_settings();
 	     }
     }
