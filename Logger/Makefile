@@ -20,10 +20,11 @@ all: Logger
 Logger: $(OBJS)
 	$(CXX) $(CFLAGS) $(OBJS) -o $@ $(LIBS) $(SIGN_VER_FLAGS)
 
-Logger.o: ./Logger.cpp
-	$(CXX) -c ${CFLAGS} -o $@  $< $(LIBS) 
-
-command_parser.o : ../Client/command_parser.cpp
+command_parser.o: ./../Client/command_parser.cpp
 	$(CXX) -c -o $@ $<
+
+Logger.o: ./Logger.cpp
+	${CXX} -c ${CFLAGS} -o $@  $< $(LIBS) 
+
 clean:
 	$(RM) *.o  Logger
