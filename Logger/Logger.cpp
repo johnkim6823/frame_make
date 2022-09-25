@@ -92,16 +92,12 @@ int init() {
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
-    
-    int w = cap.get(cv::CAP_PROP_FRAME_WIDTH);
-    int h = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-    int f = cap.get(cv::CAP_PROP_FPS);
 
-    cv::Mat img(cv::Size(h, w), CV_8UC3);
+    cv::Mat img(cv::Size(height, width), CV_8UC3);
     frame = img.clone();
 
-    cout << "    FPS: " << f << endl;
-    cout << "    width: "<< w << " height: " << h << endl << endl;
+    cout << "    FPS: " << fps << endl;
+    cout << "    width: "<< width << " height: " << height << endl << endl;
 
 
     //--- If Cap is opened
@@ -188,7 +184,7 @@ void capture() {
         }
 	    
        
-        if (bgr_queue.size() == 50) {
+        if (bgr_queue.size() == 30) {
 
             int ret = pthread_cancel( UpdThread );
             int status;
@@ -240,7 +236,7 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
         if(BGR_queue.size() == 0) {break;}
         
         cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame(cv::Size(height*3/2, width), CV_8UC1);
+        cv::Mat yuv_frame(cv::Size((height*3/2), width), CV_8UC1);
         cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
         BGR_queue.pop();
 
@@ -360,7 +356,7 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     queue<cv::Mat> yuv_send(YUV420_QUEUE);
     queue<string> hash_send(HASH_QUEUE);
     queue<string> cid_send(CID_QUEUE);
-
+  
     int total_data_size = 0;
     int hash_bufsize = hash_send.front().capacity();
     int cid_bufsize = cid_send.front().capacity();
@@ -369,12 +365,12 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     int video_channels = yuv_send.front().channels();
     int video_bufsize = video_rows * video_cols * video_channels;
 
-    cout << " video_rows: " << video_rows << endl;
-    cout << " video_cols: " << video_cols << endl;
     total_data_size += video_bufsize;
     total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
-    
+
+    cout << "video width : " << video_cols << endl;
+    cout << "video height : " << video_rows << endl; 
     cout << "total data size : " << total_data_size << endl;
     cout << "size of hash data: " << hash_bufsize << endl;
     cout << "size of CID data: " << cid_bufsize << endl;
