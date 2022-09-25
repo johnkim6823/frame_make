@@ -142,7 +142,7 @@ void init_queue() {
 void *UpdateFrame(void *arg)
 {
     while(true) {
-	cv::Mat tempFrame;
+	cv::Mat tempFrame(cv::Size(height, width), CV_8UC3);
         cap >> tempFrame;
  
         pthread_mutex_lock(&frameLocker);
@@ -160,7 +160,7 @@ void capture() {
     pthread_create(&UpdThread, NULL, UpdateFrame, NULL);
     
     while(true){
-        cv::Mat currentFrame;
+        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
 	    
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
@@ -234,16 +234,14 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
     
     cout << endl << "----Start to convert Frames into YUV420 and Y----" << endl << endl;
     queue<cv::Mat> BGR_queue(BGR_QUEUE);
-    
-    cout << "    frame width: " << BGR_queue.front().rows << "    frame height: " << BGR_queue.front().cols << endl;
 
     while(true){
         
         if(BGR_queue.size() == 0) {break;}
         
         cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame;
-        cv::Mat y_frame;
+        cv::Mat yuv_frame(cv::Size(height*3/2, width), CV_8UC1);
+        cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
         BGR_queue.pop();
 
         //CONVERT BGR To YUV420 and YUV420 to Y
