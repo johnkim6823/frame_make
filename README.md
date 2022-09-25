@@ -1,11 +1,16 @@
 # Logger_Verifier + CLient + Server
-
-Client: empty folder -> Client RELATED codes are moved to Logger_Verifier folder
-
-Logger_Verifier: Logger, Verifier folder. 
-
-Server: Server Folder
-
+```
+Client: Client module
+```
+```
+Logger: Capture frames and Send to Server
+```
+```
+Verifier: Request data from Server and Verify frames. Send Verified result to Server
+```
+```
+Server: Server module
+```
 # How to Use
 + prerequisite
 
@@ -13,12 +18,13 @@ RPI -> 32 bit
 ```
 OpenCV 4.5.1 required -> See OpenCV_Download_manual.
 
-Cryptopp required -> See Cryptopp_Download_manual.
+Openssl required -> See Openssl_Download_manual.
 
 MariaDB required -> See MariaDB_Download_manual.
+```
 
 After git clone please mv Logger_Verifier to hanium_2022
-
+```
 mv Logger_Verifier hanium_2022
 ```
 
