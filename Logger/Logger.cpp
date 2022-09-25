@@ -20,8 +20,8 @@
 #include "Logger_function_list.h"
 #include "sign.cpp"
 #include "merkle_tree.h"
-#include "client.cpp"
-#include "command_define_list.h"
+#include "../Client/client.cpp"
+#include "../Client/command_define_list.h"
 #include "cfg.h"
 #include "msg_receiver.cpp"
 

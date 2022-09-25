@@ -16,9 +16,6 @@ LOGGER := Logger
 OPENCV = `pkg-config opencv4 --cflags --libs`
 LIBS = $(OPENCV) -lpthread
 
-Logger: $(OBJS)
-	$(CXX) $(CFLAGS) $(OBJS) -o $@ $(LIBS) $(SIGN_VER_FLAGS)
-
 Verifier: Verifier.o merkle_tree.o node.o
 	$(CXX) $(CFLAGS) -o Verifier Verifier.o merkle_tree.o node.o $(LIBS)
 
@@ -31,11 +28,6 @@ node.o: src/node.cpp
 Verifier.o: ./Verifier.cpp
 	${CXX} ${CFLAGS} -c $< -o $@ $(LIBS)
 
-sign_verify.o: ./sign.cpp
-	${CXX} -c $< -o $@ $(SIGN_VER_FLAGS)
-
-Logger.o: ./Logger.cpp
-	${CXX} -c ${CFLAGS} -o $@  $< $(LIBS) 
 
 clean:
 	$(RM) *.o Verifier Logger

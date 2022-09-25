@@ -19,23 +19,17 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
-
+#include "Verifier_function_list.h"
 #include "merkle_tree.h"
+#include "client.cpp"
+#include "command_define_list.h"
+#include "cfg.h"
 
 using namespace std;
 
-int width = 640;
-int height = 480;
-int FPS = 30;
-unsigned int frame_count = 1;
-
-cv::VideoCapture cap;
-cv::Mat frame(cv::Size(width, height), CV_8UC3);
-
-//WILL DELETED
-pthread_mutex_t frameLocker;
-pthread_t UpdThread;  
-//
+int width = DEFAULT_WIDTH;
+int height = DEFAULT_HEIGHT;
+int fps = DEFAULT_FPS;
 
 queue<cv::Mat> bgr_queue;                       //for original frame(BGR)Mat queue
 queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat queue
@@ -45,50 +39,20 @@ queue<string> hash_server_queue;                //for hash from server
 queue<string> hash_verifier_queue;              //for hash made by feature vector by verifier
 queue<string> cid_queue;                        //for CID for images 
 
-//WILL DELETED
-int init();                                                 //Init Camera Setting and OPEN CAP
-void *UpdateFrame(void *arg);                               //Update frames 
-void capture();                                             //Capture frames;
-void convert_frames(queue<cv::Mat> &BGR_QUEUE);             //Convert saved frames;
-//
-void init_all_setting();                            //Init all settings at the end
-void init_queue();                                  //Init all datas in queues
-void get_data_from_server();                        //GET Data from server and save into queues
-void extract_Y_frame(queue<cv::Mat> YUV420_QUEUE);
-void edge_detection(queue<cv::Mat> &Y_QUEUE);               //Edge detact by y frames
-void make_hash(queue<cv::Mat> &FV_QUEUE);                   //make hash using feature vector
-int coompare_hashs();								        //compare two hashs
-string getCID();                                            //Make CID for frames
-int make_merkle_tree();
-
 
 void init_all_setting() {
-    cap.release();
-    width = 640;
-    height = 480;
-    FPS = 30;
     init_queue();
     
-    cout << "----Initializing all settings." << endl <<endl;
-    cout << "    cap closed." <<endl;
-    cout << "    bgr queue size: " << bgr_queue.size() << endl;
-    cout << "    yuv420 queue size: " << yuv420_queue.size() << endl;
-    cout << "    y_frame queue size: " << y_queue.size() << endl;
-    cout << "    feature vector queue size: " << feature_vector_queue.size() << endl;
-    cout << "    hash-server queue size: " << hash_server_queue.size() << endl;
-    cout << "    hash-verifier queue size: " << hash_verifier_queue.size() << endl;
-    cout << "    CID queue size: " << cid_queue.size() << endl;
-    cout << endl << "--------------------------------" << endl << endl;
 }
 
 void init_queue() {         
-    yuv420_queue = queue<cv::Mat>();                    //for original frame(yuv)Mat queue
+    yuv420_queue = queue<cv::Mat>();                 //for original frame(yuv)Mat queue
     bgr_queue = queue<cv::Mat>();                    //for original frame(BGR)Mat queue
-    y_queue = queue<cv::Mat>();                        //for y_frame Mat queue
-    feature_vector_queue = queue<cv::Mat>();                  //for edge detection Canny
+    y_queue = queue<cv::Mat>();                      //for y_frame Mat queue
+    feature_vector_queue = queue<cv::Mat>();         //for edge detection Canny
     hash_server_queue = queue<string>();
     hash_verifier_queue = queue<string>();          
-    cid_queue = queue<string>();                          //for CID for frames
+    cid_queue = queue<string>();                     //for CID for frames
 }
 
 /*
@@ -101,103 +65,6 @@ void get_data_from_server() {
     
 }
 */
-
-int init() {
-    cout << "----Initalizing----------" << endl << endl;
-
-    //open the default camera using default API
-    int deviceID = 0;             // 0 = open default camera
-    int apiID = cv::CAP_V4L2;      // use V4L2
-    
-    // open selected camera using selected API
-    cap.open(deviceID, apiID);
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
-    cap.set(cv::CAP_PROP_FPS, FPS);
-
-    cout << "    FPS: " << FPS << endl;
-    cout << "    Frame Size: " << "WIDHT = " << width << "  HEIGHT = " << height << endl << endl;
-
-    
-    //--- If Cap is opened
-    if (!cap.isOpened()) {
-        cerr << "ERROR! Unable to open camera\n";
-        return -1;
-    }
-    
-    cout << "----Initalized----------" <<endl;
-    return 0;
-}
- 
-void *UpdateFrame(void *arg) {
-    while(true) {
-        cv::Mat tempFrame(cv::Size(width, height), CV_8UC3);
-        cap >> tempFrame;
- 
-        pthread_mutex_lock(&frameLocker);
-        frame = tempFrame;
-        pthread_mutex_unlock(&frameLocker);
-    }
- 
-    pthread_exit( (void *)0 );
-}
-
-
-void capture() {
-    sleep(1);
-    pthread_mutex_init(&frameLocker,NULL);  
-    pthread_create(&UpdThread, NULL, UpdateFrame, NULL);
-    
-    cout << endl << "----Starting Capturing" << endl << endl;
-    unsigned int capture_count = 0;
-    
-    while(true){
-        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
-        
-        pthread_mutex_lock(&frameLocker);
-        currentFrame = frame;
-        pthread_mutex_unlock(&frameLocker);
-        
-        //cout << CID.back() << endl;
-        bgr_queue.push(currentFrame);
-        capture_count++;
-        
-        //Make CID for FRAMES
-        string s_cid = getCID();
-        cout << capture_count << ": " << s_cid << endl;
-        
-        cid_queue.push(s_cid);
-        
-        if(currentFrame.empty())
-            continue;
-        
-        if (bgr_queue.size() == 50) {
- 
-            int ret = pthread_cancel( UpdThread );
-            int status;
-            cv::destroyAllWindows();
-            break;
- 
-            if (ret == 0 )
-            {
-                //Fored termination
-                ret = pthread_join( UpdThread, (void **)&status );
-                if ( ret == 0 )
-                    //if the thred Forced to terminate then -1 return
-                    cout << "thread end successfully" << status << endl;
-                else
-                    cout << "thread end error" << ret << endl;
- 
-                break;
-            }
-        }
-    
-        
-        //if ESC is pressed, then force thread to end
-        if (cv::waitKey(20) == 27 ) {break;}
-    }
-}
-
 
 void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
     
@@ -228,9 +95,6 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
     cout << "    YUV420 frame: " << yuv420_queue.size() << "    Y frame: " << y_queue.size() << endl << endl;
     cout << "----FRAMES CONVERTED---------" << endl << endl;
 }
-
-
-
 
 void edge_detection(queue<cv::Mat> &Y_QUEUE) {
     queue<cv::Mat> Y_queue(Y_QUEUE);
@@ -277,8 +141,6 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         }
         
         sha_result = hash_sha256(mat_data);
-        //char *hash = const_cast<char*>(sha_result.c_str());
-        
         hash_verifier_queue.push(sha_result);
     }
     
@@ -346,19 +208,12 @@ int make_merkle_tree() {
 }
 
 int main(int, char**) { 
-    // main
-    init();
-    capture();
-    //Convert fames to YUV and Y
-    convert_frames(bgr_queue);
-    //USE Canny Edge Detection with Y_frames
-    edge_detection(y_queue);
-    //Make hash by edge_detected datas;
-    make_hash(feature_vector_queue);
-    //make merkle Tree
-    make_merkle_tree();
-    //init all settings;
-    init_all_setting();
+
+    //Init Client
+    if(!initClient()){
+        cout << "init client error!!" << endl;
+        return -1;
+    }
     
     return 0;
 }

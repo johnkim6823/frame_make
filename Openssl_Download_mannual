@@ -1,0 +1,5 @@
+##  Download openssl dev
+
+```
+sudo pat-get install libssl-dev
+```

@@ -1,10 +1,8 @@
-
 #include <pthread.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-
 #include "cfg.h"
 
 #define HANDLE void*
