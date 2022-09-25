@@ -13,8 +13,6 @@ Server: Server module
 ```
 # How to Use
 + prerequisite
-
-RPI -> 32 bit
 ```
 OpenCV 4.5.1 required -> See OpenCV_Download_manual.
 
