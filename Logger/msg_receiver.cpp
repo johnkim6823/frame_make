@@ -17,7 +17,7 @@ int msg_receiver(int &WIDTH, int &HEIGHT, int &FPS)
 	unsigned char 	size, format;
 	int 			width = WIDTH, height = HEIGHT;
 	
-	if ( -1 == ( recv_msgid = msgget( (key_t)MSG_Q_CONFIG_KEY, IPC_CREAT | 0666)))
+	if ( -1 == ( recv_msgid = msgget( (key_t)CAMERA_CFG_MQ, IPC_CREAT | 0666)))
 	{
 		perror( "msgget() failed");
 		exit( 1);

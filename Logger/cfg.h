@@ -6,8 +6,8 @@
 #define DEFAULT_FPS	   30
 //----------------------------------
 // Define CAMERA_CONFIG SETTINGS
-#define MSG_Q_CONFIG_KEY   1234
-#define MSG_Q_CONFIRM_KEY  1235
+#define CAMERA_CFG_MQ	   1129
+#define CONFIRM_MQ	   1130
 //----------------------------------
 #define TYPE_CAMERA_CFG    1
 #define TYPE_CONFIRM_CFG   2

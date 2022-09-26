@@ -369,8 +369,9 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
 
-    cout << "video width : " << video_cols << endl;
-    cout << "video height : " << video_rows << endl; 
+    cout << "video size: " << yuv_send.front().size() << endl;
+    //cout << "video width : " << video_cols << endl;
+    //cout << "video height : " << video_rows << endl; 
     cout << "total data size : " << total_data_size << endl;
     cout << "size of hash data: " << hash_bufsize << endl;
     cout << "size of CID data: " << cid_bufsize << endl;

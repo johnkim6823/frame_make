@@ -14,7 +14,7 @@ int msg_sender(void)
 	confirm_msg_data   	data;
 	unsigned char 		confirm = 0x01;
 	
-	if ( -1 == ( confirm_msqid = msgget( (key_t)MSG_Q_CONFIRM_KEY, IPC_CREAT | 0666)))
+	if ( -1 == ( confirm_msqid = msgget( (key_t)CONFIRM_MQ, IPC_CREAT | 0666)))
 	{
 		perror( "msgget() failed");
 		exit( 1);
