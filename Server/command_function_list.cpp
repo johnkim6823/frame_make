@@ -38,7 +38,15 @@ int public_key_send(HEADERPACKET* msg){
 	reshape_buffer(msg->dataType, msg->dataSize);
 
 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
+
 	file = fopen("public_key.txt", "wb");
+
+	if (file != NULL) {
+		cout << "fopen error " << endl;
+	        exit(1);
+        } 
+	else 
+		cout << "success file creation " << endl;
 	res = fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 
 	if(res != msg->dataSize){
@@ -84,7 +92,13 @@ int video_data_send(HEADERPACKET* msg){
 	string frame_dir((const char*)recv_buf);
 	frame_dir = s_dir + table_name + "/" + frame_dir; 
 	const char* file_name = frame_dir.c_str();
+
+	cout << "video file name: " << file_name << endl;
+
 	file = fopen(file_name, "wb");
+
+	if (file == NULL)
+		cout << "file creation failed " << endl;
 	memset(recv_buf, 0, msg->dataSize);
 
 	recv_binary(&g_pNetwork->port, Hash_size, (void*)recv_buf);

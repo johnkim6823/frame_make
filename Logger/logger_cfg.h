@@ -4,7 +4,7 @@
 #define DEFAULT_WIDTH 		640
 #define DEFAULT_HEIGHT		480
 #define DEFAULT_FPS		10
-#define DEFAULT_FRAME_COUNT 	10
+#define DEFAULT_FRAME_COUNT 	50
 //----------------------------------
 // Define CAMERA_CONFIG SETTINGS
 #define CAMERA_CFG_MQ	   	1129
