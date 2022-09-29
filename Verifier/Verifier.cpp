@@ -32,11 +32,10 @@ int width = DEFAULT_WIDTH;
 int height = DEFAULT_HEIGHT;
 int fps = DEFAULT_FPS;
 
-queue<cv::Mat> bgr_queue;                       //for original frame(BGR)Mat queue
 queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;                         //for y_frame Mat queue
 queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
-queue<string> hash_server_queue;                //for hash from server
+queue<string> hash_DB_queue;                    //for hash from server
 queue<string> hash_verifier_queue;              //for hash made by feature vector by verifier
 queue<string> cid_queue;                        //for CID for images 
 
