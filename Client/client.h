@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
-#include "Ccfg.h"
+#include "client_cfg.h"
 
 #define HANDLE void*
 
