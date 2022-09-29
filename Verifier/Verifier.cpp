@@ -19,11 +19,12 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
+#include "verify.cpp"
 #include "Verifier_function_list.h"
 #include "merkle_tree.h"
 #include "client.cpp"
 #include "command_define_list.h"
-#include "cfg.h"
+#include "verifier_cfg.h"
 
 using namespace std;
 
@@ -38,6 +39,11 @@ queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
 queue<string> hash_server_queue;                //for hash from server
 queue<string> hash_verifier_queue;              //for hash made by feature vector by verifier
 queue<string> cid_queue;                        //for CID for images 
+
+
+int read_pubKey(){
+    fread();    
+}
 
 
 void init_all_setting() {
