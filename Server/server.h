@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#include "cfg.h"
+#include "server_cfg.h"
 
 #define HANDLE void*
 
