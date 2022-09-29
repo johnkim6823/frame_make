@@ -42,7 +42,7 @@ queue<string> cid_queue;                        //for CID for images
 
 
 int read_pubKey(){
-    fread();    
+    FILE* file = fopen(text.txt, "rb");    
 }
 
 
