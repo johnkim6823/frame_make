@@ -6,7 +6,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <mysql.h>
 
 using namespace std;
 
@@ -22,14 +21,6 @@ using namespace std;
 
 #ifndef __SERVERSOCKET_HEADER__
 #define __SERVERSOCKET_HEADER__
-
-struct db_user {
-	char *server;
-	char *user;
-	char *password;
-	char *database;
-	std::string table;
-};
 
 typedef struct
 {
@@ -74,8 +65,6 @@ typedef struct
 	u_int32_t recvLoop;
 	u_int32_t m_socket;
 
-	struct db_user mysqlID;
-
 	IO_PORT port;
 
 }NETWORK_CONTEXT;
@@ -90,9 +79,6 @@ string get_table_name();
 void mkdir_func(string str);
 void create_table();
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
-void insert_database(char* CID, char* Hash);
-MYSQL* mysql_connection_setup(struct db_user sql_user);
-MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 
 #endif
 
@@ -100,13 +86,11 @@ MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 #ifndef PLZ_R_ONE_TIME
 #define PLZ_R_ONE_TIME
 
+#include "bout_database.cpp"
+
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
 char x;
-string table_name;
-MYSQL *conn;
-MYSQL_RES *res;
-MYSQL_ROW row;
 
 #endif
 #endif

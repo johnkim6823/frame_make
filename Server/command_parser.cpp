@@ -60,7 +60,7 @@ int cmd_parser(IO_PORT port, HEADERPACKET *pmsg)
 		}
 	}
 	if(ack == -3) {
-		cout << "Somethings Wrong... callback function return -3;;";
+		cout << "Somethings Wrong... callback function doesn't work X(";
 		return -1;
 	}
 	else if(ack == -1){

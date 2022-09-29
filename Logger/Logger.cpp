@@ -432,6 +432,7 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
         yuv_send.pop();
         hash_send.pop();
         cid_send.pop();
+        sleep(0.1);
     }
     cout << "----SEND END----------------" << endl;
 }

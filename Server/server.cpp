@@ -11,7 +11,6 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <sstream>
-#include <mysql.h>
 
 #define CMD_BACKGROUND 1
 #define THIS_IS_SERVER
@@ -101,14 +100,6 @@ void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize
 	sendDataPacket.command = cmd;
 	sendDataPacket.dataType = dataType;
 	sendDataPacket.dataSize = dataSize;
-}
-
-void initDatabase(struct db_user *db_info){
-	db_info->server = DB_IP;
-	db_info->user = DB_user;
-	db_info->password = DB_password;
-	db_info->database = DB_database;
-	db_info->table = table_name;
 }
 
 static int __send( IO_PORT *p, HANDLE pdata, int len )
@@ -462,8 +453,7 @@ int initServer()
 
 	pthread_mutex_init(&g_pNetwork->g_mc_mtx, NULL);
 
-	if( bind_socket( 
-		g_pNetwork->m_socket, SERVER_PORT ) == FALSE ) {
+	if(bind_socket(g_pNetwork->m_socket, SERVER_PORT ) == FALSE ) {
 		TRACEF("ERROR cannot bind listen port:%d \n", SERVER_PROTOCOL_PORT );
 		closesocket( g_pNetwork->m_socket);
 		g_pNetwork->m_socket = INVALID_SOCKET;
@@ -472,11 +462,9 @@ int initServer()
 	
 	table_name = get_table_name();
 	//SQL Database connect
-	initDatabase(&g_pNetwork->mysqlID);
-
-	conn = mysql_connection_setup(g_pNetwork->mysqlID);
+	init_DB();
+	
 	res = pthread_create(&g_pNetwork->listenThread, NULL, listenThd, (void*)g_pNetwork);
-
 	if(res<0){
 		TRACE_ERR("Server Listen thread init fail\n");
 		g_pNetwork->networkLoop= 0;
@@ -506,8 +494,7 @@ void termServer()
 		sleep(3);
 	}
 	
-	mysql_free_result(res);
-	mysql_close(conn);
+	term_database();
 	
 	if(g_pNetwork){
 		free(g_pNetwork);
@@ -517,38 +504,3 @@ void termServer()
 void closesocket(SOCKET sock_fd){
 	close(sock_fd);
 }
-
-/* 'bout Database */
-MYSQL* mysql_connection_setup(struct db_user sql_user){
-  MYSQL *connection = mysql_init(NULL);
-
-  if(!mysql_real_connect(connection, sql_user.server, sql_user.user, sql_user.password, sql_user.database, 0, NULL, 0)) {
-    printf("Connection error : %s\n", mysql_error(connection));
-    exit(1);
-  }
-
-  return connection;
-}
-
-MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
-	while(mysql_query(connection, sql_query) != 0){
-		create_table();
-	}
-  return mysql_use_result(connection);
-}
-
-void insert_database(char* CID, char* Hash){
-	string sorder = "INSERT INTO " + g_pNetwork->mysqlID.table + " values('" + CID + "', '" + Hash + "', 0);";	
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(conn, order);
-}
-
-void create_table(){
-	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(350), Verified INTEGER);";
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	mysql_query(conn, order);
-	res = mysql_use_result(conn);
-}
-/* 'bout Database */

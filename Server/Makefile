@@ -65,6 +65,15 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET) core
 
+tclean:
+	@if [ -e test.txt ]; then \
+		rm test.txt; \
+	fi
+
+	@if [ -e public_key.txt ]; then \
+		rm public_key.txt; \
+	fi
+
 distclean: clean
 	rm -rf .depend
 

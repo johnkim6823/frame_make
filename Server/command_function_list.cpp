@@ -45,8 +45,8 @@ int public_key_send(HEADERPACKET* msg){
 		cout << "fwrite";
 		return -1;
 	}
-	fflush(file);
 
+	fflush(file);
 	fclose(file);
 
 	return 1;
