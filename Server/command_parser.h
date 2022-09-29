@@ -5,7 +5,7 @@
 #define __CMDPARSERHEADER__
 
 #include "server.h"
-#include "cfg.h"
+#include "server_cfg.h"
 
 typedef struct _cmdpdesp
 {
