@@ -174,13 +174,13 @@ void capture() {
         else if(elementmean != 0) {
             bgr_queue.push(currentFrame);
         
-        	//Make CID for FRAMES
-        	string s_cid = getCID();
-        	cid_queue.push(s_cid);
+            //Make CID for FRAMES
+       	    string s_cid = getCID();
+	    cid_queue.push(s_cid);
         }
 	
         else {
-        	cout << "lamping time" << endl;
+            cout << "lamping time" << endl;
         }
 	    
        
