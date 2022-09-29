@@ -22,7 +22,7 @@
 #include "merkle_tree.h"
 #include "../Client/client.cpp"
 #include "../Client/command_define_list.h"
-#include "Lcfg.h"
+#include "logger_cfg.h"
 #include "msg_receiver.cpp"
 
 using namespace std;
