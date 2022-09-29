@@ -33,7 +33,7 @@ int height = DEFAULT_HEIGHT;
 int fps = DEFAULT_FPS;
 
 cv::VideoCapture cap;
-cv::Mat frame(cv::Size(height, width), CV_8UC3);
+cv::Mat frame(cv::Size(width, height), CV_8UC3);
 
 pthread_mutex_t frameLocker;
 pthread_t UpdThread;
@@ -93,7 +93,7 @@ int init() {
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
-    cv::Mat img(cv::Size(height, width), CV_8UC3);
+    cv::Mat img(cv::Size(width, height), CV_8UC3);
     frame = img.clone();
 
     cout << "    FPS: " << fps << endl;
@@ -138,7 +138,7 @@ void init_queue() {
 void *UpdateFrame(void *arg)
 {
     while(true) {
-	cv::Mat tempFrame(cv::Size(height, width), CV_8UC3);
+	cv::Mat tempFrame(cv::Size(width, height), CV_8UC3);
         cap >> tempFrame;
  
         pthread_mutex_lock(&frameLocker);
@@ -184,7 +184,7 @@ void capture() {
         }
 	    
        
-        if (bgr_queue.size() == 30) {
+        if (bgr_queue.size() == DEFAULT_FRAME_COUNT) {
 
             int ret = pthread_cancel( UpdThread );
             int status;
