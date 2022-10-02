@@ -9,8 +9,8 @@
 
 #define PUBKEY_SND      0x00
 #define PUBKEY_RES      0xf0
-#define PRIKEY_SND      0x01
-#define PRIKEY_RES      0xf1
+//#define PRIKEY_SND      0x01
+//#define PRIKEY_RES      0xf1
 #define VIDEO_DATA_SND  0x02
 #define VIDEO_DATA_RES  0xf2
 #define HASH_REQ        0x03

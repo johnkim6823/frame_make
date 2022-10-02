@@ -1,4 +1,3 @@
-#include <iostream>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -7,9 +6,24 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <assert.h>
-
 #include <cstring>
+#include <iostream>
+
+using namespace std;
+
 string publicKey = "";
+
+RSA* createPublicRSA(std::string key) {
+  RSA *rsa = NULL;
+  BIO *keybio;
+  const char* c_string = key.c_str();
+  keybio = BIO_new_mem_buf((void*)c_string, -1);
+  if (keybio==NULL) {
+      return 0;
+  }
+  rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);
+  return rsa;
+}
 
 bool RSAVerifySignature( RSA* rsa,
                          unsigned char* MsgHash,

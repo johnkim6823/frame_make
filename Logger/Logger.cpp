@@ -4,11 +4,8 @@
 #include <opencv2/opencv.hpp>
 #include <pthread.h>
 #include <iostream>
-#include <stdio.h>
-#include <cstdlib>
 #include <queue>
-#include <string.h>
-#include <stdlib.h>
+#include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -23,7 +20,7 @@
 #include "../Client/client.cpp"
 #include "../Client/command_define_list.h"
 #include "logger_cfg.h"
-#include "msg_receiver.cpp"
+#include "../msg_queue/msg_queue.cpp"
 
 using namespace std;
 using namespace cv;
@@ -65,7 +62,7 @@ int send_pubKey_to_server() {
     char *pubKey_buffer = new char[pubKey_bufsize];
     strcpy(pubKey_buffer, publicKey.c_str());
     
-    makePacket(0xff, 0xa0, strlen(pubKey_buffer));
+    makePacket(0x00, 0xa0, strlen(pubKey_buffer));
     void *p_packet = &sendDataPacket;
     
     if(!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet)){
@@ -87,7 +84,7 @@ int init() {
     // open selected camera using selected API
     cap.open(deviceID, apiID);
 
-    msg_receiver(width, height, fps);
+    camera_cfg_recv(width, height, fps);
     
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
@@ -350,6 +347,20 @@ string getCID() {
     return s_CID;
 }
 
+void send_image_hash_to_UI(){
+    cout << "----SEND BGR, Y frame and hash to WEB----"<< endl;
+    cv::Mat ori = bgr_queue.front();
+    cout << ori.size() << endl;
+    cv::Mat y = y_queue.front(); 
+
+    cv::imwrite("./L_original.png", ori);
+    cv::imwrite("./L_Y_frame.png", y);
+    string hash = hash_queue.front();
+
+    Image_HASH_send(hash);
+
+}
+
 void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
     cout << endl << "----SEND DATA to SERVER" << endl;
     
@@ -437,33 +448,13 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     cout << "----SEND END----------------" << endl;
 }
 
-void pk_send_test(char *str, uint8_t datatype, int str_size){
-    makePacket(TEST_CMD, datatype, str_size);
-    void* p_packet = &sendDataPacket;
-    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void**)p_packet);
-    send_binary(&g_pNetwork->port, 100, (void**)str);
-}
-
-
-void test() {
-    for(int i = 0; i<30;i++){
-        Mat xxx;
-        // xxx = Mat(352, 288, CV_8UC1, buf);
-        // xxx.data = buf;
-        xxx = imread("/home/pi/Desktop/lenna.bmp");
-        bgr_queue.push(xxx);
-        string s;
-        s = getCID();
-        cid_queue.push(s);
-    }
-}
-
+/*
 void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
     makePacket(command, datatype, datasize);
     void* p_packet = &sendDataPacket;
     send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
 }
-
+*/
 int main(int, char**) { 
 
     //key GEN
@@ -475,27 +466,12 @@ int main(int, char**) {
         return -1;
     }
     
-    /*
-    //CID SEND TEST
-    string r_cid1("20220918150714");
-    string r_cid2("20220918150715");
-    unsigned char* cid1 = new unsigned char[r_cid1.length() + 1];
-    unsigned char* cid2 = new unsigned char[r_cid2.length() + 1];
-    strcpy((char*)cid1, r_cid1.c_str());
-    strcpy((char*)cid2, r_cid2.c_str());
-
-    packet_testing_func(VER_REQ, Uchar, r_cid1.length() + 1);
-    send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid1);
-    send_binary(&g_pNetwork->port, r_cid1.length() + 1, (void*)cid2);
-    */
-    
     send_pubKey_to_server();
     
-    
     while(true) {
-	     if(init() == -1) {break;}
+	    if(init() == -1) {break;}
         
-	     else{
+	    else{
 	 	    //capture frames
 	 	    capture();
 
@@ -508,11 +484,14 @@ int main(int, char**) {
 	 	    //make Hash by edge_detected datas
 	 	    make_hash(feature_vector_queue);
 		    sign_hash(hash_queue);
+            
+            //Send Data to WEB UI
+            send_image_hash_to_UI();
 
 	 	    //send Datas to Server
 	 	    send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
-            	    //initialize all settings
+            //initialize all settings
 		    init_all_settings();
-	     }
+	    }
     }
 }

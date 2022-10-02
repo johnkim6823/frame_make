@@ -18,4 +18,5 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE);               //Edge detact by y f
 void make_hash(queue<cv::Mat> &FV_QUEUE);                   //make hash using feature vector
 void sign_hash(queue<string> &HASH_QUEUE);                  //Sign hash using Private Key
 string getCID();                                            //Make CID for each frames
+void send_image_hash_to_UI();                               //SEND BGR_Image,png, Y_Image.png PATH and Hash code
 void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE);   //send datas to Server
