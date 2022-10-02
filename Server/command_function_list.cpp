@@ -41,12 +41,12 @@ int public_key_send(HEADERPACKET* msg){
 
 	file = fopen("public_key.txt", "wb");
 
-	if (file != NULL) {
-		cout << "fopen error " << endl;
-	        exit(1);
-        } 
-	else 
-		cout << "success file creation " << endl;
+	// if (file != NULL) {
+	// 	cout << "fopen error " << endl;
+	//     exit(1);
+    // } 
+	// else 
+	// 	cout << "success file creation " << endl;
 	res = fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 
 	if(res != msg->dataSize){
