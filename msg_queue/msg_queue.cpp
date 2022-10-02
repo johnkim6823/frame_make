@@ -9,11 +9,11 @@
 using namespace std;
 
 int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS) {
-	int      		camera_cfg_msgid;
-	config_msg_data data;
-	int   	 		fps = FPS;
-	unsigned char 	size, format;
-	int 			width = WIDTH, height = HEIGHT;
+	int      			camera_cfg_msgid;
+	camera_cfg_msg_data data;
+	int   	 			fps = FPS;
+	unsigned char 		size, format;
+	int 				width = WIDTH, height = HEIGHT;
 	
 	if ( -1 == ( camera_cfg_msgid = msgget( (key_t)CAMERA_CFG_RECV_MQ, IPC_CREAT | 0666)))
 	{
@@ -24,7 +24,7 @@ int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS) {
 	sleep(0.1);
 	// datatype 0: receive all datatype
 	// change datatype to 1 if you want to receive python data
-	if ( -1 == msgrcv( camera_cfg_msgid, &data, sizeof(config_msg_data) - sizeof( long), 0, IPC_NOWAIT)) {
+	if ( -1 == msgrcv( camera_cfg_msgid, &data, sizeof(camera_cfg_msg_data) - sizeof( long), 0, IPC_NOWAIT)) {
 		cout << "    No Camera Configuaration value received." << endl;
 	}
 	else {
@@ -53,16 +53,16 @@ int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS) {
 				HEIGHT = 288;
 				break;
 		}
-		confirm_cfg_send();
+		camera_cfg_res_send();
 	}
 	cout << "    width: " << WIDTH << "| height: " << HEIGHT << "| fps: " << FPS << endl;
 	return 0;
 }
 
-int confirm_cfg_send() {
-	int      			camera_cfg_recv_msgid;
-	confirm_msg_data   	data;
-	unsigned char 		confirm = 0x01;
+int camera_cfg_res_send() {
+	int      					camera_cfg_recv_msgid;
+	camera_cfg_recv_msg_data   	data;
+	unsigned char 				confirm = 0x01;
 	
 	if ( -1 == ( camera_cfg_recv_msgid = msgget( (key_t)CAMERA_CFG_MQ, IPC_CREAT | 0666)))
 	{
@@ -74,7 +74,7 @@ int confirm_cfg_send() {
 	data.data_type = TYPE_CAMERA_CFG_RECV;
 	memcpy(data.data_buff, &confirm, sizeof(unsigned char));
 
-	if ( -1 == msgsnd( camera_cfg_recv_msgid, &data, sizeof(confirm_msg_data) - sizeof( long), 0))
+	if ( -1 == msgsnd( camera_cfg_recv_msgid, &data, sizeof(camera_cfg_recv_msg_data) - sizeof( long), 0))
 	{
 		perror( "msgsnd() failed");
 		exit( 1);
@@ -110,7 +110,7 @@ int Image_HASH_send(string HASH){
 	}
 }
 
-int Image_Hash_recv() {
+int Image_Hash_res_recv() {
 	int      					image_hash_recv_msgid;
 	Image_hash_recv_msg_data	data;
 	unsigned char recv;
@@ -183,7 +183,7 @@ int Server2Verifier_CID_recv(string &CID){
 	cout << CID << endl;
 }  
 
-int Verifier2Server_CID_recv_send() {
+int Verifier2Server_CID_res_send() {
 	int      		cid_recv_msgid;
 	CID_recv_msg_data	data;
 	unsigned char recv	= 0x01;
@@ -208,7 +208,7 @@ int Verifier2Server_CID_recv_send() {
 
 }
 
-int Verifier2Server_CID_recv_recv() {
+int Verifier2Server_CID_res_recv() {
 	int      			cid_recv_msgid;
 	CID_recv_msg_data	data;
 	unsigned char recv;
@@ -231,3 +231,4 @@ int Verifier2Server_CID_recv_recv() {
 	}
 	return (int)recv;
 }
+

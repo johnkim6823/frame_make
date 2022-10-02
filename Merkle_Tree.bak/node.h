@@ -8,7 +8,6 @@ struct Node {
     Node *left;
     Node *right;
 
-    Node();
     Node(std::string data);
 };
 

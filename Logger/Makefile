@@ -4,16 +4,14 @@ CXX = g++
 #--Flages----
 
 SIGN_VER_FLAGS = -lssl -lcrypto -L /usr/local/opt/openssl/lib
-CFLAGS = -Wall -g -I ../Merkle_Tree
 
+OPENCV = `pkg-config opencv4 --cflags --libs`
+LIBS = $(OPENCV) -lpthread
 #--sources----
 SOURCES :=   command_parser.cpp Logger.cpp
 
 #--Object files----
 OBJS = $(SOURCES:.cpp=.o)
-
-OPENCV = `pkg-config opencv4 --cflags --libs`
-LIBS = $(OPENCV) -lpthread
 
 all: Logger
 

@@ -14,12 +14,12 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
+#include "logger_cfg.h"
 #include "Logger_function_list.h"
 #include "sign.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
 #include "../Client/client.cpp"
 #include "../Client/command_define_list.h"
-#include "logger_cfg.h"
 #include "../msg_queue/msg_queue.cpp"
 
 using namespace std;
@@ -47,7 +47,7 @@ queue<string> cid_queue;                        //for CID for images
 int key_generation(){
     cout << "----Key Geneartion----" << endl;
     RSA * privateRSA = genPrivateRSA();
-    publicKey = genPubicRAS(privateRSA);
+    publicKey = genPubicRSA(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
     return 0;
@@ -287,14 +287,15 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         string mat_data = "";
         string sha_result = "";
         
-        
-        for(int i =0; i<temp.rows; i++) {
-            for(int j =0; j < temp.cols; j++) {
-                mat_data += to_string(temp.at<uchar>(i,j));
-            }
-        }
-        
-        
+        int width = temp.cols;
+        int height = temp.rows;
+        int channel_size = temp.channels();
+        int temp_buffsize = width * height * channel_size;
+
+        unsigned char *temp_data = new unsigned char[temp_buffsize];
+        memcpy(temp_data, temp.data, temp_buffsize);
+
+        mat_data = static_cast<string>(reinterpret_cast<const char *>(temp_data));
         sha_result = hash_sha256(mat_data);
 	
         //sign_HASH
@@ -448,13 +449,6 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
     cout << "----SEND END----------------" << endl;
 }
 
-/*
-void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
-    makePacket(command, datatype, datasize);
-    void* p_packet = &sendDataPacket;
-    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
-}
-*/
 int main(int, char**) { 
 
     //key GEN
@@ -468,6 +462,7 @@ int main(int, char**) {
     
     send_pubKey_to_server();
     
+
     while(true) {
 	    if(init() == -1) {break;}
         

@@ -9,6 +9,8 @@
 // Verifier <--> Server
 #define TYPE_CID                5
 #define TYPE_CID_RECV           6
+#define TYPE_VERIFIED_RSLT		7
+#define TYPE_VERIFIED_RSLT_RECV 8
 //-------------------------
 
 // ----MSGQ KEY----
@@ -18,6 +20,8 @@
 #define IMAGE_HASH_RECV_MQ      1132
 #define CID_MQ					1133
 #define CID_RECV_MQ				1134
+#define VERIFIED_RSLT_MQ		1135
+#define VERIFIED_RSLT_RECV_MQ	1136
 //-------------------------
 
 // ----CAMERA_CFG VALUE----
@@ -31,22 +35,24 @@
 // ----IMAGE_HASH----
 string IMAGE_PATH = "/home/pi/hanium_2022/Logger/";
 // ----BUFF SIZE----
-#define CONFIG_BUFF_SIZE        	6
-#define CONFIRM_BUFF_SIZE       	1
+#define CAMERA_CFG_BUFF_SIZE        	6
+#define CAMERA_CFG_RECV_BUFF_SIZE       1
 #define IMAGE_HASH_BUFF_SIZE		93
 #define IMAGE_HASH_RECV_BUFF_SIZE	1
 #define CID_BUFF_SIZE				24
 #define CID_RECV_BUFF_SIZE			1
+#define VERIFIED_RSLT_BUFF_SIZE		100
+#define VERIFIED_RSLT_RECV_BUFF_SIZE 1
 //-------------------------
 
-struct config_msg_data{
+struct camera_cfg_msg_data{
 	long data_type;
-	unsigned char data_buff[CONFIG_BUFF_SIZE];
+	unsigned char data_buff[CAMERA_CFG_BUFF_SIZE];
 };
 
-struct confirm_msg_data{
+struct  camera_cfg_recv_msg_data{
 	long data_type;
-	unsigned char data_buff[CONFIRM_BUFF_SIZE];
+	unsigned char data_buff[CAMERA_CFG_RECV_BUFF_SIZE ];
 };
 
 struct Image_hash_msg_data{
@@ -65,6 +71,11 @@ struct CID_msg_data{
 };
 
 struct CID_recv_msg_data{
+	long data_type;
+	unsigned char data_buff[CID_RECV_BUFF_SIZE];
+};
+
+struct Verified_Result_msg_data{
 	long data_type;
 	unsigned char data_buff[CID_RECV_BUFF_SIZE];
 };
