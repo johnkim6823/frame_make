@@ -106,7 +106,6 @@ int init() {
     	cout << "----Initalized----------" <<endl;
     	return 0;
     }
-    
 }
  
 void init_all_settings() {
@@ -142,7 +141,6 @@ void *UpdateFrame(void *arg)
         frame = tempFrame;
         pthread_mutex_unlock(&frameLocker);
     }
- 
     pthread_exit( (void *)0 );
 }
 
@@ -244,7 +242,6 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
         //save frames into queue 
         yuv420_queue.push(yuv_frame);
         y_queue.push(y_frame);
-        
     }
     
     cout << "    YUV420 amd Y frame are saved" << endl;
@@ -480,13 +477,13 @@ int main(int, char**) {
 	 	    make_hash(feature_vector_queue);
 		    sign_hash(hash_queue);
             
-            //Send Data to WEB UI
-            send_image_hash_to_UI();
+            	   //Send Data to WEB UI
+            	   send_image_hash_to_UI();
 
 	 	    //send Datas to Server
-	 	    send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
-            //initialize all settings
-		    init_all_settings();
+	 	   send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
+            	   //initialize all settings
+		   init_all_settings();
 	    }
     }
 }
