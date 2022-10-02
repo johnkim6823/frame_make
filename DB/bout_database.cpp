@@ -58,6 +58,8 @@ void insert_database(char* CID, char* Hash){
 	res = mysql_perform_query(conn, order);
 }
 
+
+
 void create_table(){
 	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(350), Verified INTEGER);";
 	char *order = new char[sorder.length() + 1];

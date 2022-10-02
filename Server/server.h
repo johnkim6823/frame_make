@@ -35,7 +35,7 @@ typedef struct
 
 typedef struct
 {
-	u_int8_t startID; //로거, �?증기, ?���? ...
+	u_int8_t startID; //濡쒓굅, 寃?利앷린, ?꽌踰? ...
 	u_int8_t destID;
 	u_int8_t command;
 	u_int8_t dataType;

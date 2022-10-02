@@ -8,13 +8,22 @@
 # define storage_dir        "/home/pi/images/"
 //----------------------------------
 // Default values for Camera Settings
-#define DEFAULT_WIDTH 			640
-#define DEFAULT_HEIGHT			480
-#define DEFAULT_FPS				10
-#define DEFAULT_FRAME_COUNT 	10
+#define VGA_SIZE                460800
+#define CIF_SIZE                152064
+
+#define YUV420_VGA_WIDTH 			640
+#define YUV420_VGA_HEIGHT			480*3/2
+#define YUV420_CIF_WIDTH			352
+#define YUV420_CIF_HEIGHT			288*3/2
+
+#define VGA_WIDTH 			640
+#define VGA_HEIGHT	        480
+#define CIF_WIDTH 			352
+#define CIF_HEIGHT			288
 //----------------------------------
-// Deafault values for Verifier
+// Deafault values PATH for Verifier
 #define pubKey_path             "/home/pi/hanium_2022/Server/PUBKEY.txt"
+#define video_data_path         "/home/pi/images/"
 //----------------------------------
 #define ThisID Verifier
 

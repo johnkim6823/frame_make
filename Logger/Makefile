@@ -18,13 +18,13 @@ LIBS = $(OPENCV) -lpthread
 all: Logger
 
 Logger: $(OBJS)
-	$(CXX) $(CFLAGS) $(OBJS) -o $@ $(LIBS) $(SIGN_VER_FLAGS)
+	$(CXX)  $(OBJS) -o $@ $(LIBS) $(SIGN_VER_FLAGS)
 
 command_parser.o: ./../Client/command_parser.cpp
 	$(CXX) -c -o $@ $<
 
 Logger.o: ./Logger.cpp
-	${CXX} -c ${CFLAGS} -o $@  $< $(LIBS) 
+	${CXX} -c  -o $@  $< $(LIBS) 
 
 clean:
 	$(RM) *.o  Logger
