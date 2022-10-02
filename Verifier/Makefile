@@ -19,6 +19,5 @@ Verifier: $(OBJS)
 %.o: ./%.cpp
 	$(CXX) -c $< -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
 
-
 clean:
 	$(RM) *.o Verifier
