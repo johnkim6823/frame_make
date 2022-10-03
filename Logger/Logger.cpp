@@ -462,6 +462,7 @@ int main(int, char**) {
 	    if(init() == -1) {break;}
         
 	    else{
+		    sleep(10);
 	 	    //capture frames
 	 	    capture();
 
