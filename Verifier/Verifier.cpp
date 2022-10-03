@@ -21,6 +21,7 @@
 #include "Verifier_function_list.h"
 #include "verify.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
+#include "../Merkle_Tree/node.h"
 #include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 

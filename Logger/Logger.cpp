@@ -348,7 +348,6 @@ string getCID() {
 void send_image_hash_to_UI(){
     cout << "----SEND BGR, Y frame and hash to WEB----"<< endl;
     cv::Mat ori = bgr_queue.front();
-    cout << ori.size() << endl;
     cv::Mat y = y_queue.front(); 
 
     cv::imwrite("./L_original.png", ori);
@@ -449,17 +448,16 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
 int main(int, char**) { 
 
     //key GEN
-    key_generation();
+    //key_generation();
 
     //Init Client
-    if(!initClient()){
-        cout << "init client error!!" << endl;
-        return -1;
-    }
+    //if(!initClient()){
+        //cout << "init client error!!" << endl;
+        //return -1;
+    //}
     
-    send_pubKey_to_server();
+    //send_pubKey_to_server();
     
-
     while(true) {
 	    if(init() == -1) {break;}
         
@@ -475,15 +473,15 @@ int main(int, char**) {
 
 	 	    //make Hash by edge_detected datas
 	 	    make_hash(feature_vector_queue);
-		    sign_hash(hash_queue);
+		    //sign_hash(hash_queue);
             
-            	   //Send Data to WEB UI
-            	   send_image_hash_to_UI();
+            //Send Data to WEB UI
+            send_image_hash_to_UI();
 
 	 	    //send Datas to Server
-	 	   send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
-            	   //initialize all settings
-		   init_all_settings();
+	 	    //send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
+            //initialize all settings
+		    init_all_settings();
 	    }
     }
 }
