@@ -110,8 +110,6 @@ int Image_HASH_send(string HASH)
 	data.data_type = TYPE_IMAGE_HASH;
 	memcpy(&data.data_buff, Img_HASH.c_str(), Img_HASH.size());
 
-	cout << sizeof(data.data_buff) << endl;
-
 	if ( -1 == msgsnd( image_hash_send_msqid, &data, sizeof( Image_hash_msg_data) - sizeof( long), 0))
 	{
 		perror( "msgsnd() failed");

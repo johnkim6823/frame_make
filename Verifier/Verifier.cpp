@@ -15,13 +15,13 @@
 #include <time.h>
 #include <sys/timeb.h> 
 #include <fstream>
+#include <filesystem>
 #include <error.h>
 
 #include "verifier_cfg.h"
 #include "Verifier_function_list.h"
 #include "verify.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
-#include "../Merkle_Tree/node.h"
 #include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 
@@ -35,16 +35,24 @@ queue<string> hash_verifier_queue;              //for hash made by feature vecto
 queue<string> cid_queue;                        //for CID for images 
 
 int read_pubKey(){
-    ifstream file(pubKey_path);
+    ifstream file;
+    file.open(pubKey_path );
 
-    if(file.is_open()){
-        while(getline(file, publicKey)){
-            cout << "public Key received." << endl;
+    cout <<"size of file '" << pubKey_path << "' = " << endl;
+    std::filesystem::file_size(pubKey_path) << endl;
+
+
+    if (file.is_open()) {
+        while (!file.eof()){
+            string temp;
+            getline(file, temp);
+            cout << temp << endl;
+            publicKey.append(temp+"\n");
         }
-    } else{
-        cout << "Unable to get Pubkey" << endl;
+
+        file.close();
     }
-    file.close();
+    cout << publicKey.size() << endl;
     return 0;
 }
 
@@ -206,8 +214,8 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
         string hash_DB = from_DB.front();
         string hash_Verifier = from_VERIFIER.front();
 
-        leaves_DB.push_back(new Node(hash_DB));
-        leaves_Verifier.push_back(new Node(hash_Verifier));
+        //leaves_DB.push_back(new Node(hash_DB));
+        //eaves_Verifier.push_back(new Node(hash_Verifier));
 
         from_DB.pop();
         from_VERIFIER.pop();
