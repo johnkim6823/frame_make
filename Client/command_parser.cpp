@@ -14,7 +14,7 @@ using namespace std;
 
 cmdp_desp parser_desp[] =
 {
-	//{PUBKEY_SND					, public_key_send		},
+	{PUBKEY_SND					, public_key_send		},
 	{PUBKEY_RES					, public_key_response	},
 	// {PRIKEY_SND					, private_key_send		},
 	// {PRIKEY_RES					, private_key_response	},

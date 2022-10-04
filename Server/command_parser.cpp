@@ -30,7 +30,7 @@ cmdp_desp parser_desp[] =
 
 
 	// Testing command
-	{TEST_CMD					, test					},
+	//{TEST_CMD					, test					},
 };
 
 //-----------------------------------------------------------------------------

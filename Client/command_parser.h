@@ -23,5 +23,4 @@ int CID_send(HEADERPACKET* msg);
 int public_key_send(HEADERPACKET* msg);
 int public_key_response(HEADERPACKET* msg);
 
-int test(HEADERPACKET* msg);
 #endif

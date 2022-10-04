@@ -34,30 +34,22 @@ void reshape_buffer(int type, int datasize){
 
 /*------------------public key send & response----------------------------*/
 int public_key_send(HEADERPACKET* msg){
-	int res;
+
+	FILE *file = fopen("PUBKEY.txt", "wb");
 	reshape_buffer(msg->dataType, msg->dataSize);
-
-	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)recv_buf);
-
-	file = fopen("public_key.txt", "wb");
-
-	// if (file != NULL) {
-	// 	cout << "fopen error " << endl;
-	//     exit(1);
-    // } 
-	// else 
-	// 	cout << "success file creation " << endl;
-	res = fwrite(recv_buf, sizeof(char), msg->dataSize, file);
-
-	if(res != msg->dataSize){
-		cout << "fwrite";
+	
+	if(recv_binary(&g_pNetwork->port, msg->dataSize, recv_buf) == 0){
+		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-
+	
+	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
+	
 	fflush(file);
 	fclose(file);
 
 	return 1;
+
 }
 int public_key_response(HEADERPACKET* msg){
 	makePacket(Logger, PUBKEY_RES, 0xa0, 0);
@@ -283,7 +275,6 @@ int hash_send(HEADERPACKET* msg){
 
 /*
  This function is for test. Receive data and write down .txt file. 
-
  commmad : 0xff
  dataType : 0xa0 = char
 			0xa1 = unsigned char

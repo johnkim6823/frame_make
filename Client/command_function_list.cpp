@@ -158,7 +158,6 @@ int video_data_response(HEADERPACKET* msg){
 
 /*
  This function is for test. Receive data and write down .txt file. 
-
  commmad : 0xff
  dataType : 0xa0 = char
 			0xa1 = unsigned char

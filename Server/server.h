@@ -35,7 +35,7 @@ typedef struct
 
 typedef struct
 {
-	u_int8_t startID; //로거, 검증기, 서버 ...
+	u_int8_t startID; //로거, �?증기, ?���? ...
 	u_int8_t destID;
 	u_int8_t command;
 	u_int8_t dataType;
@@ -86,7 +86,7 @@ void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize
 #ifndef PLZ_R_ONE_TIME
 #define PLZ_R_ONE_TIME
 
-#include "bout_database.cpp"
+#include "../DB/bout_database.cpp"
 
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;

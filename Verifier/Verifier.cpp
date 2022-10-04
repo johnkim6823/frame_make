@@ -2,15 +2,10 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <iostream>
-#include <stdio.h>
-#include <cstdlib>
-#include <queue>
 #include <pthread.h>
-#include <thread>
-#include <vector>
-#include <string.h>
-#include <stdlib.h>
+#include <iostream>
+#include <queue>
+#include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -18,19 +13,15 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timeb.h> 
+#include <fstream>
+#include <string>
 
-#include "verify.cpp"
-#include "Verifier_function_list.h"
-#include "merkle_tree.h"
-#include "client.cpp"
-#include "command_define_list.h"
 #include "verifier_cfg.h"
+#include "verify.cpp"
+#include "../msg_queue/msg_queue.cpp"
+#include "../DB/bout_database.cpp"
 
 using namespace std;
-
-int width = DEFAULT_WIDTH;
-int height = DEFAULT_HEIGHT;
-int fps = DEFAULT_FPS;
 
 queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;                         //for y_frame Mat queue
@@ -41,10 +32,40 @@ queue<string> cid_queue;                        //for CID for images
 
 
 int read_pubKey(){
-    FILE* file = fopen(text.txt, "rb");    
+    ifstream file(pubKey_path);
+
+    if(file.is_open()){
+        while(getline(file, publicKey)){
+            cout << publicKey << endl;
+        }
+    } else{
+        cout << "Unable to get Pubkey" << endl;
+    }
+    file.close();
+    return 0;
 }
 
+void get_data_from_DB(string &CID) {
+    string table_name = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2);
+    string sorder = "select CID, Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10";
+    
+    char *order = new char[sorder.length() + 1];
+    strcpy(order, sorder.c_str());
 
+    cout << order << endl;
+	res = mysql_perform_query(conn, order);
+    /*
+	while((row = mysql_fetch_row(res)) != NULL){
+	    cid_queue.push(row[0]);
+		hash_DB_queue.push(row[1]);
+	}
+
+    cout << cid_queue.size() << endl;
+    cout << hash_DB_queue.size() << endl;
+    */
+}
+
+/*
 void init_all_setting() {
     init_queue();
     
@@ -52,135 +73,14 @@ void init_all_setting() {
 
 void init_queue() {         
     yuv420_queue = queue<cv::Mat>();                 //for original frame(yuv)Mat queue
-    bgr_queue = queue<cv::Mat>();                    //for original frame(BGR)Mat queue
     y_queue = queue<cv::Mat>();                      //for y_frame Mat queue
     feature_vector_queue = queue<cv::Mat>();         //for edge detection Canny
-    hash_server_queue = queue<string>();
+    hash_DB_queue = queue<string>();
     hash_verifier_queue = queue<string>();          
     cid_queue = queue<string>();                     //for CID for frames
 }
-
-/*
-void get_data_from_server() {
-            cv::Mat from_server(video_rows, video_cols, CV_8UC1, video_buffer);
-        //cv:: Mat re_yuv = from_server.reshape(0, 352);
-        while(true) {
-            cv::imshow("rgb", from_server);
-            cv::waitKey(0);
-    
-}
 */
-
-void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
-    
-    cout << endl << "----Start to convert Frames into YUV420 and Y----" << endl << endl;
-    
-    queue<cv::Mat> BGR_queue(BGR_QUEUE);
-    
-    while(true){
-        
-        if(BGR_queue.size() == 0) {break;}
-        
-        cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame(cv::Size(height*3/2, width), CV_8UC1);
-        cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
-        BGR_queue.pop();
-
-        //CONVERT BGR To YUV420 and YUV420 to Y
-        cv::cvtColor(original, yuv_frame, cv::COLOR_BGR2YUV_I420);
-        cv::cvtColor(yuv_frame, y_frame, cv::COLOR_YUV2GRAY_I420);
-    
-        //save frames into queue 
-        yuv420_queue.push(yuv_frame);
-        y_queue.push(y_frame);
-        
-    }
-    
-    cout << "    YUV420 amd Y frame are saved" << endl;
-    cout << "    YUV420 frame: " << yuv420_queue.size() << "    Y frame: " << y_queue.size() << endl << endl;
-    cout << "----FRAMES CONVERTED---------" << endl << endl;
-}
-
-void edge_detection(queue<cv::Mat> &Y_QUEUE) {
-    queue<cv::Mat> Y_queue(Y_QUEUE);
-    
-    cout << "----Building feature vectors." << endl;
-    
-    int cnt = 0;
-    
-    while(true) {
-        if(Y_queue.size() == 0) {break;}
-        cv::Mat temp;
-        
-        //Canny(img, threshold1, threshold2) 
-        //threshold1 = Determining whether an edge is in the adjacency with another edge
-        //threshold2 = Determine if it is an edge or not
-        cv::Canny(Y_queue.front(), temp, 20, 40);
-        
-        feature_vector_queue.push(temp);
-        Y_queue.pop();
-        cnt++;
-    }
-    cout << endl << "Edge Detection made: " << feature_vector_queue.size() << endl;
-}
-
-void make_hash(queue<cv::Mat> &FV_QUEUE) {
-    
-    queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
-    
-    cout << endl << "----Make HASH from feature vectors." << endl << endl;
-    
-    while(true) {
-        if(Feature_Vector_queue.size() == 0) {break;}
-        cv::Mat temp = Feature_Vector_queue.front();
-        Feature_Vector_queue.pop();
-        
-        string mat_data = "";
-        string sha_result = "";
-        
-        
-        for(int i =0; i<temp.rows; i++) {
-            for(int j =0; j < temp.cols; j++) {
-                mat_data += to_string(temp.at<uchar>(i,j)) + " ";
-            }
-        }
-        
-        sha_result = hash_sha256(mat_data);
-        hash_verifier_queue.push(sha_result);
-    }
-    
-    cout << "    hash made : " << hash_verifier_queue.size() << endl << endl;
-}
-
-string getCID() {
-    struct timeb tb;   // <sys/timeb.h>                       
-    struct tm tstruct;                      
-    std::ostringstream oss;   
-    
-    string s_CID;                             
-    char buf[128];                                            
-                                                              
-    ftime(&tb);
-    // For Thread safe, use localtime_r
-    if (nullptr != localtime_r(&tb.time, &tstruct)) {         
-        strftime(buf, sizeof(buf), "%Y-%m-%d %T.", &tstruct);  
-        oss << buf; // YEAR-MM-DD HH-mm_SS            
-        oss << tb.millitm; // millisecond               
-    }              
-
-    s_CID = oss.str();
-    
-    s_CID = s_CID.substr(0,23);
-    if(s_CID.length() == 22) {
-        s_CID = s_CID.append("0");
-    }
-    if(s_CID.length() == 21) {
-        s_CID = s_CID.append("00");
-    }
-    
-    return s_CID;
-}
-
+/*
 int make_merkle_tree() {
     std::vector<Node*> leaves;
     
@@ -211,15 +111,21 @@ int make_merkle_tree() {
     
     return 0;
 }
+*/
 
-int main(int, char**) { 
-
-    //Init Client
-    if(!initClient()){
-        cout << "init client error!!" << endl;
-        return -1;
-    }
+int main() { 
+    read_pubKey();
     
+    string S_CID = "2022-09-29_10:30:10.111\0";
+    string V_CID = "";
+    Server2Verifier_CID_send(S_CID);
+    Server2Verifier_CID_recv(V_CID);
+
+    Verifier2Server_CID_recv_send();
+    Verifier2Server_CID_recv_recv();
+
+    get_data_from_DB(S_CID);
+
     return 0;
 }
  
