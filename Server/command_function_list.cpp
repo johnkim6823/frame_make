@@ -45,7 +45,6 @@ int public_key_send(HEADERPACKET* msg){
 	}
 	
 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
-	
 	fflush(file);
 	fclose(file);
 
@@ -73,9 +72,10 @@ int video_data_send(HEADERPACKET* msg){
 
 	recv_binary(&g_pNetwork->port, CID_size, (void*)recv_buf);
 	strcpy(CID, (char*)recv_buf);
-
+	
+	
 	string s_dir = storage_dir;
-
+	
 	if(x != CID[9]){
 		table_name = get_table_name();
 		mkdir_func((s_dir + table_name).c_str());
@@ -105,6 +105,17 @@ int video_data_send(HEADERPACKET* msg){
 
 	recv_binary(&g_pNetwork->port, frame_size, (void*)recv_buf);
 	fwrite(recv_buf, sizeof(char), frame_size, file);
+
+	
+	//cout << "CID: " << endl << CID << endl;
+	//cout << "CID size:" << strlen(CID) << endl;
+
+	//cout << "Hash: " << endl << Hash << endl;
+	//cout << "Hash size: " << strlen(Hash) << endl;
+
+	//cout << "Signed Hash: " << endl << Signed_Hash << endl;
+	//cout << "Signed Hash: " << strlen(Signed_Hash) << endl;
+	
 
 	makePacket(Logger, VIDEO_DATA_RES, 0, 0);
 	insert_database(CID, Hash, Signed_Hash);

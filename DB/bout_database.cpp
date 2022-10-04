@@ -53,7 +53,6 @@ MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
 
 void insert_database(char* CID, char* Hash, char* Signed_Hash){
 	string sorder = "INSERT INTO " + mysqlID.table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";	
-	cout << sorder << endl;
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	res = mysql_perform_query(conn, order);

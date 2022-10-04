@@ -2,6 +2,8 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/img_hash.hpp>
+#include <opencv2/imgproc.hpp>
 #include <pthread.h>
 #include <iostream>
 #include <queue>
@@ -13,6 +15,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timeb.h> 
+#include <fstream>
 
 #include "logger_cfg.h"
 #include "Logger_function_list.h"
@@ -50,13 +53,40 @@ int key_generation(){
     publicKey = genPubicRSA(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
-    return 0;
+    cout << "public Key = " << endl << publicKey;
+
+    //SAVE publickey for Logger
+    ofstream opKey;
+    opKey.open("L_PUBKEY.txt");
+    opKey << publicKey;
+    opKey.close();
+
+    //Test1
+    ifstream ipKey;
+    string PubkeyTest1;
+    ipKey.open("L_PUBKEY.txt");
+    if(ipKey.is_open()){
+        while(!ipKey.eof()) {
+            string temp;
+            getline(ipKey, temp);
+            PubkeyTest1 += temp+"\n";
+        }
+        ipKey.close();
+        PubkeyTest1.erase(prev(PubkeyTest1.end()));
+        cout << "from PubkeyTest1: " << PubkeyTest1;
+    }
+    
+    if(PubkeyTest1.compare(publicKey) == 0){
+        cout << "PubKeyTest1 and publicKey are same." << endl;
+    } else {
+        cout << "PubKeyTest1 and publicKey are not same." << endl;
+    }
 }
 
 int send_pubKey_to_server() {
     
     cout << "----SEND PUBKEY to SERVER----" << endl;
-    int pubKey_bufsize = publicKey.capacity();
+    int pubKey_bufsize = publicKey.size();
     std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
 	
     char *pubKey_buffer = new char[pubKey_bufsize];
@@ -122,6 +152,7 @@ void init_all_settings() {
 }
 
 void init_queue() {         
+
     yuv420_queue = queue<cv::Mat>();            //for original frame(yuv)Mat queue
     bgr_queue = queue<cv::Mat>();               //for original frame(BGR)Mat queue
     y_queue = queue<cv::Mat>();                 //for y_frame Mat queue
@@ -276,6 +307,11 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
     queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
     cout << endl << "----Make HASH from feature vectors." << endl << endl;
     
+    int mat_width = Feature_Vector_queue.front().cols;
+    int mat_height = Feature_Vector_queue.front().rows;
+    int mat_channels = Feature_Vector_queue.front().channels();
+    int umat_data_bufsize = mat_width * mat_height * mat_channels;
+
     while(true) {
         if(Feature_Vector_queue.size() == 0) {break;}
         cv::Mat temp = Feature_Vector_queue.front();
@@ -283,16 +319,24 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         string mat_data = "";
         string sha_result = "";
-        
+    
+    /*
+        unsigned char *umat_data = new unsigned char[umat_data_bufsize];
+        memcpy(umat_data, temp.data, umat_data_bufsize);
+    */    
         for(int i =0; i<temp.rows; i++){
             for (int j = 0; j< temp.cols; j++){
                 mat_data += to_string(temp.at<uchar>(i,j));
             }
         }
 
+        //mat_data1 = static_cast<string>(reinterpret_cast<const char *>(umat_data));
+
+        //cout << "mat1:" << endl << mat_data1 << endl;;
+        //cout << "mat2:" << endl << mat_data2 << endl;;
+
         sha_result = hash_sha256(mat_data);
 
-        //sign_HASH
         hash_queue.push(sha_result);
     }
     cout << "    hash made : " << hash_queue.size() << endl;
@@ -306,6 +350,10 @@ void sign_hash(queue<string> &HASH_QUEUE) {
     while(true){
 	    if(sign.size() == 0) {break;}
 	    string signed_hash = signMessage(privateKey, sign.front());
+
+        char* ch = new char[350];
+        strcpy(ch, signed_hash.c_str());
+
 	    hash_signed_queue.push(signed_hash);
 	    sign.pop();
     }
@@ -343,9 +391,12 @@ string getCID() {
 
 void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y){
     cout << "----SEND BGR, Y frame and hash to WEB----"<< endl;
-    cv::Mat ori = ORI.front();
-    cv::Mat y = Y.front();
+    cv::Mat ori(Size(width, height), CV_8UC3);
+    cv::Mat y(Size(width, height), CV_8UC3);
 
+    ORI.front().copyTo(ori);
+    Y.front().copyTo(y);
+    /*
     int removeResult1 = remove(orifile_path);
     int removeResult2 = remove(yfile_path);
 
@@ -362,10 +413,9 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y){
     else {
         cout << "First L_Y_frame.png file." << endl;
     }
-
-
-    cv::imwrite("L_original.png", ori);
-    cv::imwrite("L_Y_frame.png", y);
+    */
+    cv::imwrite("L_original.png", ORI.front());
+    cv::imwrite("L_Y_frame.png", Y.front());
     string hash = hash_queue.front();
 
     Image_HASH_send(hash);
@@ -474,7 +524,7 @@ int main(int, char**) {
 
     //key GEN
     key_generation();
-
+    
     //Init Client
     if(!initClient()){
         cout << "init client error!!" << endl;
