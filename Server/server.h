@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <mysql.h>
 
 using namespace std;
 
@@ -35,7 +36,7 @@ typedef struct
 
 typedef struct
 {
-	u_int8_t startID; //濡쒓�?, �??利앷�?, ?꽌踰? ...
+	u_int8_t startID; //濡쒓�?, �??利앷�?, ?꽌踰? ...
 	u_int8_t destID;
 	u_int8_t command;
 	u_int8_t dataType;
@@ -86,11 +87,16 @@ void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize
 #ifndef PLZ_R_ONE_TIME
 #define PLZ_R_ONE_TIME
 
-#include "../DB/bout_database.cpp"
-
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
 char x;
+MYSQL *conn;
+MYSQL_RES *res;
+MYSQL_ROW row;
+string table_name;
+
+#include "../DB/bout_database.cpp"
+struct db_user mysqlID;
 
 #endif
 #endif

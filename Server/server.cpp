@@ -462,7 +462,7 @@ int initServer()
 	
 	table_name = get_table_name();
 	//SQL Database connect
-	init_DB();
+	init_DB(mysqlID);
 	
 	res = pthread_create(&g_pNetwork->listenThread, NULL, listenThd, (void*)g_pNetwork);
 	if(res<0){

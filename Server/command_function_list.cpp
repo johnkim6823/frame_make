@@ -107,7 +107,7 @@ int video_data_send(HEADERPACKET* msg){
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
 	makePacket(Logger, VIDEO_DATA_RES, 0, 0);
-	insert_database(CID, Hash, Signed_Hash);
+	insert_database(conn,  CID, Hash, Signed_Hash);
 
 	fflush(file);
 	fclose(file);
