@@ -70,8 +70,8 @@ tclean:
 		rm test.txt; \
 	fi
 
-	@if [ -e public_key.txt ]; then \
-		rm public_key.txt; \
+	@if [ -e PUBKEY.txt ]; then \
+		rm PUBKEY.txt; \
 	fi
 
 distclean: clean

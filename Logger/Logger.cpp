@@ -14,12 +14,12 @@
 #include <time.h>
 #include <sys/timeb.h> 
 
+#include "logger_cfg.h"
 #include "Logger_function_list.h"
 #include "sign.cpp"
-#include "merkle_tree.h"
+#include "../Merkle_Tree/merkle_tree.h"
 #include "../Client/client.cpp"
 #include "../Client/command_define_list.h"
-#include "logger_cfg.h"
 #include "../msg_queue/msg_queue.cpp"
 
 using namespace std;
@@ -47,7 +47,7 @@ queue<string> cid_queue;                        //for CID for images
 int key_generation(){
     cout << "----Key Geneartion----" << endl;
     RSA * privateRSA = genPrivateRSA();
-    publicKey = genPubicRAS(privateRSA);
+    publicKey = genPubicRSA(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
     return 0;
@@ -106,7 +106,6 @@ int init() {
     	cout << "----Initalized----------" <<endl;
     	return 0;
     }
-    
 }
  
 void init_all_settings() {
@@ -142,7 +141,6 @@ void *UpdateFrame(void *arg)
         frame = tempFrame;
         pthread_mutex_unlock(&frameLocker);
     }
- 
     pthread_exit( (void *)0 );
 }
 
@@ -244,7 +242,6 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
         //save frames into queue 
         yuv420_queue.push(yuv_frame);
         y_queue.push(y_frame);
-        
     }
     
     cout << "    YUV420 amd Y frame are saved" << endl;
@@ -287,18 +284,15 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         string mat_data = "";
         string sha_result = "";
         
-        
-        for(int i =0; i<temp.rows; i++) {
-            for(int j =0; j < temp.cols; j++) {
+        for(int i =0; i<temp.rows; i++){
+            for (int j = 0; j< temp.cols; j++){
                 mat_data += to_string(temp.at<uchar>(i,j));
             }
         }
-        
-        
+
         sha_result = hash_sha256(mat_data);
-	
+
         //sign_HASH
-        //string signed_hash = signMessage(privateKey, sha_result);
         hash_queue.push(sha_result);
     }
     cout << "    hash made : " << hash_queue.size() << endl;
@@ -347,60 +341,83 @@ string getCID() {
     return s_CID;
 }
 
-void send_image_hash_to_UI(){
+void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y){
     cout << "----SEND BGR, Y frame and hash to WEB----"<< endl;
-    cv::Mat ori = bgr_queue.front();
-    cout << ori.size() << endl;
-    cv::Mat y = y_queue.front(); 
+    cv::Mat ori = ORI.front();
+    cv::Mat y = Y.front();
 
-    cv::imwrite("./L_original.png", ori);
-    cv::imwrite("./L_Y_frame.png", y);
+    int removeResult1 = remove(orifile_path);
+    int removeResult2 = remove(yfile_path);
+
+    if( removeResult1 == 0){
+        cout << "previous L_original.png removed." << endl;
+    }
+    else {
+        cout << "First L_original.png file." << endl;
+    }
+
+        if( removeResult2 == 0){
+        cout << "previous L_Y_frame.png removed." << endl;
+    }
+    else {
+        cout << "First L_Y_frame.png file." << endl;
+    }
+
+
+    cv::imwrite("L_original.png", ori);
+    cv::imwrite("L_Y_frame.png", y);
     string hash = hash_queue.front();
 
     Image_HASH_send(hash);
-
+    sleep(10);
 }
 
-void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE, queue<string> &CID_QUEUE) {
+void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, queue<string> &SIGNED_HASH_QUEUE, queue<cv::Mat> &YUV420_QUEUE) {
     cout << endl << "----SEND DATA to SERVER" << endl;
-    
+
+    queue<string> cid_send(CID_QUEUE);
     queue<cv::Mat> yuv_send(YUV420_QUEUE);
     queue<string> hash_send(HASH_QUEUE);
-    queue<string> cid_send(CID_QUEUE);
+    queue<string> signed_hash_send(SIGNED_HASH_QUEUE);
+
   
     int total_data_size = 0;
-    int hash_bufsize = hash_send.front().capacity();
     int cid_bufsize = cid_send.front().capacity();
+    int hash_bufsize = hash_send.front().capacity();
+    int signed_hash_bufsize = signed_hash_send.front().capacity();
+    
     int video_rows = yuv_send.front().rows;
     int video_cols = yuv_send.front().cols;
     int video_channels = yuv_send.front().channels();
     int video_bufsize = video_rows * video_cols * video_channels;
 
-    total_data_size += video_bufsize;
-    total_data_size += hash_bufsize;
     total_data_size += cid_bufsize;
+    total_data_size += hash_bufsize;
+    total_data_size += signed_hash_bufsize;
+    total_data_size += video_bufsize;
 
-    cout << "video size: " << yuv_send.front().size() << endl;
-    //cout << "video width : " << video_cols << endl;
-    //cout << "video height : " << video_rows << endl; 
     cout << "total data size : " << total_data_size << endl;
-    cout << "size of hash data: " << hash_bufsize << endl;
     cout << "size of CID data: " << cid_bufsize << endl;
+    cout << "size of hash data: " << hash_bufsize << endl;
+    cout << "size of signed_hash data: " << signed_hash_bufsize << endl;
+    cout << "video size: " << yuv_send.front().size() << endl;
     cout << "size of video data: " << video_bufsize << endl;
     cout << endl << "---------------------- " << endl;
     
     int step = 0;
     while(true) {
-	if(yuv_send.size() == 0 && hash_send.size() == 0 && cid_send.size() == 0) {break;}
+	if(cid_send.size() == 0 && hash_send.size() == 0 && signed_hash_send.size() == 0 && yuv_send.size() == 0 ) {break;}
         cout << "step : " << ++step << endl;
       	
-        unsigned char *video_buffer = new unsigned char[video_bufsize];
-        char *hash_buffer = new char[hash_bufsize];
         char *cid_buffer = new char[cid_bufsize];
+        char *hash_buffer = new char[hash_bufsize];
+        char *signed_hash_buffer = new char[signed_hash_bufsize];
+        unsigned char *video_buffer = new unsigned char[video_bufsize]; 
         
-        memcpy(video_buffer, yuv_send.front().data, video_bufsize);
-        strcpy(hash_buffer, hash_send.front().c_str());
         strcpy(cid_buffer, cid_send.front().c_str());
+        strcpy(hash_buffer, hash_send.front().c_str());
+        strcpy(signed_hash_buffer, signed_hash_send.front().c_str());
+        memcpy(video_buffer, yuv_send.front().data, video_bufsize);
 
         makePacket(VIDEO_DATA_SND, 0xa1, total_data_size);
 
@@ -430,6 +447,10 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
         if(!send_binary(&g_pNetwork->port, hash_bufsize, (void*)hash_buffer)){
             cout << "hash send Error!!" << endl;
         }
+        
+        if(!send_binary(&g_pNetwork->port, signed_hash_bufsize, (void*)signed_hash_buffer)){
+            cout << "signed_hash send Error!!" << endl;
+        }
 
         if(!send_binary(&g_pNetwork->port, video_bufsize, (void*)video_buffer)){
             cout << "Image send Error!!" << endl;
@@ -442,19 +463,13 @@ void send_data_to_server(queue<cv::Mat> &YUV420_QUEUE, queue<string> &HASH_QUEUE
         
         yuv_send.pop();
         hash_send.pop();
+        signed_hash_send.pop();
         cid_send.pop();
         sleep(0.1);
     }
     cout << "----SEND END----------------" << endl;
 }
 
-/*
-void packet_testing_func(uint8_t command, uint8_t datatype, uint32_t datasize){
-    makePacket(command, datatype, datasize);
-    void* p_packet = &sendDataPacket;
-    send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), p_packet);
-}
-*/
 int main(int, char**) { 
 
     //key GEN
@@ -486,10 +501,10 @@ int main(int, char**) {
 		    sign_hash(hash_queue);
             
             //Send Data to WEB UI
-            send_image_hash_to_UI();
+            //send_image_hash_to_UI(bgr_queue, y_queue);
 
 	 	    //send Datas to Server
-	 	    send_data_to_server(yuv420_queue, hash_signed_queue, cid_queue);
+	 	    send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
             //initialize all settings
 		    init_all_settings();
 	    }

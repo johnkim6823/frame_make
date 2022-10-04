@@ -17,7 +17,7 @@ MYSQL_RES *res;
 MYSQL_ROW row;
 string table_name;
 
-void insert_database(char* CID, char* Hash);
+void insert_database(char* CID, char* Hash, char* Signed_Hash);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 void create_table();
@@ -51,15 +51,18 @@ MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
   return mysql_use_result(connection);
 }
 
-void insert_database(char* CID, char* Hash){
-	string sorder = "INSERT INTO " + mysqlID.table + " values('" + CID + "', '" + Hash + "', 0);";	
+void insert_database(char* CID, char* Hash, char* Signed_Hash){
+	string sorder = "INSERT INTO " + mysqlID.table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";	
+	cout << sorder << endl;
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	res = mysql_perform_query(conn, order);
 }
 
+
+
 void create_table(){
-	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(350), Verified INTEGER);";
+	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(64), Signed_Hash VARCHAR(350), Verified INTEGER);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	mysql_query(conn, order);

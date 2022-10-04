@@ -12,6 +12,7 @@ void* p_packet = &sendDataPacket;
 void* recv_buf;
 char* CID = new char[CID_size];
 char* Hash = new char[Hash_size];
+char* Signed_Hash = new char[Signed_Hash_size];
 FILE* file;
 
 void reshape_buffer(int type, int datasize){
@@ -65,8 +66,9 @@ int video_data_send(HEADERPACKET* msg){
 	memset(recv_buf, 0, msg->dataSize);
 	memset(CID, 0, CID_size);
 	memset(Hash, 0, Hash_size);
+	memset(Signed_Hash, 0, Signed_Hash_size);
 
-	int frame_size =  msg->dataSize - CID_size - Hash_size;
+	int frame_size =  msg->dataSize - CID_size - Hash_size - Signed_Hash_size;
 	FILE *file;
 
 	recv_binary(&g_pNetwork->port, CID_size, (void*)recv_buf);
@@ -97,11 +99,15 @@ int video_data_send(HEADERPACKET* msg){
 	strcpy(Hash, (char*)recv_buf);
 	memset(recv_buf, 0, msg->dataSize);
 
+	recv_binary(&g_pNetwork->port, Signed_Hash_size, (void*)recv_buf);
+	strcpy(Signed_Hash, (char*)recv_buf);
+	memset(recv_buf, 0, msg->dataSize);
+
 	recv_binary(&g_pNetwork->port, frame_size, (void*)recv_buf);
 	fwrite(recv_buf, sizeof(char), frame_size, file);
 
 	makePacket(Logger, VIDEO_DATA_RES, 0, 0);
-	insert_database(CID, Hash);
+	insert_database(CID, Hash, Signed_Hash);
 
 	fflush(file);
 	fclose(file);
@@ -110,6 +116,8 @@ int video_data_send(HEADERPACKET* msg){
 	
 	return 1;
 }
+
+
 int video_data_response(HEADERPACKET* msg){
 	cout << "video data response recv" << endl;
 	return 1;

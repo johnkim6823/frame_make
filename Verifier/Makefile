@@ -2,30 +2,22 @@
 CXX = g++
 
 #--Flages----
-
-SIGN_VER_FLAGS = -lssl -lcrypto -L /usr/local/opt/openssl/lib
-MYSQL_FLAGS =  -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient
-CFLAGS = -Wall -g -I ../Merkle_Tree 
-
-#--sources----
-SOURCES :=   command_parser.cpp Logger.cpp
-
-#--Object files----
-OBJS = $(SOURCES:.cpp=.o)
-LOGGER := Logger
-
+SIGN_VER_FLAGS = -lssl -lcrypto -L/usr/local/opt/openssl/lib
+MYSQL_FLAGS =  -I/usr/include/mysql -L/usr/lib64/mysql -lmysqlclient 
 OPENCV = `pkg-config opencv4 --cflags --libs`
 LIBS = $(OPENCV) -lpthread
 
-Verifier: Verifier.o 
-	$(CXX) $(CFLAGS) -o Verifier Verifier.o  $(LIBS) $(SIGN_VER_FLAGS) $(MYSQL_FLAGS)
+#--sources----
+SOURCES :=  Verifier.cpp
 
-command_parser.o: ./../Client/command_parser.cpp
-	$(CXX) -c -o $@ $<
-	
-Verifier.o: ./Verifier.cpp
-	${CXX} ${CFLAGS} -c $< -o $@ $(LIBS) $(MYSQL_FLAGS)
+#--Object files----
+OBJS = $(SOURCES:.cpp=.o)
 
+Verifier: $(OBJS)
+	$(CXX) $(OBJS) -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
+
+%.o: ./%.cpp
+	$(CXX) -c $< -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
 
 clean:
 	$(RM) *.o Verifier

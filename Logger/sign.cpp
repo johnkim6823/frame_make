@@ -42,7 +42,7 @@ RSA* genPrivateRSA() {
 }
 
 
-char* genPubicRAS(RSA * rsa) {
+char* genPubicRSA(RSA * rsa) {
 
 	BIO	*bp_public = NULL;
    

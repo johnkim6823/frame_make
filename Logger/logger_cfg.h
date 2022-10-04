@@ -6,7 +6,9 @@
 #define DEFAULT_FPS				10
 #define DEFAULT_FRAME_COUNT 	10
 //----------------------------------
-
+#define orifile_path            "L_original.png"
+#define yfile_path              "L_Y_frame.png"
+//----------------------------------
 #define ThisID Logger
 
 #endif
