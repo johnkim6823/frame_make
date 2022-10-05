@@ -95,7 +95,7 @@ string get_table_name(){
 
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize)
 {
-	sendDataPacket.startID = ThisID; //로거, 검증기, 서버 ...
+	sendDataPacket.startID = ThisID; //로거, �?증기, ?���? ...
 	sendDataPacket.destID = destID;
 	sendDataPacket.command = cmd;
 	sendDataPacket.dataType = dataType;
@@ -382,7 +382,7 @@ static void *listenThd(void *arg)
 
 	fd_max = thisThd->m_socket;
 	lingerStruct.l_onoff = 1;
-	lingerStruct.l_linger = 0; // 대기 없이 바로 종료, blocking 대기시간
+	lingerStruct.l_linger = 0; // ???�? ?��?�� 바로 종료, blocking ???기시�?
 
 	TRACEC(D_PURPLE," Server Service Listen Thread Start\n");
 	while(thisThd->networkLoop){

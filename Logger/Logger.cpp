@@ -55,12 +55,13 @@ int key_generation(){
     cout << "PRIKEY and PUBKEY are made" << endl;
     cout << "public Key = " << endl << publicKey;
 
+    /*
     //SAVE publickey for Logger
     ofstream opKey;
     opKey.open("L_PUBKEY.txt");
     opKey << publicKey;
     opKey.close();
-
+    
     //Test1
     ifstream ipKey;
     string PubkeyTest1;
@@ -81,6 +82,7 @@ int key_generation(){
     } else {
         cout << "PubKeyTest1 and publicKey are not same." << endl;
     }
+    */
 }
 
 int send_pubKey_to_server() {
@@ -515,7 +517,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         hash_send.pop();
         signed_hash_send.pop();
         cid_send.pop();
-        sleep(0.1);
+        sleep(0.2);
     }
     cout << "----SEND END----------------" << endl;
 }
@@ -551,7 +553,7 @@ int main(int, char**) {
 		    sign_hash(hash_queue);
             
             //Send Data to WEB UI
-            //send_image_hash_to_UI(bgr_queue, y_queue);
+            send_image_hash_to_UI(bgr_queue, y_queue);
 
 	 	    //send Datas to Server
 	 	    send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);

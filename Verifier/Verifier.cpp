@@ -106,7 +106,24 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
         cv::Mat temp = cv::imread(frame_name);
         const char* frame = frame_name.c_str();
         cout << frame << endl;
-        
+
+        int c;
+        for(int i=0; i < get_CID.size(); i++){
+		    n = 0;
+		    string frame_name = frame_dir + get_CID.front();
+		    const char* frame = frame_name.c_str();
+		    FILE* file = fopen(frame, "rb");
+
+		    fseek(file, 0, SEEK_END);
+		    int size = ftell(file);
+		    unsigned char *frame_data = new unsigned char[size];
+		    fseek(file,0,0);
+
+		    while((c = fgetc(file)) != EOF){
+			    frame_data[i] = (unsigned char)c;
+		    }
+	
+        /*
         ifstream frame_file(frame, ios::binary);
         if(frame_file.is_open()){
             frame_file.seekg(0, ios::end);
@@ -126,6 +143,7 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
                 YUV420_QUEUE.push(frame);
             }
         }
+        */
         get_CID.pop();
     }
     cout << "Frame read " << YUV420_QUEUE.size() << endl;
