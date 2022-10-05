@@ -54,6 +54,7 @@ int read_pubKey() {
     cout << publicKey;
 
     pubKeyfile.close();
+    cout << endl;
 
     return 0;
 }
@@ -107,9 +108,9 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
         const char* frame = frame_name.c_str();
         cout << frame << endl;
 
+        /*
         int c;
         for(int i=0; i < get_CID.size(); i++){
-		    n = 0;
 		    string frame_name = frame_dir + get_CID.front();
 		    const char* frame = frame_name.c_str();
 		    FILE* file = fopen(frame, "rb");
@@ -123,7 +124,7 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
 			    frame_data[i] = (unsigned char)c;
 		    }
 	
-        /*
+        
         ifstream frame_file(frame, ios::binary);
         if(frame_file.is_open()){
             frame_file.seekg(0, ios::end);
@@ -142,6 +143,7 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
                 cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, *u_frame_data);
                 YUV420_QUEUE.push(frame);
             }
+            
         }
         */
         get_CID.pop();
@@ -291,7 +293,8 @@ void init_queue() {
 int main() { 
 
     read_pubKey();
-    
+    sleep(5);
+
     string S_CID = "2022-10-05_00:05:10.606\0";
     string V_CID = "";
 
@@ -301,12 +304,13 @@ int main() {
     Verifier2Server_CID_res_send();
     Verifier2Server_CID_res_recv();
     
+    sleep(5);
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
-    read_video_data(V_CID, cid_queue,yuv420_queue);
+    //read_video_data(V_CID, cid_queue,yuv420_queue);
 
-    convert_frames(yuv420_queue);
-    edge_detection(y_queue);
-    make_hash(feature_vector_queue);
+    //convert_frames(yuv420_queue);
+    //edge_detection(y_queue);
+    //make_hash(feature_vector_queue);
 
 
     //make_merkle_tree(hash_DB_queue, hash_verifier_queue);

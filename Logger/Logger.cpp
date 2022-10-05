@@ -416,12 +416,11 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y){
         cout << "First L_Y_frame.png file." << endl;
     }
     */
-    cv::imwrite("L_original.png", ORI.front());
-    cv::imwrite("L_Y_frame.png", Y.front());
+    cv::imwrite(orifile_path, ORI.front());
+    cv::imwrite(yfile_path, Y.front());
     string hash = hash_queue.front();
 
     Image_HASH_send(hash);
-    sleep(10);
 }
 
 void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, queue<string> &SIGNED_HASH_QUEUE, queue<cv::Mat> &YUV420_QUEUE) {
@@ -553,7 +552,7 @@ int main(int, char**) {
 		    sign_hash(hash_queue);
             
             //Send Data to WEB UI
-            send_image_hash_to_UI(bgr_queue, y_queue);
+            //send_image_hash_to_UI(bgr_queue, y_queue);
 
 	 	    //send Datas to Server
 	 	    send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
