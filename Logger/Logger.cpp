@@ -398,24 +398,7 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y){
 
     ORI.front().copyTo(ori);
     Y.front().copyTo(y);
-    /*
-    int removeResult1 = remove(orifile_path);
-    int removeResult2 = remove(yfile_path);
 
-    if( removeResult1 == 0){
-        cout << "previous L_original.png removed." << endl;
-    }
-    else {
-        cout << "First L_original.png file." << endl;
-    }
-
-        if( removeResult2 == 0){
-        cout << "previous L_Y_frame.png removed." << endl;
-    }
-    else {
-        cout << "First L_Y_frame.png file." << endl;
-    }
-    */
     cv::imwrite(orifile_path, ORI.front());
     cv::imwrite(yfile_path, Y.front());
     string hash = hash_queue.front();
