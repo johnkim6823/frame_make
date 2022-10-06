@@ -127,14 +127,13 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
         
 	cout << strlen(frame_list);
         /*
-
         if(size == VGA_SIZE){
-            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *u_frame_data);
+            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
             cv::imwrite("V_origianl.png", frame);
-            //cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *u_frame_data);
+            //cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
             YUV420_QUEUE.push(frame);
         } else if(size == CIF_SIZE){
-            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, *u_frame_data);
+            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_list);
             YUV420_QUEUE.push(frame);
         }
             
