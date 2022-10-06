@@ -155,7 +155,6 @@ void init_all_settings() {
 }
 
 void init_queue() {         
-
     yuv420_queue = queue<cv::Mat>();            //for original frame(yuv)Mat queue
     bgr_queue = queue<cv::Mat>();               //for original frame(BGR)Mat queue
     y_queue = queue<cv::Mat>();                 //for y_frame Mat queue
