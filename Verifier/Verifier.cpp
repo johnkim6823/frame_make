@@ -82,9 +82,8 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
         if( authentic ){
             cout << s_CID << "'s signed hash is verified." << endl;
             HASH_DB_QUEUE.push(row[1]);
-        }
-        else{
-            cout << "Not Authentic" << endl;
+	} else{
+            cout << "Not Authentic." << endl;
         }   
     }
 
