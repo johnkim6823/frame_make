@@ -45,8 +45,7 @@ int read_pubKey() {
 
         pubKeyfile.seekg(0, ios::beg);
         pubKeyfile.read(&publicKey[0], size);
-    }
-    else {
+    } else {
         cout << "can't find file." << endl;
     }
 
@@ -60,13 +59,13 @@ int read_pubKey() {
 }
 
 int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_DB_QUEUE ){
-	init_DB();
-	string table_name = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2);
+    init_DB();
+    string table_name = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2);
     string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10; ";
 
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
-	res = mysql_perform_query(conn, order);
+    res = mysql_perform_query(conn, order);
     int i =0;
 	while((row = mysql_fetch_row(res)) != NULL){
         string s_CID = row[0];
