@@ -275,16 +275,15 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
         //save frames into queue 
         yuv420_queue.push(yuv_frame);
         y_queue.push(y_frame);
+	//release Mat
+    	original.release();
+    	yuv_frame.release();
+    	y_frame.release();
     }
     
     cout << "    YUV420 amd Y frame are saved" << endl;
     cout << "    YUV420 frame: " << yuv420_queue.size() << "    Y frame: " << y_queue.size() << endl << endl;
     cout << "----FRAMES CONVERTED---------" << endl << endl;
-   
-    //release Mat
-    original.release();
-    yuv_frame.release();
-    y_frame.release();
 }
 
 void edge_detection(queue<cv::Mat> &Y_QUEUE) {
