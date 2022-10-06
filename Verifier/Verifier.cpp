@@ -104,47 +104,40 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
     while(true) {
         if(get_CID.size() == 0) {break;}
         string frame_name = file_dir + get_CID.front();
-        cv::Mat temp = cv::imread(frame_name);
+	    
         const char* frame = frame_name.c_str();
         cout << frame << endl;
+	    
+	unsigned char** frame_list = new unsigned char* [get_CID.size()];
+	size_t n;
+	int c;
+	n = 0;
+	    
+	FILE* file = fopen(frame, "rb");
 
-        /*
-        int c;
-        for(int i=0; i < get_CID.size(); i++){
-		    string frame_name = frame_dir + get_CID.front();
-		    const char* frame = frame_name.c_str();
-		    FILE* file = fopen(frame, "rb");
+	fseek(file, 0, SEEK_END);
+	int size = ftell(file);
+	frame_list[i] = new unsigned char[size];
+	fseek(file,0,0);
 
-		    fseek(file, 0, SEEK_END);
-		    int size = ftell(file);
-		    unsigned char *frame_data = new unsigned char[size];
-		    fseek(file,0,0);
-
-		    while((c = fgetc(file)) != EOF){
-			    frame_data[i] = (unsigned char)c;
-		    }
-	
+	while((c = fgetc(file)) != EOF){
+		frame_list[i][n++] = (unsigned char)c;
+		}
+	}
         
-        ifstream frame_file(frame, ios::binary);
-        if(frame_file.is_open()){
-            frame_file.seekg(0, ios::end);
-            int size = frame_file.tellg();
-            frame_file.seekg(0, ios::beg);
-            string s_frame_data = "";
-            unsigned char *u_frame_data = new unsigned char[size];
-		    frame_file.close(); 
+	cout << strlen(frame_list);
+        /*
 
-            if(size == VGA_SIZE){
-                cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *u_frame_data);
-                cv::imwrite("V_origianl.png", frame);
-                //cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *u_frame_data);
-                YUV420_QUEUE.push(frame);
-            } else if(size == CIF_SIZE){
-                cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, *u_frame_data);
-                YUV420_QUEUE.push(frame);
-            }
-            
+        if(size == VGA_SIZE){
+            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *u_frame_data);
+            cv::imwrite("V_origianl.png", frame);
+            //cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *u_frame_data);
+            YUV420_QUEUE.push(frame);
+        } else if(size == CIF_SIZE){
+            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, *u_frame_data);
+            YUV420_QUEUE.push(frame);
         }
+            
         */
         get_CID.pop();
     }
