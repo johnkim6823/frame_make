@@ -10,14 +10,9 @@ struct db_user {
 	char *password;
 	char *database;
 	std::string table;
-}mysqlID;
+};
 
-MYSQL *conn;
-MYSQL_RES *res;
-MYSQL_ROW row;
-string table_name;
-
-void insert_database(char* CID, char* Hash, char* Signed_Hash);
+void insert_database(MYSQL *connectionchar, char* CID, char* Hash, char* Signed_Hash);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 void create_table();
@@ -51,15 +46,12 @@ MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
   return mysql_use_result(connection);
 }
 
-void insert_database(char* CID, char* Hash, char* Signed_Hash){
-	string sorder = "INSERT INTO " + mysqlID.table + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";	
-	cout << sorder << endl;
+void insert_database(MYSQL *connection, char* CID, char* Hash, char* Signed_Hash){
+	string sorder = "INSERT INTO " + table_name + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(conn, order);
+	res = mysql_perform_query(connection, order);
 }
-
-
 
 void create_table(){
 	string sorder = "CREATE TABLE " + table_name + "(CID VARCHAR(24), Hash VARCHAR(64), Signed_Hash VARCHAR(350), Verified INTEGER);";
@@ -69,7 +61,7 @@ void create_table(){
 	res = mysql_use_result(conn);
 }
 
-void init_DB(){
+void init_DB(struct db_user mysqlID){
     initDatabase(&mysqlID);
 	conn = mysql_connection_setup(mysqlID);
 }
