@@ -34,47 +34,62 @@ queue<string> hash_DB_queue;                    //for hash from server
 queue<string> hash_verifier_queue;              //for hash made by feature vector by verifier
 queue<string> cid_queue;                        //for CID for images 
 
-int read_pubKey(){
-    ifstream file;
-    file.open(pubKey_path );
+int read_pubKey() {
+    ifstream pubKeyfile(pubKey_path);
 
-    cout <<"size of file '" << pubKey_path << "' = " << endl;
-    std::filesystem::file_size(pubKey_path) << endl;
+    if(pubKeyfile.is_open()){
+        pubKeyfile.seekg(0, ios::end);
 
+        int size = pubKeyfile.tellg();
+        publicKey.resize(size);
 
-    if (file.is_open()) {
-        while (!file.eof()){
-            string temp;
-            getline(file, temp);
-            cout << temp << endl;
-            publicKey.append(temp+"\n");
-        }
-
-        file.close();
+        pubKeyfile.seekg(0, ios::beg);
+        pubKeyfile.read(&publicKey[0], size);
+    } else {
+        cout << "can't find file." << endl;
     }
-    cout << publicKey.size() << endl;
+
+    publicKey.erase(prev(publicKey.end()));
+    cout << publicKey;
+
+    pubKeyfile.close();
+    cout << endl;
+
     return 0;
 }
 
-void get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_DB_QUEUE){
-	init_DB();
-	string table_name = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2);
-    string sorder = "select CID, Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10; ";
+int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_DB_QUEUE ){
+    init_DB();
+    string table_name = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2);
+    string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10; ";
 
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
-
-    cout << order << endl;
-	res = mysql_perform_query(conn, order);
-
+    res = mysql_perform_query(conn, order);
+    int i =0;
 	while((row = mysql_fetch_row(res)) != NULL){
+        string s_CID = row[0];
+        CID_QUEUE.push(s_CID);
+
+        string s_hash_DB = row[1];
+        string s_signed_hash_DB = row[2];
+
+        char *c_signed_hash_DB = new char[Signed_Hash_size];
+        strcpy(c_signed_hash_DB, s_signed_hash_DB.c_str());
         
-		CID_QUEUE.push(row[0]);
-		HASH_DB_QUEUE.push(row[1]);
-	}
+        
+        bool authentic = verifySignature(publicKey, s_hash_DB, c_signed_hash_DB);
+        if( authentic ){
+            cout << s_CID << "'s signed hash is verified." << endl;
+            HASH_DB_QUEUE.push(row[1]);
+	} else{
+            cout << "Not Authentic." << endl;
+        }   
+    }
 
     cout << "CID queue size: " << CID_QUEUE.size() << endl;
     cout << "HASH queue size: " << HASH_DB_QUEUE.size() << endl;
+    return 0;
 }
 
 void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV420_QUEUE) {
@@ -87,38 +102,40 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV
     while(true) {
         if(get_CID.size() == 0) {break;}
         string frame_name = file_dir + get_CID.front();
+	    
         const char* frame = frame_name.c_str();
-        cout << frame;
+        cout << frame << endl;
+	    
+	unsigned char** frame_list = new unsigned char* [get_CID.size()];
+	size_t n;
+	int c;
+	n = 0;
+	    
+	FILE* file = fopen(frame, "rb");
 
-        FILE *frame_file = fopen(frame, "rb");
-        if(frame_file == NULL) {
-            cout << "GET NULL pointer" <<endl;
-        }
-        fseek(frame_file, 0, SEEK_END);
-		int size = ftell(frame_file);
+	fseek(file, 0, SEEK_END);
+	int size = ftell(file);
+	frame_list[i] = new unsigned char[size];
+	fseek(file,0,0);
 
-        fseek(frame_file, 0, 0);
+	while((c = fgetc(file)) != EOF){
+		frame_list[i][n++] = (unsigned char)c;
+		}
+	}
         
-        unsigned char *frame_data = (unsigned char*) malloc(size);
-        cout << frame_data << endl;
-        fread(frame_data, sizeof(unsigned char), size, frame_file);
-
-        fflush(frame_file);
-        fclose(frame_file);
-
+	cout << strlen(frame_list);
+        /*
         if(size == VGA_SIZE){
-            cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, *frame_data);
-            cout << frame.size() << endl;
-            //cv::imwrite(get_CID.front(), frame);
+            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
+            cv::imwrite("V_origianl.png", frame);
+            //cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
+            YUV420_QUEUE.push(frame);
+        } else if(size == CIF_SIZE){
+            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_list);
             YUV420_QUEUE.push(frame);
         }
-        else if(size == CIF_SIZE){
-            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, *frame_data);
-            cout << frame.size() << endl;
-            //cv::imwrite(get_CID.front(), frame);
-            YUV420_QUEUE.push(frame);
-        }
-
+            
+        */
         get_CID.pop();
     }
     cout << "Frame read " << YUV420_QUEUE.size() << endl;
@@ -263,12 +280,12 @@ void init_queue() {
     cid_queue = queue<string>();                     //for CID for frames
 }
 
-
 int main() { 
 
     read_pubKey();
-    
-    string S_CID = "2022-10-02_10:30:10.111\0";
+    sleep(5);
+
+    string S_CID = "2022-10-05_00:05:10.606\0";
     string V_CID = "";
 
     Server2Verifier_CID_send(S_CID);
@@ -277,15 +294,17 @@ int main() {
     Verifier2Server_CID_res_send();
     Verifier2Server_CID_res_recv();
     
+    sleep(5);
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
-    read_video_data(V_CID, cid_queue,yuv420_queue);
+    //read_video_data(V_CID, cid_queue,yuv420_queue);
 
-    convert_frames(yuv420_queue);
-    edge_detection(y_queue);
-    make_hash(feature_vector_queue);
+    //convert_frames(yuv420_queue);
+    //edge_detection(y_queue);
+    //make_hash(feature_vector_queue);
 
 
-    make_merkle_tree(hash_DB_queue, hash_verifier_queue);
+    //make_merkle_tree(hash_DB_queue, hash_verifier_queue);
+    init_all_setting();
     return 0;
 }
  

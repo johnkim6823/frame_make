@@ -60,6 +60,7 @@ int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS)
 			break;
 		}
 
+		sleep(0.2);
 		camera_cfg_res_send();
 	}
 	cout << "    width: " << WIDTH << "| height: " << HEIGHT << "| fps: " << FPS << endl;

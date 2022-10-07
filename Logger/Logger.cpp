@@ -2,6 +2,8 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/img_hash.hpp>
+#include <opencv2/imgproc.hpp>
 #include <pthread.h>
 #include <iostream>
 #include <queue>
@@ -13,6 +15,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/timeb.h> 
+#include <fstream>
 
 #include "logger_cfg.h"
 #include "Logger_function_list.h"
@@ -50,13 +53,42 @@ int key_generation(){
     publicKey = genPubicRSA(privateRSA);
     
     cout << "PRIKEY and PUBKEY are made" << endl;
-    return 0;
+    cout << "public Key = " << endl << publicKey;
+
+    /*
+    //SAVE publickey for Logger
+    ofstream opKey;
+    opKey.open("L_PUBKEY.txt");
+    opKey << publicKey;
+    opKey.close();
+    
+    //Test1
+    ifstream ipKey;
+    string PubkeyTest1;
+    ipKey.open("L_PUBKEY.txt");
+    if(ipKey.is_open()){
+        while(!ipKey.eof()) {
+            string temp;
+            getline(ipKey, temp);
+            PubkeyTest1 += temp+"\n";
+        }
+        ipKey.close();
+        PubkeyTest1.erase(prev(PubkeyTest1.end()));
+        cout << "from PubkeyTest1: " << PubkeyTest1;
+    }
+    
+    if(PubkeyTest1.compare(publicKey) == 0){
+        cout << "PubKeyTest1 and publicKey are same." << endl;
+    } else {
+        cout << "PubKeyTest1 and publicKey are not same." << endl;
+    }
+    */
 }
 
 int send_pubKey_to_server() {
     
     cout << "----SEND PUBKEY to SERVER----" << endl;
-    int pubKey_bufsize = publicKey.capacity();
+    int pubKey_bufsize = publicKey.size();
     std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
 	
     char *pubKey_buffer = new char[pubKey_bufsize];
@@ -95,7 +127,8 @@ int init() {
 
     cout << "    FPS: " << fps << endl;
     cout << "    width: "<< width << " height: " << height << endl << endl;
-
+    
+    img.release();
 
     //--- If Cap is opened
     if (!cap.isOpened()) {
@@ -242,6 +275,10 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE) {
         //save frames into queue 
         yuv420_queue.push(yuv_frame);
         y_queue.push(y_frame);
+	//release Mat
+    	original.release();
+    	yuv_frame.release();
+    	y_frame.release();
     }
     
     cout << "    YUV420 amd Y frame are saved" << endl;
@@ -267,6 +304,7 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE) {
         feature_vector_queue.push(temp);
         Y_queue.pop();
         cnt++;
+	temp.release();
     }
     cout << endl << "    Edge Detection made: " << feature_vector_queue.size() << endl;
 }
@@ -276,6 +314,11 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
     queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
     cout << endl << "----Make HASH from feature vectors." << endl << endl;
     
+    int mat_width = Feature_Vector_queue.front().cols;
+    int mat_height = Feature_Vector_queue.front().rows;
+    int mat_channels = Feature_Vector_queue.front().channels();
+    int umat_data_bufsize = mat_width * mat_height * mat_channels;
+
     while(true) {
         if(Feature_Vector_queue.size() == 0) {break;}
         cv::Mat temp = Feature_Vector_queue.front();
@@ -283,17 +326,19 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         string mat_data = "";
         string sha_result = "";
+ 
+        //unsigned char *umat_data = new unsigned char[umat_data_bufsize];
+        //memcpy(umat_data, temp.data, umat_data_bufsize);    
         
-        for(int i =0; i<temp.rows; i++){
+	for(int i =0; i<temp.rows; i++){
             for (int j = 0; j< temp.cols; j++){
                 mat_data += to_string(temp.at<uchar>(i,j));
             }
         }
 
         sha_result = hash_sha256(mat_data);
-
-        //sign_HASH
         hash_queue.push(sha_result);
+	temp.release();
     }
     cout << "    hash made : " << hash_queue.size() << endl;
 }
@@ -304,10 +349,14 @@ void sign_hash(queue<string> &HASH_QUEUE) {
     cout << "----Signing Hash by private Key" << endl << endl;
 
     while(true){
-	    if(sign.size() == 0) {break;}
-	    string signed_hash = signMessage(privateKey, sign.front());
-	    hash_signed_queue.push(signed_hash);
-	    sign.pop();
+	if(sign.size() == 0) {break;}
+	string signed_hash = signMessage(privateKey, sign.front());
+
+        char* ch = new char[350];
+        strcpy(ch, signed_hash.c_str());
+
+	hash_signed_queue.push(signed_hash);
+	sign.pop();
     }
     cout << "Signed Hash made: " << hash_signed_queue.size() << endl << endl;
 }
@@ -343,33 +392,19 @@ string getCID() {
 
 void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y){
     cout << "----SEND BGR, Y frame and hash to WEB----"<< endl;
-    cv::Mat ori = ORI.front();
-    cv::Mat y = Y.front();
+    cv::Mat ori(Size(width, height), CV_8UC3);
+    cv::Mat y(Size(width, height), CV_8UC3);
 
-    int removeResult1 = remove(orifile_path);
-    int removeResult2 = remove(yfile_path);
+    ORI.front().copyTo(ori);
+    Y.front().copyTo(y);
 
-    if( removeResult1 == 0){
-        cout << "previous L_original.png removed." << endl;
-    }
-    else {
-        cout << "First L_original.png file." << endl;
-    }
-
-        if( removeResult2 == 0){
-        cout << "previous L_Y_frame.png removed." << endl;
-    }
-    else {
-        cout << "First L_Y_frame.png file." << endl;
-    }
-
-
-    cv::imwrite("L_original.png", ori);
-    cv::imwrite("L_Y_frame.png", y);
+    cv::imwrite(orifile_path, ORI.front());
+    cv::imwrite(yfile_path, Y.front());
     string hash = hash_queue.front();
 
     Image_HASH_send(hash);
-    sleep(10);
+    ori.release();
+    y.release();
 }
 
 void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, queue<string> &SIGNED_HASH_QUEUE, queue<cv::Mat> &YUV420_QUEUE) {
@@ -380,7 +415,6 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
     queue<string> hash_send(HASH_QUEUE);
     queue<string> signed_hash_send(SIGNED_HASH_QUEUE);
 
-  
     int total_data_size = 0;
     int cid_bufsize = cid_send.front().capacity();
     int hash_bufsize = hash_send.front().capacity();
@@ -465,7 +499,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         hash_send.pop();
         signed_hash_send.pop();
         cid_send.pop();
-        sleep(0.1);
+        sleep(0.2);
     }
     cout << "----SEND END----------------" << endl;
 }
@@ -474,7 +508,7 @@ int main(int, char**) {
 
     //key GEN
     key_generation();
-
+    
     //Init Client
     if(!initClient()){
         cout << "init client error!!" << endl;
@@ -500,12 +534,12 @@ int main(int, char**) {
 	 	    make_hash(feature_vector_queue);
 		    sign_hash(hash_queue);
             
-            //Send Data to WEB UI
-            //send_image_hash_to_UI(bgr_queue, y_queue);
+            	    //Send Data to WEB UI
+            	    //send_image_hash_to_UI(bgr_queue, y_queue);
 
 	 	    //send Datas to Server
 	 	    send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
-            //initialize all settings
+            	    //initialize all settings
 		    init_all_settings();
 	    }
     }

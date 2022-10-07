@@ -6,8 +6,8 @@
 #define DEFAULT_FPS				10
 #define DEFAULT_FRAME_COUNT 	10
 //----------------------------------
-#define orifile_path            "L_original.png"
-#define yfile_path              "L_Y_frame.png"
+#define orifile_path            "/home/pi/Web-UI/static/images/L_original.png"
+#define yfile_path              "/home/pi/Web-UI/static/images/L_Y_frame.png"
 //----------------------------------
 #define ThisID Logger
 
