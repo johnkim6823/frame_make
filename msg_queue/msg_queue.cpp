@@ -94,11 +94,12 @@ int camera_cfg_res_send()
 	{
 		cout << "    Camera_cfg_res sent." << endl;
 	}
+	return 0;
 }
 
 int Image_HASH_send(string HASH)
 {
-	string Img_HASH = IMAGE_PATH + HASH;
+	string Img_HASH = HASH;
 	int image_hash_send_msqid;
 	Image_hash_msg_data data;
 
@@ -107,9 +108,9 @@ int Image_HASH_send(string HASH)
 		perror("msgget() failed");
 		exit(1);
 	}
-	
+
 	data.data_type = TYPE_IMAGE_HASH;
-	memcpy(&data.data_buff, Img_HASH.c_str(), Img_HASH.size());
+	strcpy(data.data_buff, Img_HASH.c_str());
 
 	if ( -1 == msgsnd( image_hash_send_msqid, &data, sizeof( Image_hash_msg_data) - sizeof( long), 0))
 	{
@@ -121,6 +122,7 @@ int Image_HASH_send(string HASH)
 		cout << "Data: " << data.data_buff << endl;
 		cout << "PATH and HASH sent." << endl;
 	}
+	return 0;
 }
 
 int Image_Hash_res_recv()

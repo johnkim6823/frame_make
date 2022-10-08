@@ -31,7 +31,7 @@ void closesocket(SOCKET sock_fd);
 void makePacket(uint8_t cmd, uint8_t dataType, uint32_t datasize)
 {
 	memset(&sendDataPacket, 0, sizeof(HEADERPACKET));
-	sendDataPacket.startID = Logger; //로거, 검증기, 서버 ...
+	sendDataPacket.startID = Logger; 
 	sendDataPacket.destID = Server;
 	sendDataPacket.command = cmd;
 	sendDataPacket.dataType = dataType;

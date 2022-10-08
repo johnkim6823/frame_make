@@ -36,8 +36,8 @@
 string IMAGE_PATH = "/home/pi/Web-UI/static/images/";
 // ----BUFF SIZE----
 #define CAMERA_CFG_BUFF_SIZE        	6
-#define CAMERA_CFG_RES_BUFF_SIZE       1
-#define IMAGE_HASH_BUFF_SIZE			94
+#define CAMERA_CFG_RES_BUFF_SIZE       	1
+#define IMAGE_HASH_BUFF_SIZE			64
 #define IMAGE_HASH_RECV_BUFF_SIZE		1
 #define CID_BUFF_SIZE					24
 #define CID_RECV_BUFF_SIZE				1

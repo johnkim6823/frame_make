@@ -92,53 +92,77 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
     return 0;
 }
 
-void read_video_data(string &CID , queue<string> &CID_QUEUE, queue<cv::Mat> &YUV420_QUEUE) {
+void read_video_data(string &CID , queue<string> &CID_QUEUE) {
     queue<string> get_CID(CID_QUEUE);
 
     string folder_dir = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2) + "/";
     string file_dir = video_data_path + folder_dir;
     cout << file_dir << endl;
-
+    /*
     while(true) {
+        int i = 0;
         if(get_CID.size() == 0) {break;}
         string frame_name = file_dir + get_CID.front();
 	    
         const char* frame = frame_name.c_str();
         cout << frame << endl;
 	    
-	unsigned char** frame_list = new unsigned char* [get_CID.size()];
-	size_t n;
-	int c;
-	n = 0;
+	    unsigned char** frame_list = new unsigned char* [get_CID.size()];
+	    size_t n;
+	    int c;
+	    n = 0;
 	    
-	FILE* file = fopen(frame, "rb");
+	    FILE* file = fopen(frame, "rb");
 
-	fseek(file, 0, SEEK_END);
-	int size = ftell(file);
-	frame_list[i] = new unsigned char[size];
-	fseek(file,0,0);
+	    fseek(file, 0, SEEK_END);
+	    int size = ftell(file);
 
-	while((c = fgetc(file)) != EOF){
-		frame_list[i][n++] = (unsigned char)c;
+        cout << size << endl;
+	    frame_list[i] = new unsigned char[size];
+	    fseek(file,0,0);
+
+
+	    while((c = fgetc(file)) != EOF){
+		    frame_list[i][n++] = (unsigned char)c;
 		}
-	}
+
         
-	cout << strlen(frame_list);
-        /*
         if(size == VGA_SIZE){
             cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
-            cv::imwrite("V_origianl.png", frame);
-            //cv::Mat frame(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
-            YUV420_QUEUE.push(frame);
-        } else if(size == CIF_SIZE){
-            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_list);
-            YUV420_QUEUE.push(frame);
+            yuv420_queue.push(frame);
+        } /*else if(size == CIF_SIZE){
+            //cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_list);
+            yuv420_queue.push(frame);
         }
-            
-        */
+        
         get_CID.pop();
     }
-    cout << "Frame read " << YUV420_QUEUE.size() << endl;
+    */
+    cout << "Frame read " << yuv420_queue.size() << endl;
+}
+
+void show_frames(queue<cv::Mat> &ORI)
+{
+    queue<cv::Mat> bgr(ORI);
+
+    cout << "----show frames----------" << endl
+         << endl;
+    cv::moveWindow("Original BGR", 0, 0);
+    while (true)
+    {
+
+        cv::imshow("Original BGR", bgr.front());
+
+        bgr.pop();
+        sleep(1);
+        if (cv::waitKey(10) == 't')
+            break;
+        if (bgr.size() == 0)
+        {
+            cv::destroyAllWindows();
+            break;
+        }
+    }
 }
 
 void convert_frames(queue<cv::Mat> &YUV420_QUEUE){
@@ -211,11 +235,25 @@ void make_hash(queue<cv::Mat> &FV_QUEUE) {
         
         sha_result = hash_sha256(mat_data);
         hash_verifier_queue.push(sha_result);
-        cout << sha_result << endl;
     }
     cout << "    hash made : " << hash_verifier_queue.size() << endl;
 }
 
+void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH) {
+    queue<string> db_hash(DB_HASH);
+    queue<string> vf_hash(VF_HASH);
+    int i = 1;
+    while(true) {
+        if(db_hash.size() == 0 && vf_hash.size() == 0){
+            break;
+        }
+        cout << "DB hash" << i  << ": " <<  db_hash.front() << endl;
+        cout << "VF hash" << i  << ": " <<  vf_hash.front() << endl;;
+        i++;
+        db_hash.pop();
+        vf_hash.pop();
+    }
+}
 
 int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_QUEUE){
     vector<Node*> leaves_DB;
@@ -283,9 +321,8 @@ void init_queue() {
 int main() { 
 
     read_pubKey();
-    sleep(5);
 
-    string S_CID = "2022-10-05_00:05:10.606\0";
+    string S_CID = "2022-10-08_17:33:18.940\0";
     string V_CID = "";
 
     Server2Verifier_CID_send(S_CID);
@@ -294,15 +331,16 @@ int main() {
     Verifier2Server_CID_res_send();
     Verifier2Server_CID_res_recv();
     
-    sleep(5);
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
-    //read_video_data(V_CID, cid_queue,yuv420_queue);
-
-    //convert_frames(yuv420_queue);
-    //edge_detection(y_queue);
-    //make_hash(feature_vector_queue);
-
-
+    read_video_data(V_CID, cid_queue);
+    show_frames(yuv420_queue);
+    /*
+    convert_frames(yuv420_queue);
+    edge_detection(y_queue);
+    make_hash(feature_vector_queue);
+    
+    show_hash(hash_DB_queue, hash_verifier_queue);
+    */
     //make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
     return 0;
