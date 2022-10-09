@@ -99,7 +99,8 @@ int init()
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
-    cv::Mat img(cv::Size(width, height), CV_8UC3);
+    cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
+    cv::imwrite("img.png", img);
     frame = img.clone();
 
     cout << "    FPS: " << fps << endl;
@@ -124,6 +125,7 @@ int init()
 void init_all_settings()
 {
     init_queue();
+    frame.release();
 
     cout << endl
          << "----Initializing all settings." << endl
@@ -165,7 +167,7 @@ void init_queue()
     // cid_queue = queue<string>();                //for CID for frames
     // hash_signed_queue = queue<string>();        //for hash signed
 }
-/*
+
 void *UpdateFrame(void *arg)
 {
     while (true)
@@ -174,7 +176,7 @@ void *UpdateFrame(void *arg)
         cap >> tempFrame;
 
         pthread_mutex_lock(&frameLocker);
-        frame = tempFrame;
+        frame = tempFrame.clone();
         pthread_mutex_unlock(&frameLocker);
     }
     pthread_exit((void *)0);
@@ -194,7 +196,7 @@ void capture()
         cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
 
         pthread_mutex_lock(&frameLocker);
-        currentFrame = frame;
+        currentFrame = frame.clone();
         pthread_mutex_unlock(&frameLocker);
 
         int sum1 = (int)sum(currentFrame)[0];
@@ -277,8 +279,7 @@ void capture()
         }
     }
 }
-*/
-
+/*
 void capture() {
     cout << endl << "----Starting Capturing" << endl << endl;
 
@@ -318,7 +319,7 @@ void capture() {
         currentFrame.release();
     }
 }
-
+*/
 void show_frames(queue<cv::Mat> &ORI)
 {
     queue<Mat> bgr(ORI);
@@ -527,7 +528,7 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
     cv::imwrite(yfile_path, y);
     string hash = hash_queue.front();
 
-    // Image_HASH_send(hash);
+    //Image_HASH_send(hash);
 
     ori.release();
     y.release();
@@ -657,8 +658,8 @@ int main(int, char **)
     }
 
     send_pubKey_to_server();
-    int i = 0;
-    while (i<2)
+
+    while (true)
     {
         if (init() == -1)
         {
@@ -688,7 +689,6 @@ int main(int, char **)
             send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
             // initialize all settings
             init_all_settings();
-            i++;
         }
     }
 }
