@@ -67,7 +67,7 @@
 #define IMAGE_HASH_BUFF_SIZE			64
 #define IMAGE_HASH_RECV_BUFF_SIZE		1
 
-#define CID_BUFF_SIZE					24
+#define CID_BUFF_SIZE					23
 #define CID_RECV_BUFF_SIZE				1
 #define VERIFIED_RSLT_BUFF_SIZE			100
 #define VERIFIED_RSLT_RECV_BUFF_SIZE 	1
@@ -100,7 +100,7 @@ struct Image_hash_recv_msg_data{
 
 struct CID_msg_data{
 	long data_type;
-	unsigned char data_buff[CID_BUFF_SIZE];
+	char data_buff[CID_BUFF_SIZE];
 };
 
 struct CID_recv_msg_data{

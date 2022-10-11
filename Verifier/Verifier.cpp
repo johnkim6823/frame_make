@@ -108,7 +108,6 @@ void read_video_data(string &CID, queue<string> &CID_QUEUE)
 
     string folder_dir = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2) + "/";
     string file_dir = video_data_path + folder_dir;
-    cout << file_dir << endl;
 
     while (true)
     {
@@ -119,44 +118,29 @@ void read_video_data(string &CID, queue<string> &CID_QUEUE)
         }
         string frame_name = file_dir + get_CID.front();
 
-        const char *frame = frame_name.c_str();
-        cout << frame << endl;
+        ifstream frame_file(frame_name, ifstream::binary);
+        frame_file.seekg(0,frame_file.end);
+        int size = (int)frame_file.tellg();
+        frame_file.seekg(0,frame_file.beg);
 
-        unsigned char **frame_list = new unsigned char *[get_CID.size()];
-        size_t n;
-        int c;
-        n = 0;
+        unsigned char* frame_data = (unsigned char*)malloc(size);
 
-        FILE *file = fopen(frame, "rb");
-
-        fseek(file, 0, SEEK_END);
-        int size = ftell(file);
-        /*
-        cout << size << endl;
-        frame_list[i] = new unsigned char[size];
-        fseek(file,0,0);
-
-
-        while((c = fgetc(file)) != EOF){
-            frame_list[i][n++] = (unsigned char)c;
-        }
-
+        frame_file.read((char*)frame_data, size);
+        frame_file.close();
 
         if(size == VGA_SIZE){
-            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
+            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_data);
             yuv420_queue.push(frame);
         } else if(size == CIF_SIZE){
-            //cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_list);
+            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_data);
             yuv420_queue.push(frame);
         }
 
         get_CID.pop();
     }
-    */
-        cout << "Frame read " << yuv420_queue.size() << endl;
-    }
-}
 
+        cout << "Frame read " << yuv420_queue.size() << endl;
+}
 /*
 void show_frames(queue<cv::Mat> &ORI)
 {
@@ -371,11 +355,11 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-10_17:05:01.813\0";
+    string S_CID = "2022-10-11_23:36:52.360\0";
     string V_CID = "";
 
     Server2Verifier_CID_send(S_CID);
-    Server2Verifier_CID_recv(V_CID);
+    V_CID = Server2Verifier_CID_recv();
 
     Verifier2Server_CID_res_send();
     Verifier2Server_CID_res_recv();
@@ -383,13 +367,13 @@ int main()
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
     read_video_data(V_CID, cid_queue);
     // show_frames(yuv420_queue);
-    /*
+    
     convert_frames(yuv420_queue);
     edge_detection(y_queue);
     make_hash(feature_vector_queue);
 
     show_hash(hash_DB_queue, hash_verifier_queue);
-    */
+
     // make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
     return 0;

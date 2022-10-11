@@ -8,8 +8,8 @@ int Image_Hash_send(string HASH);                           //Logger(SND)  -> We
 int Image_Hash_response();                                  //Logger(RECV) <- Web UI(SND))      B
 
 // Verifier <--> Server                                     //Verifier <-------> Server
-int Server2Verifier_CID_send(string &CID );                 //Server(SND)   -> Verifier(RECV)   s
-int Server2Verifier_CID_recv(string &CID);                  //Server(CND)   -> Verifier(RECV)   s
+int Server2Verifier_CID_send(string CID );                 //Server(SND)   -> Verifier(RECV)   s
+string Server2Verifier_CID_recv(string CID);                  //Server(CND)   -> Verifier(RECV)   s
 int Verifier2Server_CID_res_send();                         //Verifier(SND) -> Server(RECV)     B
 int Verifier2Server_CID_res_recv();                         //Verifier(SND) -> Server(RECV      B       
 
