@@ -22,7 +22,7 @@ command_parser.o: ./../Client/command_parser.cpp
 	$(CXX) -c -o $@ $<
 
 Logger.o: ./Logger.cpp
-	${CXX} -c  -o $@  $< $(LIBS) 
+	${CXX} -c -o $@  $< $(LIBS) 
 
 clean:
 	$(RM) *.o  Logger

@@ -172,7 +172,6 @@ void *UpdateFrame(void *arg)
     {
 	cout << "width: " << width << "height: " << height << endl;
         cv::Mat tempFrame(cv::Size(width, height), CV_8UC3);
-	cout << "tempFrame size : " << tempFrame.size() << endl;
         cap >> tempFrame;
 	cout << "tempFrame's size: " << tempFrame.size() << endl;
         pthread_mutex_lock(&frameLocker);

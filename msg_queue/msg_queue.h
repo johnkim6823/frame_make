@@ -1,3 +1,4 @@
+using namespace std;
 // Logger <--> Web UI                                       //Logger <----> WEbUI
 int camera_cfg_res_send();                                  //Logger(SND)  -> Web UI(RECV)      B
 int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS);     //Logger(RECV) <- Web UI(SND)       BBI
