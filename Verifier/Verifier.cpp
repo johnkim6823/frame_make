@@ -82,10 +82,10 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
         if( authentic ){
             cout << s_CID << "'s signed hash is verified." << endl;
             HASH_DB_QUEUE.push(row[1]);
-	} else{
+	    } else{
             cout << "Not Authentic." << endl;
-        }   
-    }
+            }   
+    }   
 
     cout << "CID queue size: " << CID_QUEUE.size() << endl;
     cout << "HASH queue size: " << HASH_DB_QUEUE.size() << endl;
@@ -93,12 +93,14 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
 }
 
 void read_video_data(string &CID , queue<string> &CID_QUEUE) {
+
+    cout << "Read frames from storage." << endl;
     queue<string> get_CID(CID_QUEUE);
 
     string folder_dir = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2) + "/";
     string file_dir = video_data_path + folder_dir;
     cout << file_dir << endl;
-    /*
+    
     while(true) {
         int i = 0;
         if(get_CID.size() == 0) {break;}
@@ -116,7 +118,7 @@ void read_video_data(string &CID , queue<string> &CID_QUEUE) {
 
 	    fseek(file, 0, SEEK_END);
 	    int size = ftell(file);
-
+        /*
         cout << size << endl;
 	    frame_list[i] = new unsigned char[size];
 	    fseek(file,0,0);
@@ -322,7 +324,7 @@ int main() {
 
     read_pubKey();
 
-    string S_CID = "2022-10-08_17:33:18.940\0";
+    string S_CID = "2022-10-10_17:05:01.813\0";
     string V_CID = "";
 
     Server2Verifier_CID_send(S_CID);
@@ -333,7 +335,7 @@ int main() {
     
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
     read_video_data(V_CID, cid_queue);
-    show_frames(yuv420_queue);
+    //show_frames(yuv420_queue);
     /*
     convert_frames(yuv420_queue);
     edge_detection(y_queue);

@@ -100,7 +100,6 @@ int init()
     cap.set(cv::CAP_PROP_FPS, fps);
 
     cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
-    cv::imwrite("img.png", img);
     frame = img.clone();
 
     cout << "    FPS: " << fps << endl;
@@ -528,7 +527,7 @@ void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
     cv::imwrite(yfile_path, y);
     string hash = hash_queue.front();
 
-    //Image_HASH_send(hash);
+    Image_Hash_request(hash);
 
     ori.release();
     y.release();
@@ -689,6 +688,7 @@ int main(int, char **)
             send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
             // initialize all settings
             init_all_settings();
+
         }
     }
 }
