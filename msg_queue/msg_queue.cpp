@@ -118,15 +118,17 @@ int Image_Hash_request(string HASH){
 	}	
 	else {
 		if(data.data_type == TYPE_IMAGE_HASH_REQ) {
-			// Image_HASH_send(hash);
+			Image_Hash_send(hash);
 			cout << "IMAGE_HASH sent " << endl; 
-		}
+
+			Image_Hash_response();		
+			}
 	}
 	return 0;
 }
 
 // Logger(SND) -> Web UI(RECV)
-int Image_HASH_send(string HASH)
+int Image_Hash_send(string HASH)
 {
 	string Img_HASH = HASH;
 	int image_hash_send_msqid;
@@ -167,7 +169,7 @@ int Image_Hash_response()
 		exit(1);
 	}
 
-	if (-1 == msgrcv(image_hash_recv_msgid, &data, sizeof(Image_hash_recv_msg_data) - sizeof(long), 0, IPC_NOWAIT))
+	if (-1 == msgrcv(image_hash_recv_msgid, &data, sizeof(Image_hash_recv_msg_data) - sizeof(long), 0, 0))
 	{
 		cout << "Web UI didn't received path and hash." << endl;
 	}

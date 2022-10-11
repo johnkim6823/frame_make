@@ -688,7 +688,6 @@ int main(int, char **)
             send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
             // initialize all settings
             init_all_settings();
-
         }
     }
 }
