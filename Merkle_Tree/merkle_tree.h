@@ -15,5 +15,4 @@ struct MerkleTree {
     void deleteTree(Node *n);
 };
 
-
 #endif /* MERKLE_TREE_H */

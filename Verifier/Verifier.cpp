@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <time.h>
-#include <sys/timeb.h> 
+#include <sys/timeb.h>
 #include <fstream>
 #include <filesystem>
 #include <error.h>
@@ -22,22 +22,25 @@
 #include "Verifier_function_list.h"
 #include "verify.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
+#include "../Merkle_Tree/node.cpp"
 #include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 
 using namespace std;
 
-queue<cv::Mat> yuv420_queue;                    //for original frame(yuv)Mat queue
-queue<cv::Mat> y_queue;                         //for y_frame Mat queue
-queue<cv::Mat> feature_vector_queue;            //for edge detection Canny
-queue<string> hash_DB_queue;                    //for hash from server
-queue<string> hash_verifier_queue;              //for hash made by feature vector by verifier
-queue<string> cid_queue;                        //for CID for images 
+queue<cv::Mat> yuv420_queue;         // for original frame(yuv)Mat queue
+queue<cv::Mat> y_queue;              // for y_frame Mat queue
+queue<cv::Mat> feature_vector_queue; // for edge detection Canny
+queue<string> hash_DB_queue;         // for hash from server
+queue<string> hash_verifier_queue;   // for hash made by feature vector by verifier
+queue<string> cid_queue;             // for CID for images
 
-int read_pubKey() {
+int read_pubKey()
+{
     ifstream pubKeyfile(pubKey_path);
 
-    if(pubKeyfile.is_open()){
+    if (pubKeyfile.is_open())
+    {
         pubKeyfile.seekg(0, ios::end);
 
         int size = pubKeyfile.tellg();
@@ -45,7 +48,9 @@ int read_pubKey() {
 
         pubKeyfile.seekg(0, ios::beg);
         pubKeyfile.read(&publicKey[0], size);
-    } else {
+    }
+    else
+    {
         cout << "can't find file." << endl;
     }
 
@@ -58,16 +63,18 @@ int read_pubKey() {
     return 0;
 }
 
-int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_DB_QUEUE ){
+int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_DB_QUEUE)
+{
     init_DB(mysqlID);
-    string table_name = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2);
+    string table_name = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2);    
     string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10; ";
 
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
     res = mysql_perform_query(conn, order);
-    int i =0;
-	while((row = mysql_fetch_row(res)) != NULL){
+    int i = 0;
+    while ((row = mysql_fetch_row(res)) != NULL)
+    {
         string s_CID = row[0];
         CID_QUEUE.push(s_CID);
 
@@ -76,15 +83,17 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
 
         char *c_signed_hash_DB = new char[Signed_Hash_size];
         strcpy(c_signed_hash_DB, s_signed_hash_DB.c_str());
-        
-        
+
         bool authentic = verifySignature(publicKey, s_hash_DB, c_signed_hash_DB);
-        if( authentic ){
-            cout << s_CID << " is signed hash is verified." << endl;
+        if (authentic)
+        {
+            cout << s_CID << "'s signed hash is verified." << endl;
             HASH_DB_QUEUE.push(row[1]);
-	} else{
+        }
+        else
+        {
             cout << "Not Authentic." << endl;
-        }   
+        }
     }
 
     cout << "CID queue size: " << CID_QUEUE.size() << endl;
@@ -92,55 +101,48 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
     return 0;
 }
 
-void read_video_data(string &CID , queue<string> &CID_QUEUE) {
+void read_video_data(string &CID, queue<string> &CID_QUEUE)
+{
+
+    cout << "Read frames from storage." << endl;
     queue<string> get_CID(CID_QUEUE);
 
-    string folder_dir = CID.substr(0,4) + "_" + CID.substr(5,2) + CID.substr(8,2) + "/";
+    string folder_dir = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2) + "/";
     string file_dir = video_data_path + folder_dir;
-    cout << file_dir << endl;
-    /*
-    while(true) {
+
+    while (true)
+    {
         int i = 0;
-        if(get_CID.size() == 0) {break;}
+        if (get_CID.size() == 0)
+        {
+            break;
+        }
         string frame_name = file_dir + get_CID.front();
-	    
-        const char* frame = frame_name.c_str();
-        cout << frame << endl;
-	    
-	    unsigned char** frame_list = new unsigned char* [get_CID.size()];
-	    size_t n;
-	    int c;
-	    n = 0;
-	    
-	    FILE* file = fopen(frame, "rb");
 
-	    fseek(file, 0, SEEK_END);
-	    int size = ftell(file);
+        ifstream frame_file(frame_name, ifstream::binary);
+        frame_file.seekg(0,frame_file.end);
+        int size = (int)frame_file.tellg();
+        frame_file.seekg(0,frame_file.beg);
 
-        cout << size << endl;
-	    frame_list[i] = new unsigned char[size];
-	    fseek(file,0,0);
+        unsigned char* frame_data = (unsigned char*)malloc(size);
 
+        frame_file.read((char*)frame_data, size);
+        frame_file.close();
 
-	    while((c = fgetc(file)) != EOF){
-		    frame_list[i][n++] = (unsigned char)c;
-		}
-
-        
         if(size == VGA_SIZE){
-            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_list);
+            cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_data);
             yuv420_queue.push(frame);
-        } /*else if(size == CIF_SIZE){
-            //cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_list);
+        } else if(size == CIF_SIZE){
+            cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_data);
             yuv420_queue.push(frame);
         }
-        
+
         get_CID.pop();
     }
-    */
-    cout << "Frame read " << yuv420_queue.size() << endl;
-}
 
+        cout << "Frame read " << yuv420_queue.size() << endl;
+}
+/*
 void show_frames(queue<cv::Mat> &ORI)
 {
     queue<cv::Mat> bgr(ORI);
@@ -164,13 +166,21 @@ void show_frames(queue<cv::Mat> &ORI)
         }
     }
 }
+*/
 
-void convert_frames(queue<cv::Mat> &YUV420_QUEUE){
-    cout << endl << "----Start to convert Frames into Y----" << endl << endl;
+void convert_frames(queue<cv::Mat> &YUV420_QUEUE)
+{
+    cout << endl
+         << "----Start to convert Frames into Y----" << endl
+         << endl;
     queue<cv::Mat> yuv_queue(YUV420_QUEUE);
 
-    while(true){
-        if(yuv_queue.size() == 0) {break;}
+    while (true)
+    {
+        if (yuv_queue.size() == 0)
+        {
+            break;
+        }
         cv::Mat yuv_frame = yuv_queue.front();
         int height = yuv_frame.rows;
         int width = yuv_frame.cols;
@@ -178,105 +188,129 @@ void convert_frames(queue<cv::Mat> &YUV420_QUEUE){
         cv::Mat y_frame(cv::Size(height, width), CV_8UC1);
         yuv_queue.pop();
 
-        //CONVERT BGR To YUV420 and YUV420 to Y
+        // CONVERT BGR To YUV420 and YUV420 to Y
         cv::cvtColor(yuv_frame, y_frame, cv::COLOR_YUV2GRAY_I420);
-    
-        //save frames into queue 
+
+        // save frames into queue
         y_queue.push(y_frame);
-        
     }
-    
+
     cout << "    Y frame are saved" << endl;
-    cout << "    y_queue size: "  << y_queue.size() << endl << endl;
-    cout << "----FRAMES CONVERTED---------" << endl << endl;
+    cout << "    y_queue size: " << y_queue.size() << endl
+         << endl;
+    cout << "----FRAMES CONVERTED---------" << endl
+         << endl;
 }
 
-void edge_detection(queue<cv::Mat> &Y_QUEUE) {
+void edge_detection(queue<cv::Mat> &Y_QUEUE)
+{
     queue<cv::Mat> Y_queue(Y_QUEUE);
-    
+
     cout << "----Building feature vectors." << endl;
     int cnt = 0;
-    
-    while(true) {
-        if(Y_queue.size() == 0) {break;}
+
+    while (true)
+    {
+        if (Y_queue.size() == 0)
+        {
+            break;
+        }
         cv::Mat temp;
-        
-        //Canny(img, threshold1, threshold2) 
-        //threshold1 = Determining whether an edge is in the adjacency with another edge
-        //threshold2 = Determine if it is an edge or not
+
+        // Canny(img, threshold1, threshold2)
+        // threshold1 = Determining whether an edge is in the adjacency with another edge
+        // threshold2 = Determine if it is an edge or not
         cv::Canny(Y_queue.front(), temp, 20, 40);
-        
+
         feature_vector_queue.push(temp);
         Y_queue.pop();
         cnt++;
     }
-    cout << endl << "    Edge Detection made: " << feature_vector_queue.size() << endl;
+    cout << endl
+         << "    Edge Detection made: " << feature_vector_queue.size() << endl;
 }
 
-void make_hash(queue<cv::Mat> &FV_QUEUE) {
-    
+void make_hash(queue<cv::Mat> &FV_QUEUE)
+{
+
     queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
-    cout << endl << "----Make HASH from feature vectors." << endl << endl;
-    
-    while(true) {
-        if(Feature_Vector_queue.size() == 0) {break;}
+    cout << endl
+         << "----Make HASH from feature vectors." << endl
+         << endl;
+
+    while (true)
+    {
+        if (Feature_Vector_queue.size() == 0)
+        {
+            break;
+        }
         cv::Mat temp = Feature_Vector_queue.front();
         Feature_Vector_queue.pop();
-        
+
         string mat_data = "";
         string sha_result = "";
-        
-        
-        for(int i =0; i<temp.rows; i++) {
-            for(int j =0; j < temp.cols; j++) {
-                mat_data += to_string(temp.at<uchar>(i,j));
+
+        for (int i = 0; i < temp.rows; i++)
+        {
+            for (int j = 0; j < temp.cols; j++)
+            {
+                mat_data += to_string(temp.at<uchar>(i, j));
             }
         }
-        
+
         sha_result = hash_sha256(mat_data);
         hash_verifier_queue.push(sha_result);
     }
     cout << "    hash made : " << hash_verifier_queue.size() << endl;
 }
 
-void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH) {
+void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
+{
     queue<string> db_hash(DB_HASH);
     queue<string> vf_hash(VF_HASH);
     int i = 1;
-    while(true) {
-        if(db_hash.size() == 0 && vf_hash.size() == 0){
+    while (true)
+    {
+        if (db_hash.size() == 0 && vf_hash.size() == 0)
+        {
             break;
         }
-        cout << "DB hash" << i  << ": " <<  db_hash.front() << endl;
-        cout << "VF hash" << i  << ": " <<  vf_hash.front() << endl;;
+        cout << "DB hash" << i << ": " << db_hash.front() << endl;
+        cout << "VF hash" << i << ": " << vf_hash.front() << endl;
+        ;
         i++;
         db_hash.pop();
         vf_hash.pop();
     }
 }
 
-int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_QUEUE){
-    vector<Node*> leaves_DB;
-    vector<Node*> leaves_Verifier;
+int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_QUEUE)
+{
+    vector<Node *> leaves_DB;
+    vector<Node *> leaves_Verifier;
 
     queue<string> from_DB(HASH_DB_QUEUE);
     queue<string> from_VERIFIER(HASH_VERIFIER_QUEUE);
 
-    int i =0;
-    while(true) {
-        if(from_DB.size() == 0 && from_VERIFIER.size() == 0) {break;}
+    int i = 0;
+    while (true)
+    {
+        if (from_DB.size() == 0 && from_VERIFIER.size() == 0)
+        {
+            break;
+        }
 
         string hash_DB = from_DB.front();
         string hash_Verifier = from_VERIFIER.front();
 
-        //leaves_DB.push_back(new Node(hash_DB));
-        //eaves_Verifier.push_back(new Node(hash_Verifier));
+        leaves_DB.push_back(new Node(hash_DB));
+        leaves_Verifier.push_back(new Node(hash_Verifier));
 
         from_DB.pop();
         from_VERIFIER.pop();
     }
 
-    /*
+    
     // initialize leaves
     for (unsigned int i = 0; i < leaves_DB.size(); i++) {
         leaves_DB[i]-> left = NULL;
@@ -284,8 +318,7 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
         leaves_Verifier[i]-> left = NULL;
         leaves_Verifier[i]-> right = NULL;
     }
-    
-    
+
     MerkleTree *hashTreeDB = new MerkleTree(leaves_DB);
     MerkleTree *hashTreeVerifier = new MerkleTree(leaves_Verifier);
     std::cout << hashTreeDB->root->hash << std::endl;
@@ -298,51 +331,50 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
     }
     delete hashTreeDB;
     delete hashTreeVerifier;
-    */
-    return 0;
-
-}
-
-
-void init_all_setting() {
-    init_queue();
     
+    return 0;
 }
 
-void init_queue() {         
-    yuv420_queue = queue<cv::Mat>();                 //for original frame(yuv)Mat queue
-    y_queue = queue<cv::Mat>();                      //for y_frame Mat queue
-    feature_vector_queue = queue<cv::Mat>();         //for edge detection Canny
+void init_all_setting()
+{
+    init_queue();
+}
+
+void init_queue()
+{
+    yuv420_queue = queue<cv::Mat>();         // for original frame(yuv)Mat queue
+    y_queue = queue<cv::Mat>();              // for y_frame Mat queue
+    feature_vector_queue = queue<cv::Mat>(); // for edge detection Canny
     hash_DB_queue = queue<string>();
-    hash_verifier_queue = queue<string>();          
-    cid_queue = queue<string>();                     //for CID for frames
+    hash_verifier_queue = queue<string>();
+    cid_queue = queue<string>(); // for CID for frames
 }
 
-int main() { 
+int main()
+{
 
     read_pubKey();
 
-    string S_CID = "2022-10-12_12:32:56.632\0";
-    string V_CID = "2022-10-12_12:32:56.632\0";
+    string S_CID = "2022-10-12_17:32:03.472\0";
+    string V_CID = "2022-10-12_17:32:03.472";
 
     // Server2Verifier_CID_send(S_CID);
-    // Server2Verifier_CID_recv(V_CID);
+    // V_CID = Server2Verifier_CID_recv();
 
     // Verifier2Server_CID_res_send();
     // Verifier2Server_CID_res_recv();
-    
+
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
     read_video_data(V_CID, cid_queue);
-    show_frames(yuv420_queue);
-    /*
+    // show_frames(yuv420_queue);
+    
     convert_frames(yuv420_queue);
     edge_detection(y_queue);
     make_hash(feature_vector_queue);
-    
+
     show_hash(hash_DB_queue, hash_verifier_queue);
-    */
-    //make_merkle_tree(hash_DB_queue, hash_verifier_queue);
+
+    make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
     return 0;
 }
- 

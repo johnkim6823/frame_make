@@ -51,7 +51,12 @@
 
 #define CAMERA_CFG_RES		0x01
 //-------------------------
-#define YUV420                  0x21
+#define YUV420              0x21
+//-------------------------
+
+
+// ----IMAGE_HASH VALUE----
+#define IMAGE_HASH_REQ		0x01
 //-------------------------
 
 
@@ -100,7 +105,7 @@ struct Image_hash_recv_msg_data{
 
 struct CID_msg_data{
 	long data_type;
-	unsigned char data_buff[CID_BUFF_SIZE];
+	char data_buff[CID_BUFF_SIZE];
 };
 
 struct CID_recv_msg_data{

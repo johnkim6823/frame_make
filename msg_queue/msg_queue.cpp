@@ -167,7 +167,7 @@ int Image_Hash_response()
 		exit(1);
 	}
 
-	if (-1 == msgrcv(image_hash_recv_msgid, &data, sizeof(Image_hash_recv_msg_data) - sizeof(long), 0, IPC_NOWAIT))
+	if (-1 == msgrcv(image_hash_recv_msgid, &data, sizeof(Image_hash_recv_msg_data) - sizeof(long), 0, 0))
 	{
 		cout << "Web UI didn't received path and hash." << endl;
 	}
@@ -187,13 +187,11 @@ int Server2Verifier_CID_send(string &CID)
 {
 	int cid_msgid;
 	CID_msg_data data;
-
 	if (-1 == (cid_msgid = msgget((key_t)CID_MQ, IPC_CREAT | 0666)))
 	{
 		perror("msgget() failed");
 		exit(1);
 	}
-
 	data.data_type = TYPE_CID;
 	memcpy(&data.data_buff, CID.c_str(), CID.size());
 	cout << data.data_buff << endl;
@@ -208,21 +206,19 @@ int Server2Verifier_CID_send(string &CID)
 		cout << "Data: " << data.data_buff << endl;
 		cout << "CID sent. " << endl;
 	}
-	return 0;
 }
 
-int Server2Verifier_CID_recv(string &CID)
+// Verifier(RECV) <- Server(SND)
+string Server2Verifier_CID_recv()
 {
 	int cid_msgid;
 	CID_msg_data data;
 	char sCID[CID_BUFF_SIZE];
-
 	if (-1 == (cid_msgid = msgget((key_t)CID_MQ, IPC_CREAT | 0666)))
 	{
 		perror("msgget() failed");
 		exit(1);
 	}
-
 	if (-1 == msgrcv(cid_msgid, &data, sizeof(CID_msg_data) - sizeof(long), 0, 0))
 	{
 		cout << "No CID from Server." << endl;
@@ -235,25 +231,23 @@ int Server2Verifier_CID_recv(string &CID)
 			memcpy(&sCID, data.data_buff, sizeof(char) * CID_BUFF_SIZE);
 		}
 	}
-	CID = sCID;
-	cout << CID << endl;
+	cout << sCID << endl;
+	return sCID;
 }
 
+// Verfier(RES) -> Server(RECV)
 int Verifier2Server_CID_res_send()
 {
 	int cid_recv_msgid;
 	CID_recv_msg_data data;
 	unsigned char recv = 0x01;
-
 	if (-1 == (cid_recv_msgid = msgget((key_t)CID_RECV_MQ, IPC_CREAT | 0666)))
 	{
 		perror("msgget() failed");
 		exit(1);
 	}
-
 	data.data_type = TYPE_CID_RECV;
 	memcpy(&data.data_buff, &recv, sizeof(unsigned char));
-
 	if (-1 == msgsnd(cid_recv_msgid, &data, sizeof(CID_recv_msg_data) - sizeof(long), 0))
 	{
 		perror("msgsnd() failed");
@@ -261,22 +255,21 @@ int Verifier2Server_CID_res_send()
 	}
 	else
 	{
-		cout << "received sent." << endl;
+		cout << "Response sent." << endl;
 	}
 }
 
+// Verifier(RES) -> Server(RECV)
 int Verifier2Server_CID_res_recv()
 {
 	int cid_recv_msgid;
 	CID_recv_msg_data data;
 	unsigned char recv;
-
 	if (-1 == (cid_recv_msgid = msgget((key_t)CID_RECV_MQ, IPC_CREAT | 0666)))
 	{
 		perror("msgget() failed");
 		exit(1);
 	}
-
 	data.data_type = TYPE_CID_RECV;
 	if (-1 == msgrcv(cid_recv_msgid, &data, sizeof(CID_recv_msg_data) - sizeof(long), 0, 0))
 	{
