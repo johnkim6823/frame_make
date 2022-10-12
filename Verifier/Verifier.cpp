@@ -21,7 +21,9 @@
 #include "verifier_cfg.h"
 #include "Verifier_function_list.h"
 #include "verify.cpp"
-#include "../Merkle_Tree/merkle_tree.h"
+#include "../Merkle_Tree/merkle_tree.cpp"
+#include "../Merkle_Tree/node.cpp"
+#include "../Merkle_Tree/node.h"
 #include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 
@@ -262,7 +264,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
     }
     cout << "    hash made : " << hash_verifier_queue.size() << endl;
 }
-
+/*
 void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
 {
     queue<string> db_hash(DB_HASH);
@@ -282,6 +284,7 @@ void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
         vf_hash.pop();
     }
 }
+*/
 
 int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_QUEUE)
 {
@@ -302,14 +305,13 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
         string hash_DB = from_DB.front();
         string hash_Verifier = from_VERIFIER.front();
 
-        // leaves_DB.push_back(new Node(hash_DB));
-        // eaves_Verifier.push_back(new Node(hash_Verifier));
+        leaves_DB.push_back(new Node(hash_DB));
+        leaves_Verifier.push_back(new Node(hash_Verifier));
 
         from_DB.pop();
         from_VERIFIER.pop();
     }
 
-    /*
     // initialize leaves
     for (unsigned int i = 0; i < leaves_DB.size(); i++) {
         leaves_DB[i]-> left = NULL;
@@ -318,11 +320,13 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
         leaves_Verifier[i]-> right = NULL;
     }
 
-
+    
     MerkleTree *hashTreeDB = new MerkleTree(leaves_DB);
     MerkleTree *hashTreeVerifier = new MerkleTree(leaves_Verifier);
     std::cout << hashTreeDB->root->hash << std::endl;
     std::cout << hashTreeVerifier->root->hash << std::endl;
+
+
     hashTreeDB->printTree(hashTreeDB->root, 0);
     hashTreeVerifier->printTree(hashTreeVerifier->root, 0);
     for (unsigned int k = 0; k < leaves_DB.size(); k++) {
@@ -331,7 +335,7 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
     }
     delete hashTreeDB;
     delete hashTreeVerifier;
-    */
+    
     return 0;
 }
 
@@ -355,7 +359,7 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-11_23:36:52.360\0";
+    string S_CID = "2022-10-12_21:56:58.824\0";
     string V_CID = "";
 
     Server2Verifier_CID_send(S_CID);
@@ -371,10 +375,9 @@ int main()
     convert_frames(yuv420_queue);
     edge_detection(y_queue);
     make_hash(feature_vector_queue);
+    //show_hash(hash_DB_queue, hash_verifier_queue);
 
-    show_hash(hash_DB_queue, hash_verifier_queue);
-
-    // make_merkle_tree(hash_DB_queue, hash_verifier_queue);
+    make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
     return 0;
 }
