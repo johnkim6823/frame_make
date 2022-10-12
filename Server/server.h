@@ -90,13 +90,13 @@ void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize
 NETWORK_CONTEXT *g_pNetwork;
 HEADERPACKET sendDataPacket;
 char x;
-MYSQL *conn;
-MYSQL_RES *res;
-MYSQL_ROW row;
-string table_name;
+// MYSQL *conn;
+// MYSQL_RES *res;
+// MYSQL_ROW row;
+// string table_name;
 
 #include "../DB/bout_database.cpp"
-struct db_user mysqlID;
+//struct db_user mysqlID;
 
 #endif
 #endif

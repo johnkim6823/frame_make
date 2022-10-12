@@ -10,6 +10,7 @@
 
 using namespace std;
 
+// Logger(RECV) <- Web UI(SND)
 int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS)
 {
 	int camera_cfg_msgid;
@@ -46,21 +47,21 @@ int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS)
 		// SET SIZE
 		switch (size)
 		{
-		case 0x01:
-			WIDTH = 640;
-			HEIGHT = 480;
+		case VGA:
+			WIDTH = VGA_WIDTH;
+			HEIGHT = VGA_HEIGHT;
 			break;
-		case 0x02:
-			WIDTH = 1280;
-			HEIGHT = 720;
+		case HD:
+			WIDTH = HD_WIDTH;
+			HEIGHT = HD_HEIGHT;
 			break;
-		case 0x03:
-			WIDTH = 352;
-			HEIGHT = 288;
+		case CIF:
+			WIDTH = CIF_WIDTH;
+			HEIGHT = CIF_HEIGHT;
 			break;
 		}
 
-		sleep(0.2);
+		//sleep(0.2);
 		camera_cfg_res_send();
 	}
 	cout << "    width: " << WIDTH << "| height: " << HEIGHT << "| fps: " << FPS << endl;
@@ -68,11 +69,12 @@ int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS)
 	return 0;
 }
 
+// Logger(RES) -> WEB UI(RECV)
 int camera_cfg_res_send()
 {
 	int camera_cfg_res_msgid;
 	camera_cfg_res_msg_data data;
-	unsigned char confirm = 0x01;
+	unsigned char camera_cfg_res = CAMERA_CFG_RES;
 
 	if (-1 == (camera_cfg_res_msgid = msgget((key_t)CAMERA_CFG_RES_MQ, IPC_CREAT | 0666)))
 	{
@@ -82,7 +84,7 @@ int camera_cfg_res_send()
 
 	// by Header
 	data.data_type = TYPE_CAMERA_CFG_RES;
-	memcpy(data.data_buff, &confirm, sizeof(unsigned char));
+	memcpy(data.data_buff, &camera_cfg_res, sizeof(unsigned char));
 
 	if (-1 == msgsnd(camera_cfg_res_msgid, &data, sizeof(camera_cfg_res_msg_data) - sizeof(long), 0))
 	{
@@ -94,22 +96,51 @@ int camera_cfg_res_send()
 	{
 		cout << "    Camera_cfg_res sent." << endl;
 	}
+	return 0;
 }
 
+// Logger(RECV) <- Web UI(REQ)
+int Image_Hash_request(string HASH){
+	
+	string hash = HASH;
+	int image_hash_req_msqid;
+	Image_hash_req_msg_data data;
+	unsigned char image_hash_req = IMAGE_HASH_REQ;
+
+	if( -1 == (image_hash_req_msqid == msgget((key_t)IMAGE_HASH_REQ_MQ, IPC_CREAT | 0666)))	
+	{
+		cout << "msgget failed" << endl;
+		exit(0);
+	}
+
+	if(-1 == msgrcv(image_hash_req_msqid, &data, sizeof(Image_hash_req_msg_data) - sizeof(long), 0, IPC_NOWAIT)) 
+	{
+		cout << "    No request from Web UI. " << endl;
+	}	
+	else {
+		if(data.data_type == TYPE_IMAGE_HASH_REQ) {
+			// Image_HASH_send(hash);
+			cout << "IMAGE_HASH sent " << endl; 
+		}
+	}
+	return 0;
+}
+
+// Logger(SND) -> Web UI(RECV)
 int Image_HASH_send(string HASH)
 {
-	string Img_HASH = IMAGE_PATH + HASH;
+	string Img_HASH = HASH;
 	int image_hash_send_msqid;
 	Image_hash_msg_data data;
 
 	if (-1 == (image_hash_send_msqid = msgget((key_t)IMAGE_HASH_MQ, IPC_CREAT | 0666)))
 	{
-		perror("msgget() failed");
-		exit(1);
+		cout << "msgget failed" << endl;
+		exit(0);
 	}
-	
+
 	data.data_type = TYPE_IMAGE_HASH;
-	memcpy(&data.data_buff, Img_HASH.c_str(), Img_HASH.size());
+	strcpy(data.data_buff, Img_HASH.c_str());
 
 	if ( -1 == msgsnd( image_hash_send_msqid, &data, sizeof( Image_hash_msg_data) - sizeof( long), 0))
 	{
@@ -121,9 +152,10 @@ int Image_HASH_send(string HASH)
 		cout << "Data: " << data.data_buff << endl;
 		cout << "PATH and HASH sent." << endl;
 	}
+	return 0;
 }
 
-int Image_Hash_res_recv()
+int Image_Hash_response()
 {
 	int image_hash_recv_msgid;
 	Image_hash_recv_msg_data data;
@@ -150,6 +182,7 @@ int Image_Hash_res_recv()
 	return (int)recv;
 }
 
+/*
 int Server2Verifier_CID_send(string &CID)
 {
 	int cid_msgid;
@@ -259,3 +292,4 @@ int Verifier2Server_CID_res_recv()
 	}
 	return (int)recv;
 }
+*/

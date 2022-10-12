@@ -14,10 +14,10 @@ SOURCES :=  Verifier.cpp
 OBJS = $(SOURCES:.cpp=.o)
 
 Verifier: $(OBJS)
-	$(CXX) $(OBJS) -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
+	$(CXX) $(OBJS) -g -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
 
 %.o: ./%.cpp
-	$(CXX) -c $< -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
+	$(CXX) -c $< -g -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
 
 clean:
 	$(RM) *.o Verifier

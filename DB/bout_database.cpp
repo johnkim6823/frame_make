@@ -4,6 +4,12 @@
 #include <mysql.h>
 #include <cstring>
 
+MYSQL *conn;
+MYSQL_RES *res;
+MYSQL_ROW row;
+string table_name;
+
+
 struct db_user {
 	char *server;
 	char *user;
@@ -11,6 +17,8 @@ struct db_user {
 	char *database;
 	std::string table;
 };
+
+struct db_user mysqlID;
 
 void insert_database(MYSQL *connectionchar, char* CID, char* Hash, char* Signed_Hash);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
