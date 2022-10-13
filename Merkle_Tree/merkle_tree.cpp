@@ -2,8 +2,6 @@
 #include <iomanip>
 #include "merkle_tree.h"
 
-
-
 MerkleTree::MerkleTree(std::vector<Node*> blocks) {
     std::vector<Node*> nodes;
     while (blocks.size() != 1) {

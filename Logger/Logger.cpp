@@ -2,8 +2,6 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/img_hash.hpp>
-#include <opencv2/imgproc.hpp>
 #include <pthread.h>
 #include <iostream>
 #include <queue>
@@ -99,14 +97,22 @@ int init()
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
+    cout << "Frame Width: " << cvRound(cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
+    cout << "Frame Height: " << cvRound(cap.get(CAP_PROP_FRAME_HEIGHT)) << endl;
+    cout << "FPS : " << cvRound(cap.get(CAP_PROP_FPS)) << endl;
+    
     cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
     cout << "img's size: " << img.size() << endl;
     frame = img.clone();
+<<<<<<< HEAD
     cout << "frame's size : " << frame.size() << endl;
 
     cout << "    FPS: " << fps << endl;
     cout << "    width: " << width << " height: " << height << endl
          << endl;
+=======
+    img.release();
+>>>>>>> 09adff13fdc9c6a1c94274d89e3a01d43d0d73f3
 
     //--- If Cap is opened
     if (!cap.isOpened())
@@ -123,7 +129,11 @@ int init()
 
 void init_all_settings()
 {
+<<<<<<< HEAD
     init_queue();
+=======
+    init_queue();   
+>>>>>>> 09adff13fdc9c6a1c94274d89e3a01d43d0d73f3
 
     cout << endl
          << "----Initializing all settings." << endl
@@ -199,7 +209,7 @@ void capture()
 	cout << "frame size : " << frame.size() << endl;
 
         pthread_mutex_lock(&frameLocker);
-        currentFrame = frame.clone();
+        currentFrame = frame;
         pthread_mutex_unlock(&frameLocker);
 
         int sum1 = (int)sum(currentFrame)[0];

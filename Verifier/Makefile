@@ -8,13 +8,19 @@ OPENCV = `pkg-config opencv4 --cflags --libs`
 LIBS = $(OPENCV) -lpthread
 
 #--sources----
-SOURCES :=  Verifier.cpp
+SOURCES :=  Verifier.cpp merkle_tree.cpp node.cpp
 
 #--Object files----
 OBJS = $(SOURCES:.cpp=.o)
 
 Verifier: $(OBJS)
 	$(CXX) $(OBJS) -g -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)
+
+merkle_tree.o: ./../Merkle_Tree/merkle_tree.cpp
+	$(CXX) -g -c -o $@ $<
+
+node.o: ./../Merkle_Tree/node.cpp
+	$(CXX) -Wall -g -c -o $@ $<
 
 %.o: ./%.cpp
 	$(CXX) -c $< -g -o $@  $(LIBS) $(MYSQL_FLAGS) $(SIGN_VER_FLAGS)

@@ -22,7 +22,6 @@
 #include "Verifier_function_list.h"
 #include "verify.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
-#include "../Merkle_Tree/node.cpp"
 #include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 
@@ -263,7 +262,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
     }
     cout << "    hash made : " << hash_verifier_queue.size() << endl;
 }
-
+/*
 void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
 {
     queue<string> db_hash(DB_HASH);
@@ -283,6 +282,7 @@ void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
         vf_hash.pop();
     }
 }
+*/
 
 int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_QUEUE)
 {
@@ -323,6 +323,8 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
     MerkleTree *hashTreeVerifier = new MerkleTree(leaves_Verifier);
     std::cout << hashTreeDB->root->hash << std::endl;
     std::cout << hashTreeVerifier->root->hash << std::endl;
+
+
     hashTreeDB->printTree(hashTreeDB->root, 0);
     hashTreeVerifier->printTree(hashTreeVerifier->root, 0);
     for (unsigned int k = 0; k < leaves_DB.size(); k++) {
@@ -355,8 +357,8 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-12_17:32:03.472\0";
-    string V_CID = "2022-10-12_17:32:03.472";
+    string S_CID = "2022-10-13_16:19:24.514";
+    string V_CID = "2022-10-13_16:19:24.514";
 
     // Server2Verifier_CID_send(S_CID);
     // V_CID = Server2Verifier_CID_recv();
@@ -371,8 +373,8 @@ int main()
     convert_frames(yuv420_queue);
     edge_detection(y_queue);
     make_hash(feature_vector_queue);
+    //show_hash(hash_DB_queue, hash_verifier_queue);
 
-    show_hash(hash_DB_queue, hash_verifier_queue);
 
     make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
