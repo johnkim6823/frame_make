@@ -2,8 +2,6 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/img_hash.hpp>
-#include <opencv2/imgproc.hpp>
 #include <pthread.h>
 #include <iostream>
 #include <queue>
@@ -99,9 +97,9 @@ int init()
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
-    cout << "Frame Width: " << cvRound(cv::cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
-    cout << "Frame Height: " << cvRound(cv::cap.get(CAP_PROP_FRAME_HEIGHT)) << endl;
-    cout << "FPS : " << cvRound(cv::cap.get(CAP_PROP_FPS)) << endl;
+    cout << "Frame Width: " << cvRound(cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
+    cout << "Frame Height: " << cvRound(cap.get(CAP_PROP_FRAME_HEIGHT)) << endl;
+    cout << "FPS : " << cvRound(cap.get(CAP_PROP_FPS)) << endl;
     
     cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
     frame = img.clone();
@@ -122,7 +120,7 @@ int init()
 
 void init_all_settings()
 {
-    init_queue();
+    init_queue();   
 
     cout << endl
          << "----Initializing all settings." << endl
