@@ -104,15 +104,15 @@ int init()
     cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
     cout << "img's size: " << img.size() << endl;
     frame = img.clone();
-<<<<<<< HEAD
+
     cout << "frame's size : " << frame.size() << endl;
 
     cout << "    FPS: " << fps << endl;
     cout << "    width: " << width << " height: " << height << endl
          << endl;
-=======
+
     img.release();
->>>>>>> 09adff13fdc9c6a1c94274d89e3a01d43d0d73f3
+
 
     //--- If Cap is opened
     if (!cap.isOpened())
@@ -129,12 +129,9 @@ int init()
 
 void init_all_settings()
 {
-<<<<<<< HEAD
-    init_queue();
-=======
-    init_queue();   
->>>>>>> 09adff13fdc9c6a1c94274d89e3a01d43d0d73f3
 
+    init_queue();
+	
     cout << endl
          << "----Initializing all settings." << endl
          << endl;
