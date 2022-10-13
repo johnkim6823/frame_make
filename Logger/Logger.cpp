@@ -99,13 +99,12 @@ int init()
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
+    cout << "Frame Width: " << cvRound(cv::cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
+    cout << "Frame Height: " << cvRound(cv::cap.get(CAP_PROP_FRAME_HEIGHT)) << endl;
+    cout << "FPS : " << cvRound(cv::cap.get(CAP_PROP_FPS)) << endl;
+    
     cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
     frame = img.clone();
-
-    cout << "    FPS: " << fps << endl;
-    cout << "    width: " << width << " height: " << height << endl
-         << endl;
-
     img.release();
 
     //--- If Cap is opened
@@ -124,7 +123,6 @@ int init()
 void init_all_settings()
 {
     init_queue();
-    frame.release();
 
     cout << endl
          << "----Initializing all settings." << endl
@@ -195,7 +193,7 @@ void capture()
         cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
 
         pthread_mutex_lock(&frameLocker);
-        currentFrame = frame.clone();
+        currentFrame = frame;
         pthread_mutex_unlock(&frameLocker);
 
         int sum1 = (int)sum(currentFrame)[0];
@@ -278,47 +276,7 @@ void capture()
         }
     }
 }
-/*
-void capture() {
-    cout << endl << "----Starting Capturing" << endl << endl;
 
-
-    while (true)
-    {
-        cv::Mat currentFrame(cv::Size(height, width), CV_8UC3);
-        cap >> currentFrame;
-
-        int sum1 = (int)sum(currentFrame)[0];
-        int sum2 = (int)sum(currentFrame)[1];
-        int sum3 = (int)sum(currentFrame)[2];
-        int elementmean = (sum1 + sum2 + sum3) / 3;
-
-        if (currentFrame.empty())
-        {
-            cout << "Frame is empty" << endl;
-        }
-
-        else if (elementmean != 0)
-        {
-            bgr_queue.push(currentFrame);
-            // Make CID for FRAMES
-            string s_cid = getCID();
-            cid_queue.push(s_cid);
-        }
-
-        else
-        {
-            cout << "lamping time" << endl;
-        }
-
-        if (bgr_queue.size() == DEFAULT_FRAME_COUNT)
-        { break; }
-
-
-        currentFrame.release();
-    }
-}
-*/
 void show_frames(queue<cv::Mat> &ORI)
 {
     queue<Mat> bgr(ORI);
