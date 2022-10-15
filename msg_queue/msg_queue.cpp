@@ -182,7 +182,7 @@ int Image_Hash_response()
 	return (int)recv;
 }
 
-/*
+
 int Server2Verifier_CID_send(string &CID)
 {
 	int cid_msgid;
@@ -285,4 +285,3 @@ int Verifier2Server_CID_res_recv()
 	}
 	return (int)recv;
 }
-*/

@@ -56,6 +56,8 @@ int read_pubKey()
     publicKey.erase(prev(publicKey.end()));
     cout << publicKey;
 
+    cout << endl << "key length : " << publicKey.length() << endl;
+
     pubKeyfile.close();
     cout << endl;
 
@@ -357,8 +359,8 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-13_16:19:24.514";
-    string V_CID = "2022-10-13_16:19:24.514";
+    string S_CID = "2022-10-15_15:22:10.180";
+    string V_CID = "2022-10-15_15:22:10.180";
 
     // Server2Verifier_CID_send(S_CID);
     // V_CID = Server2Verifier_CID_recv();
