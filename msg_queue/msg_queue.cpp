@@ -60,8 +60,8 @@ int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS)
 			HEIGHT = CIF_HEIGHT;
 			break;
 		}
-
-		//sleep(0.2);
+		
+		sleep(0.2);
 		camera_cfg_res_send();
 	}
 	cout << "    width: " << WIDTH << "| height: " << HEIGHT << "| fps: " << FPS << endl;
@@ -97,7 +97,7 @@ int camera_cfg_res_send()
 		cout << "    Camera_cfg_res sent." << endl;
 	}
 	return 0;
-}
+}  
 
 // Logger(RECV) <- Web UI(REQ)
 int Image_Hash_request(string HASH){
@@ -119,15 +119,17 @@ int Image_Hash_request(string HASH){
 	}	
 	else {
 		if(data.data_type == TYPE_IMAGE_HASH_REQ) {
-			// Image_HASH_send(hash);
+			Image_Hash_send(hash);
 			cout << "IMAGE_HASH sent " << endl; 
-		}
+
+			Image_Hash_response();		
+			}
 	}
 	return 0;
 }
 
 // Logger(SND) -> Web UI(RECV)
-int Image_HASH_send(string HASH)
+int Image_Hash_send(string HASH)
 {
 	string Img_HASH = HASH;
 	int image_hash_send_msqid;
@@ -155,6 +157,7 @@ int Image_HASH_send(string HASH)
 	return 0;
 }
 
+// Logger(RECV) <- Web UI(RES)
 int Image_Hash_response()
 {
 	int image_hash_recv_msgid;
@@ -182,8 +185,8 @@ int Image_Hash_response()
 	return (int)recv;
 }
 
-/*
-int Server2Verifier_CID_send(string &CID)
+// Verifier(RECV) <- Server(SND)
+int Server2Verifier_CID_send(string CID)
 {
 	int cid_msgid;
 	CID_msg_data data;
@@ -246,7 +249,7 @@ int Verifier2Server_CID_res_send()
 		perror("msgget() failed");
 		exit(1);
 	}
-	data.data_type = TYPE_CID_RECV;
+	data.data_type = TYPE_CID_RES;
 	memcpy(&data.data_buff, &recv, sizeof(unsigned char));
 	if (-1 == msgsnd(cid_recv_msgid, &data, sizeof(CID_recv_msg_data) - sizeof(long), 0))
 	{
@@ -270,14 +273,13 @@ int Verifier2Server_CID_res_recv()
 		perror("msgget() failed");
 		exit(1);
 	}
-	data.data_type = TYPE_CID_RECV;
 	if (-1 == msgrcv(cid_recv_msgid, &data, sizeof(CID_recv_msg_data) - sizeof(long), 0, 0))
 	{
 		cout << "Verifier didn't received CID." << endl;
 	}
 	else
 	{
-		if (data.data_type == TYPE_CID_RECV)
+		if (data.data_type == TYPE_CID_RES)
 		{
 			cout << "Verifier received CID." << endl;
 			memcpy(&recv, data.data_buff, sizeof(unsigned char));
@@ -285,4 +287,3 @@ int Verifier2Server_CID_res_recv()
 	}
 	return (int)recv;
 }
-*/

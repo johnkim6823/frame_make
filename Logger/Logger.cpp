@@ -93,26 +93,19 @@ int init()
 
     camera_cfg_recv(width, height, fps);
 
+    cout << "    Camera Setting Changes to: " << endl;
+
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, width);
     cap.set(cv::CAP_PROP_FPS, fps);
 
-    cout << "Frame Width: " << cvRound(cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
-    cout << "Frame Height: " << cvRound(cap.get(CAP_PROP_FRAME_HEIGHT)) << endl;
-    cout << "FPS : " << cvRound(cap.get(CAP_PROP_FPS)) << endl;
-    
+    cout << "    Frame Width: " << cvRound(cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
+    cout << "    Frame Height: " << cvRound(cap.get(CAP_PROP_FRAME_HEIGHT)) << endl;
+    cout << "    FPS : " << cvRound(cap.get(CAP_PROP_FPS)) << endl;
+
     cv::Mat img(cv::Size(width, height), CV_8UC3, Scalar(0));
-    cout << "img's size: " << img.size() << endl;
     frame = img.clone();
-
-    cout << "frame's size : " << frame.size() << endl;
-
-    cout << "    FPS: " << fps << endl;
-    cout << "    width: " << width << " height: " << height << endl
-         << endl;
-
     img.release();
-
 
     //--- If Cap is opened
     if (!cap.isOpened())
@@ -131,7 +124,7 @@ void init_all_settings()
 {
 
     init_queue();
-	
+
     cout << endl
          << "----Initializing all settings." << endl
          << endl;
@@ -162,7 +155,7 @@ void init_queue()
     while (!hash_signed_queue.empty())
         hash_signed_queue.pop();
     while (!cid_queue.empty())
-        cid_queue.pop(); 
+        cid_queue.pop();
 
     // yuv420_queue = queue<cv::Mat>();            //for original frame(yuv)Mat queue
     // bgr_queue = queue<cv::Mat>();               //for original frame(BGR)Mat queue
@@ -177,11 +170,10 @@ void *UpdateFrame(void *arg)
 {
     while (true)
     {
-	cout << "width: " << width << "height: " << height << endl;
+
         cv::Mat tempFrame(cv::Size(width, height), CV_8UC3);
-	cout << "tempFrame size : " << tempFrame.size() << endl;
         cap >> tempFrame;
-	cout << "tempFrame's size: " << tempFrame.size() << endl;
+
         pthread_mutex_lock(&frameLocker);
         frame = tempFrame.clone();
         pthread_mutex_unlock(&frameLocker);
@@ -195,15 +187,12 @@ void capture()
          << "----Starting Capturing" << endl
          << endl;
 
-    pthread_mutex_init(&frameLocker, NULL); 
+    pthread_mutex_init(&frameLocker, NULL);
     pthread_create(&UpdThread, NULL, UpdateFrame, NULL);
 
     while (true)
     {
-	cout << "height: " << height << " width: " << width << endl;
         cv::Mat currentFrame(cv::Size(height, width), CV_8UC3, Scalar(0));
-	cout << "currentFrame size : " << currentFrame.size() << endl;
-	cout << "frame size : " << frame.size() << endl;
 
         pthread_mutex_lock(&frameLocker);
         currentFrame = frame;
@@ -221,7 +210,6 @@ void capture()
 
         else if (elementmean != 0)
         {
-	    cout << "currentFrame's size: " << currentFrame.size() << endl;
             bgr_queue.push(currentFrame);
             // Make CID for FRAMES
             string s_cid = getCID();
@@ -323,7 +311,7 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE)
          << "----Start to convert Frames into YUV420 and Y----" << endl
          << endl;
     queue<cv::Mat> BGR_queue(BGR_QUEUE);
-    
+
     cout << "bgr_queue's mat size: " << BGR_queue.front().size() << endl;
     while (true)
     {
@@ -619,7 +607,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
 
 int main(int, char **)
 {
-
+    
     // key GEN
     key_generation();
 
@@ -631,7 +619,7 @@ int main(int, char **)
     }
 
     send_pubKey_to_server();
-
+    
     while (true)
     {
         if (init() == -1)
@@ -641,6 +629,7 @@ int main(int, char **)
 
         else
         {
+            
             // capture frames
             capture();
             // show_frames(bgr_queue);
@@ -662,6 +651,7 @@ int main(int, char **)
             send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
             // initialize all settings
             init_all_settings();
+
         }
     }
 }

@@ -21,7 +21,8 @@
 #include "verifier_cfg.h"
 #include "Verifier_function_list.h"
 #include "verify.cpp"
-#include "../Merkle_Tree/merkle_tree.h"
+#include "../Merkle_Tree/merkle_tree.cpp"
+#include "../Merkle_Tree/node.cpp"
 #include "../msg_queue/msg_queue.cpp"
 #include "../DB/bout_database.cpp"
 
@@ -65,8 +66,10 @@ int read_pubKey()
 int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_DB_QUEUE)
 {
     init_DB(mysqlID);
-    string table_name = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2);    
+
+    string table_name = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2);
     string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10; ";
+
 
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
@@ -310,7 +313,6 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
         from_VERIFIER.pop();
     }
 
-    
     // initialize leaves
     for (unsigned int i = 0; i < leaves_DB.size(); i++) {
         leaves_DB[i]-> left = NULL;
@@ -319,6 +321,7 @@ int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_
         leaves_Verifier[i]-> right = NULL;
     }
 
+    
     MerkleTree *hashTreeDB = new MerkleTree(leaves_DB);
     MerkleTree *hashTreeVerifier = new MerkleTree(leaves_Verifier);
     std::cout << hashTreeDB->root->hash << std::endl;
@@ -357,24 +360,23 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-13_16:19:24.514";
-    string V_CID = "2022-10-13_16:19:24.514";
+    string S_CID = "2022-10-14_12:28:20.280\0";
+    string V_CID = "";
 
-    // Server2Verifier_CID_send(S_CID);
-    // V_CID = Server2Verifier_CID_recv();
+    Server2Verifier_CID_send(S_CID);
+    V_CID = Server2Verifier_CID_recv();
 
-    // Verifier2Server_CID_res_send();
-    // Verifier2Server_CID_res_recv();
+    Verifier2Server_CID_res_send();
+    Verifier2Server_CID_res_recv();
 
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
     read_video_data(V_CID, cid_queue);
-    // show_frames(yuv420_queue);
+    //show_frames(yuv420_queue);
     
     convert_frames(yuv420_queue);
     edge_detection(y_queue);
     make_hash(feature_vector_queue);
     //show_hash(hash_DB_queue, hash_verifier_queue);
-
 
     make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
