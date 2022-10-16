@@ -21,9 +21,10 @@ struct db_user {
 struct db_user mysqlID;
 
 void insert_database(char* CID, char* Hash, char* Signed_Hash);
-void insert_pk_database(char* CID, char* key_value);
+void insert_pk_database(string key_ID, char* key_value);
+string get_latest_key_ID(char* order);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
-MYSQL_RES* mysql_perform_query(char *sql_query);
+MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 void create_table();
 
 void initDatabase(struct db_user *db_info){
@@ -45,28 +46,28 @@ MYSQL* mysql_connection_setup(struct db_user sql_user){
   return connection;
 }
 
-MYSQL_RES* mysql_perform_query(char *sql_query) {
+MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
 	int retry_cnt = 5;
-	while(mysql_query(conn, sql_query) != 0){
+	while(mysql_query(connection, sql_query) != 0){
 		if(retry_cnt-- == 0)
 			break;
 		create_table();
 	}
-  return mysql_use_result(conn);
+  return mysql_use_result(connection);
 }
 
 void insert_database(char* CID, char* Hash, char* Signed_Hash){
 	string sorder = "INSERT INTO " + table_name + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(order);
+	res = mysql_perform_query(conn, order);
 }
 
-void insert_pk_database(char* CID, char* Hash, char* Signed_Hash){
-	string sorder = "INSERT INTO " + table_name + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";
+void insert_pk_database(string key_ID, char* key_value){
+	string sorder = "INSERT INTO public_key values('" + key_ID + "', '" + key_value + "', 1);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(order);
+	res = mysql_perform_query(conn, order);
 }
 
 void create_table(){
@@ -75,6 +76,26 @@ void create_table(){
 	strcpy(order, sorder.c_str());
 	mysql_query(conn, order);
 	res = mysql_use_result(conn);
+}
+
+string get_latest_key_ID(char* order){
+	res = mysql_perform_query(conn, order);
+	string key_ID;
+	while((row = mysql_fetch_row(res)) != NULL){
+		key_ID = row[0];
+		cout << "key_ID : " << key_ID << endl;
+	}
+	
+	return key_ID;
+}
+
+void update_database(char* order){
+	res = mysql_perform_query(conn, order);
+	cout << endl << "---------------------------------------------------" << endl;
+	while((row = mysql_fetch_row(res)) != NULL){
+		string x = row[0];
+		cout << x << endl;
+	}
 }
 
 void init_DB(struct db_user mysqlID){

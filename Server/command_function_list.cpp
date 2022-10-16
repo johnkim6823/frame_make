@@ -43,32 +43,22 @@ int public_key_send(HEADERPACKET* msg){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
-	string sorder = "select key_ID from public_key where key_status = 1";
+	string sorder = "select key_ID from public_key where key_status = 1;";
 	char* order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(order);
-	string key_ID;
-	if((row = mysql_fetch_row(res)) != NULL)
-		key_ID = row[0];
-
+	string key_ID = get_latest_key_ID(order);
+	
 	sorder = "update public_key set key_status = 0 where key_ID = '" + key_ID + "';";
 	delete [] order;
 	order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(order);
-	cout << endl << "---------------------------------------------------" << endl;
-	while((row = mysql_fetch_row(res)) != NULL){
-		string x = row[0];
-		cout << x << endl;
-	}
-	cout << "---------------------------------------------------" << endl;
+	update_database(order);
+	
 
 	string pk((char*)recv_buf);
-	sorder = "insert into public_key value('" + getCID() + "', '" + pk + "', " + "1);";
-	delete [] order;
-	order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	mysql_perform_query(order);	
+	char *key_value = new char[pk.length() + 1];
+	strcpy(key_value, pk.c_str());
+	insert_pk_database(getCID(), key_value);
 	
 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 	fflush(file);
@@ -163,76 +153,76 @@ int video_data_response(HEADERPACKET* msg){
 
 /*-----------------------Verify request & response------------------------*/
 int verify_request(HEADERPACKET* msg){
-	unsigned char* cid1 = new unsigned char[msg->dataSize];
-	unsigned char* cid2 = new unsigned char[msg->dataSize];	
+// 	unsigned char* cid1 = new unsigned char[msg->dataSize];
+// 	unsigned char* cid2 = new unsigned char[msg->dataSize];	
 
-	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid1);
-	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid2);
+// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid1);
+// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid2);
 
-	string s_cid((char*)cid1);
-	string e_cid((char*)cid2);
+// 	string s_cid((char*)cid1);
+// 	string e_cid((char*)cid2);
 
-	CIDINFO start_cid = 
-	{
-		s_cid.substr(0, 4),
-		s_cid.substr(4, 2),
-		s_cid.substr(6, 2),
-		s_cid.substr(8, 2),
-		s_cid.substr(10, 2),
-		s_cid.substr(12),
-	};
+// 	CIDINFO start_cid = 
+// 	{
+// 		s_cid.substr(0, 4),
+// 		s_cid.substr(4, 2),
+// 		s_cid.substr(6, 2),
+// 		s_cid.substr(8, 2),
+// 		s_cid.substr(10, 2),
+// 		s_cid.substr(12),
+// 	};
 
-	CIDINFO end_cid = 
-	{
-		e_cid.substr(0, 4),
-		e_cid.substr(4, 2),
-		e_cid.substr(6, 2),
-		e_cid.substr(8, 2),
-		e_cid.substr(10, 2),
-		e_cid.substr(12),
-	};
+// 	CIDINFO end_cid = 
+// 	{
+// 		e_cid.substr(0, 4),
+// 		e_cid.substr(4, 2),
+// 		e_cid.substr(6, 2),
+// 		e_cid.substr(8, 2),
+// 		e_cid.substr(10, 2),
+// 		e_cid.substr(12),
+// 	};
 
-	string s_time = start_cid.Year + "-" + start_cid.Month + "-" + start_cid.Day + "_" + start_cid.Hour + ":" + start_cid.Min + ":" + start_cid.Sec + ".500";
-	string e_time = end_cid.Year + "-" + end_cid.Month + "-" + end_cid.Day + "_" + end_cid.Hour + ":" + end_cid.Min + ":" + end_cid.Sec + ".500";
-	string t_name = start_cid.Year + "_" + start_cid.Month + start_cid.Day;
-	string sorder = "select CID, Hash from " + t_name + " where CID between '" + s_time + "' and '" + e_time + "' order by CID;";
+// 	string s_time = start_cid.Year + "-" + start_cid.Month + "-" + start_cid.Day + "_" + start_cid.Hour + ":" + start_cid.Min + ":" + start_cid.Sec + ".500";
+// 	string e_time = end_cid.Year + "-" + end_cid.Month + "-" + end_cid.Day + "_" + end_cid.Hour + ":" + end_cid.Min + ":" + end_cid.Sec + ".500";
+// 	string t_name = start_cid.Year + "_" + start_cid.Month + start_cid.Day;
+// 	string sorder = "select CID, Hash from " + t_name + " where CID between '" + s_time + "' and '" + e_time + "' order by CID;";
 
-	cout << s_time << endl;
-	cout << e_time << endl;
-	cout << t_name << endl;
-	cout << sorder << endl;
-	char *order = new char[sorder.length() + 1];
-	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(order);
+// 	cout << s_time << endl;
+// 	cout << e_time << endl;
+// 	cout << t_name << endl;
+// 	cout << sorder << endl;
+// 	char *order = new char[sorder.length() + 1];
+// 	strcpy(order, sorder.c_str());
+// 	res = mysql_perform_query(order);
 
-	vector<string> cid_list;
-	vector<string> hash_list;
+// 	vector<string> cid_list;
+// 	vector<string> hash_list;
 
-	while((row = mysql_fetch_row(res)) != NULL){
-		cid_list.push_back(row[0]);
-		hash_list.push_back(row[1]);
-	}
+// 	while((row = mysql_fetch_row(res)) != NULL){
+// 		cid_list.push_back(row[0]);
+// 		hash_list.push_back(row[1]);
+// 	}
 
-	unsigned char** frame_list = new unsigned char* [cid_list.size()];
+// 	unsigned char** frame_list = new unsigned char* [cid_list.size()];
 
-	string frame_dir = "/home/pi/images/" + table_name + "/";
-	size_t n;
-	int c;
-	for(int i=0; i < cid_list.size(); i++){
-		n = 0;
-		string frame_name = frame_dir + cid_list[i];
-		const char* frame = frame_name.c_str();
-		FILE* file = fopen(frame, "rb");
+// 	string frame_dir = "/home/pi/images/" + table_name + "/";
+// 	size_t n;
+// 	int c;
+// 	for(int i=0; i < cid_list.size(); i++){
+// 		n = 0;
+// 		string frame_name = frame_dir + cid_list[i];
+// 		const char* frame = frame_name.c_str();
+// 		FILE* file = fopen(frame, "rb");
 
-		fseek(file, 0, SEEK_END);
-		int size = ftell(file);
-		frame_list[i] = new unsigned char[size];
-		fseek(file,0,0);
+// 		fseek(file, 0, SEEK_END);
+// 		int size = ftell(file);
+// 		frame_list[i] = new unsigned char[size];
+// 		fseek(file,0,0);
 
-		while((c = fgetc(file)) != EOF){
-			frame_list[i][n++] = (unsigned char)c;
-		}
-	}
+// 		while((c = fgetc(file)) != EOF){
+// 			frame_list[i][n++] = (unsigned char)c;
+// 		}
+// 	}
 	// makePacket(Verifier, VIDEO_DATA_SND, 0xa1, CID_size + Hash_size + strlen((char*)frame_list[0]));
 
 	// for(int i=0; i<cid_list.size(); i++){
@@ -283,7 +273,7 @@ int verify_request(HEADERPACKET* msg){
 	// 	cout << hash_list[i] << endl;
 	// }
 
-	return 1;
+// 	return 1;
 }
 
 int verify_response(HEADERPACKET* msg){

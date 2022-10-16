@@ -15,9 +15,5 @@ struct MerkleTree {
     void deleteTree(Node *n);
 };
 
-// MerkleTree::MerkleTree(std::vector<Node*> blocks);
-// MerkleTree::~MerkleTree();
-// void MerkleTree::printTree(Node* n, int indent);
-// void MerkleTree::deleteTree(Node* n);
 
 #endif /* MERKLE_TREE_H */
