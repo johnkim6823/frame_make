@@ -96,7 +96,7 @@ int init()
     cout << "    Camera Setting Changes to: " << endl;
 
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, width);
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
     cout << "    Frame Width: " << cvRound(cap.get(CAP_PROP_FRAME_WIDTH)) << endl;
@@ -278,31 +278,6 @@ void capture()
     }
 }
 
-/*
-void show_frames(queue<cv::Mat> &ORI)
-{
-    queue<Mat> bgr(ORI);
-
-    cout << "----show frames----------" << endl
-         << endl;
-    moveWindow("Original BGR", 0, 0);
-    while (true)
-    {
-
-        imshow("Original BGR", bgr.front());
-
-        bgr.pop();
-        sleep(1);
-        if (waitKey(10) == 't')
-            break;
-        if (bgr.size() == 0)
-        {
-            destroyAllWindows();
-            break;
-        }
-    }
-}
-*/
 
 void convert_frames(queue<cv::Mat> &BGR_QUEUE)
 {
@@ -602,6 +577,7 @@ void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, qu
         cid_send.pop();
         sleep(0.2);
     }
+
     cout << "----SEND END----------------" << endl;
 }
 
@@ -629,7 +605,6 @@ int main(int, char **)
 
         else
         {
-            
             // capture frames
             capture();
             // show_frames(bgr_queue);
