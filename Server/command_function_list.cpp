@@ -43,6 +43,32 @@ int public_key_send(HEADERPACKET* msg){
 		cout << "recv_binary fail" << endl;
 		return -1;
 	}
+	string sorder = "select key_ID from public_key where key_status = 1";
+	char* order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	res = mysql_perform_query(order);
+	string key_ID;
+	if((row = mysql_fetch_row(res)) != NULL)
+		key_ID = row[0];
+
+	sorder = "update public_key set key_status = 0 where key_ID = '" + key_ID + "';";
+	delete [] order;
+	order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	res = mysql_perform_query(order);
+	cout << endl << "---------------------------------------------------" << endl;
+	while((row = mysql_fetch_row(res)) != NULL){
+		string x = row[0];
+		cout << x << endl;
+	}
+	cout << "---------------------------------------------------" << endl;
+
+	string pk((char*)recv_buf);
+	sorder = "insert into public_key value('" + getCID() + "', '" + pk + "', " + "1);";
+	delete [] order;
+	order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	mysql_perform_query(order);	
 	
 	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
 	fflush(file);
@@ -118,7 +144,7 @@ int video_data_send(HEADERPACKET* msg){
 	
 
 	makePacket(Logger, VIDEO_DATA_RES, 0, 0);
-	insert_database(conn,  CID, Hash, Signed_Hash);
+	insert_database(CID, Hash, Signed_Hash);
 
 	fflush(file);
 	fclose(file);
@@ -177,7 +203,7 @@ int verify_request(HEADERPACKET* msg){
 	cout << sorder << endl;
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(conn, order);
+	res = mysql_perform_query(order);
 
 	vector<string> cid_list;
 	vector<string> hash_list;

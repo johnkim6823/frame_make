@@ -20,9 +20,10 @@ struct db_user {
 
 struct db_user mysqlID;
 
-void insert_database(MYSQL *connectionchar, char* CID, char* Hash, char* Signed_Hash);
+void insert_database(char* CID, char* Hash, char* Signed_Hash);
+void insert_pk_database(char* CID, char* key_value);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
-MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
+MYSQL_RES* mysql_perform_query(char *sql_query);
 void create_table();
 
 void initDatabase(struct db_user *db_info){
@@ -44,21 +45,28 @@ MYSQL* mysql_connection_setup(struct db_user sql_user){
   return connection;
 }
 
-MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query) {
+MYSQL_RES* mysql_perform_query(char *sql_query) {
 	int retry_cnt = 5;
-	while(mysql_query(connection, sql_query) != 0){
+	while(mysql_query(conn, sql_query) != 0){
 		if(retry_cnt-- == 0)
 			break;
 		create_table();
 	}
-  return mysql_use_result(connection);
+  return mysql_use_result(conn);
 }
 
-void insert_database(MYSQL *connection, char* CID, char* Hash, char* Signed_Hash){
+void insert_database(char* CID, char* Hash, char* Signed_Hash){
 	string sorder = "INSERT INTO " + table_name + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";
 	char *order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
-	res = mysql_perform_query(connection, order);
+	res = mysql_perform_query(order);
+}
+
+void insert_pk_database(char* CID, char* Hash, char* Signed_Hash){
+	string sorder = "INSERT INTO " + table_name + " values('" + CID + "', '" + Hash + "', '" + Signed_Hash + "' ,0);";
+	char *order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	res = mysql_perform_query(order);
 }
 
 void create_table(){

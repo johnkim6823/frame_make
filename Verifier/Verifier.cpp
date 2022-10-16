@@ -72,7 +72,7 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
 
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
-    res = mysql_perform_query(conn, order);
+    res = mysql_perform_query(order);
     int i = 0;
     while ((row = mysql_fetch_row(res)) != NULL)
     {
@@ -359,8 +359,8 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-15_15:22:10.180";
-    string V_CID = "2022-10-15_15:22:10.180";
+    string S_CID = "2022-10-15_15:57:18.440";
+    string V_CID = "2022-10-15_15:57:18.440";
 
     // Server2Verifier_CID_send(S_CID);
     // V_CID = Server2Verifier_CID_recv();
