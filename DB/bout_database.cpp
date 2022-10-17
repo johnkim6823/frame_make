@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <mysql.h>
 #include <cstring>
+#include <vector>
 
 MYSQL *conn;
 MYSQL_RES *res;
 MYSQL_ROW row;
 string table_name;
-
 
 struct db_user {
 	char *server;
@@ -22,6 +22,7 @@ struct db_user mysqlID;
 
 void insert_database(char* CID, char* Hash, char* Signed_Hash);
 void insert_pk_database(string key_ID, char* key_value);
+void get_CID_list(vector<string> &CID_list, string first_cid, string last_cid);
 string get_latest_key_ID(char* order);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
@@ -95,6 +96,17 @@ void update_database(char* order){
 	while((row = mysql_fetch_row(res)) != NULL){
 		string x = row[0];
 		cout << x << endl;
+	}
+}
+
+void get_CID_list(vector<string> &CID_list, string table, string first_cid, string last_cid){
+	char *order;
+	string sorder = "select CID from " + table + " where key_ID < '" + first_cid + "' order by key_ID desc limit 1;";
+	order = new char[sorder.length() + 1];
+	strcpy(order, sorder.c_str());
+	res = mysql_perform_query(conn, order);
+	while((row = mysql_fetch_row(res)) != NULL){
+		CID_list.push_back(row[0]);
 	}
 }
 

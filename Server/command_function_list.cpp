@@ -153,34 +153,62 @@ int video_data_response(HEADERPACKET* msg){
 
 /*-----------------------Verify request & response------------------------*/
 int verify_request(HEADERPACKET* msg){
-// 	unsigned char* cid1 = new unsigned char[msg->dataSize];
-// 	unsigned char* cid2 = new unsigned char[msg->dataSize];	
+	unsigned char* cid1 = new unsigned char[msg->dataSize];
+	unsigned char* cid2 = new unsigned char[msg->dataSize];	
 
-// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid1);
-// 	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid2);
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid1);
+	recv_binary(&g_pNetwork->port, msg->dataSize, (void*)cid2);
 
-// 	string s_cid((char*)cid1);
-// 	string e_cid((char*)cid2);
+	string first_cid((char*)cid1);
+	string last_cid((char*)cid2);
 
-// 	CIDINFO start_cid = 
-// 	{
-// 		s_cid.substr(0, 4),
-// 		s_cid.substr(4, 2),
-// 		s_cid.substr(6, 2),
-// 		s_cid.substr(8, 2),
-// 		s_cid.substr(10, 2),
-// 		s_cid.substr(12),
-// 	};
+	cout << "first_cid : " << first_cid << endl;
+	cout << "last_cid : " << last_cid << endl;
 
-// 	CIDINFO end_cid = 
-// 	{
-// 		e_cid.substr(0, 4),
-// 		e_cid.substr(4, 2),
-// 		e_cid.substr(6, 2),
-// 		e_cid.substr(8, 2),
-// 		e_cid.substr(10, 2),
-// 		e_cid.substr(12),
-// 	};
+	if(first_cid > last_cid){
+		first_cid.swap(last_cid);
+	}
+
+	cout << "first_cid : " << first_cid << endl;
+	cout << "last_cid : " << last_cid << endl;
+	vector<string> CID_list;
+
+	CIDINFO start_cid = 
+	{
+		first_cid.substr(0, 4),
+		first_cid.substr(5, 2),
+		first_cid.substr(8, 2),
+		first_cid.substr(11, 2),
+		first_cid.substr(14, 2),
+		first_cid.substr(17, 2),
+		first_cid.substr(20,3),
+	};
+
+	CIDINFO end_cid = 
+	{
+		last_cid.substr(0, 4),
+		last_cid.substr(5, 2),
+		last_cid.substr(8, 2),
+		last_cid.substr(11, 2),
+		last_cid.substr(14, 2),
+		last_cid.substr(17, 2),
+		last_cid.substr(20,3),
+	};
+
+	if(start_cid.Day != end_cid.Day){
+		vector<string> table_list;
+		int j = end_cid.Day - start_cid.Day;
+		for(int i = 0; i <= j; i++){
+			int d = i + (int) start_cid.Day;
+			string x_table = start_cid.Year + "_" + start_cid.Month + d;
+			table_list.push_back(x_table);
+		}
+	}
+	else{
+		string vtable_name = start_cid.Year + '_' + start_cid.Month + start_cid.Day;
+		get_CID_list(CID_list, vtable_name, first_cid, last_cid);
+
+	}
 
 // 	string s_time = start_cid.Year + "-" + start_cid.Month + "-" + start_cid.Day + "_" + start_cid.Hour + ":" + start_cid.Min + ":" + start_cid.Sec + ".500";
 // 	string e_time = end_cid.Year + "-" + end_cid.Month + "-" + end_cid.Day + "_" + end_cid.Hour + ":" + end_cid.Min + ":" + end_cid.Sec + ".500";

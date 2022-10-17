@@ -31,7 +31,7 @@ typedef struct
     string Hour;
     string Min;
     string Sec;
-
+	string Msec;
 } CIDINFO;
 
 typedef struct
