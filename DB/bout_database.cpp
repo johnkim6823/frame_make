@@ -22,8 +22,8 @@ struct db_user mysqlID;
 
 void insert_database(char* CID, char* Hash, char* Signed_Hash);
 void insert_pk_database(string key_ID, char* key_value);
-void get_CID_list(vector<string> &CID_list, string first_cid, string last_cid);
 string get_latest_key_ID(char* order);
+void get_list(vector<string> &list, string table, string first_cid, string last_cid, int Switch);
 MYSQL* mysql_connection_setup(struct db_user sql_user);
 MYSQL_RES* mysql_perform_query(MYSQL *connection, char *sql_query);
 void create_table();
@@ -79,6 +79,15 @@ void create_table(){
 	res = mysql_use_result(conn);
 }
 
+void update_database(char* order){
+	res = mysql_perform_query(conn, order);
+	cout << endl << "---------------------------------------------------" << endl;
+	while((row = mysql_fetch_row(res)) != NULL){
+		string x = row[0];
+		cout << x << endl;
+	}
+}
+
 string get_latest_key_ID(char* order){
 	res = mysql_perform_query(conn, order);
 	string key_ID;
@@ -90,23 +99,25 @@ string get_latest_key_ID(char* order){
 	return key_ID;
 }
 
-void update_database(char* order){
-	res = mysql_perform_query(conn, order);
-	cout << endl << "---------------------------------------------------" << endl;
-	while((row = mysql_fetch_row(res)) != NULL){
-		string x = row[0];
-		cout << x << endl;
+void get_list(vector<string> &list, string table, string first_cid, string last_cid, int Switch){
+	string sorder;
+	if(Switch == 1)
+		sorder = "select key_ID from " + table + " where '" + first_cid + "' < key_ID and key_ID< '" + last_cid + "' order by key_ID;";
+	else if(Switch == 0)
+		sorder = "select CID from " + table + " where '" + first_cid + "' <= CID and CID <= '" + last_cid + "' order by CID;";
+	else if(Switch == -1)
+		sorder = "select key_ID from " + table + " where '" + first_cid + "' < key_ID and key_ID < '" + last_cid + "' order by key_ID desc limit 1;";
+	else{
+		cout << "get_list() has something wrong" << endl;
+		exit(1);
 	}
-}
-
-void get_CID_list(vector<string> &CID_list, string table, string first_cid, string last_cid){
 	char *order;
-	string sorder = "select CID from " + table + " where key_ID < '" + first_cid + "' order by key_ID desc limit 1;";
 	order = new char[sorder.length() + 1];
 	strcpy(order, sorder.c_str());
 	res = mysql_perform_query(conn, order);
+
 	while((row = mysql_fetch_row(res)) != NULL){
-		CID_list.push_back(row[0]);
+		list.push_back(row[0]);
 	}
 }
 

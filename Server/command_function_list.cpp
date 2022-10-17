@@ -172,6 +172,7 @@ int verify_request(HEADERPACKET* msg){
 	cout << "first_cid : " << first_cid << endl;
 	cout << "last_cid : " << last_cid << endl;
 	vector<string> CID_list;
+	vector<string> pk_list;
 
 	CIDINFO start_cid = 
 	{
@@ -197,17 +198,24 @@ int verify_request(HEADERPACKET* msg){
 
 	if(start_cid.Day != end_cid.Day){
 		vector<string> table_list;
-		int j = end_cid.Day - start_cid.Day;
+		int j = stoi(end_cid.Day) - stoi(start_cid.Day);
 		for(int i = 0; i <= j; i++){
-			int d = i + (int) start_cid.Day;
-			string x_table = start_cid.Year + "_" + start_cid.Month + d;
+			int d = i + stoi(start_cid.Day);
+			string x_table = start_cid.Year + "_" + start_cid.Month + to_string(d);
 			table_list.push_back(x_table);
 		}
 	}
 	else{
 		string vtable_name = start_cid.Year + '_' + start_cid.Month + start_cid.Day;
-		get_CID_list(CID_list, vtable_name, first_cid, last_cid);
+		
+		get_list(pk_list, "public_key", "-1", first_cid, -1);
+		get_list(pk_list, "public_key", first_cid, last_cid, 1);
 
+		get_list(CID_list, vtable_name, first_cid, pk_list[1], 0);
+		for(int i = 1; i < pk_list.size()-1; i++){
+			get_list(CID_list, vtable_name, pk_list[i], pk_list[i + 1], 0);
+		}
+		get_list(CID_list, vtable_name, pk_list[pk_list.size()-1], last_cid, 0);
 	}
 
 // 	string s_time = start_cid.Year + "-" + start_cid.Month + "-" + start_cid.Day + "_" + start_cid.Hour + ":" + start_cid.Min + ":" + start_cid.Sec + ".500";
