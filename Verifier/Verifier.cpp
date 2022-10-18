@@ -72,10 +72,9 @@ int get_data_from_DB(string &CID, queue<string> &CID_QUEUE, queue<string> &HASH_
     string table_name = CID.substr(0, 4) + "_" + CID.substr(5, 2) + CID.substr(8, 2);
     string sorder = "select CID, Hash, Signed_Hash from " + table_name + " where Verified = 0 order by CID DESC limit 10; ";
 
-
     char *order = new char[sorder.length() + 1];
     strcpy(order, sorder.c_str());
-    res = mysql_perform_query(order);
+    res = mysql_perform_query(conn, order);
     int i = 0;
     while ((row = mysql_fetch_row(res)) != NULL)
     {
@@ -133,44 +132,22 @@ void read_video_data(string &CID, queue<string> &CID_QUEUE)
         frame_file.read((char*)frame_data, size);
         frame_file.close();
 
+
         if(size == VGA_SIZE){
             cv::Mat frame = cv::Mat(cv::Size(YUV420_VGA_WIDTH, YUV420_VGA_HEIGHT), CV_8UC1, frame_data);
             yuv420_queue.push(frame);
         } else if(size == CIF_SIZE){
             cv::Mat frame(cv::Size(YUV420_CIF_WIDTH, YUV420_CIF_HEIGHT), CV_8UC1, frame_data);
             yuv420_queue.push(frame);
+        } else if(size == HD_SIZE){
+            cv::Mat frame(cv::Size(YUV420_HD_WIDTH, YUV420_HD_HEIGHT), CV_8UC1, frame_data);
+            yuv420_queue.push(frame);
         }
 
         get_CID.pop();
     }
-
         cout << "Frame read " << yuv420_queue.size() << endl;
 }
-/*
-void show_frames(queue<cv::Mat> &ORI)
-{
-    queue<cv::Mat> bgr(ORI);
-
-    cout << "----show frames----------" << endl
-         << endl;
-    cv::moveWindow("Original BGR", 0, 0);
-    while (true)
-    {
-
-        cv::imshow("Original BGR", bgr.front());
-
-        bgr.pop();
-        sleep(1);
-        if (cv::waitKey(10) == 't')
-            break;
-        if (bgr.size() == 0)
-        {
-            cv::destroyAllWindows();
-            break;
-        }
-    }
-}
-*/
 
 void convert_frames(queue<cv::Mat> &YUV420_QUEUE)
 {
@@ -267,7 +244,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
     }
     cout << "    hash made : " << hash_verifier_queue.size() << endl;
 }
-/*
+
 void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
 {
     queue<string> db_hash(DB_HASH);
@@ -287,7 +264,6 @@ void show_hash(queue<string> &DB_HASH, queue<string> &VF_HASH)
         vf_hash.pop();
     }
 }
-*/
 
 int make_merkle_tree(queue<string> &HASH_DB_QUEUE, queue<string> &HASH_VERIFIER_QUEUE)
 {
@@ -362,25 +338,24 @@ int main()
 
     read_pubKey();
 
-    string S_CID = "2022-10-15_15:57:18.440";
-    string V_CID = "2022-10-15_15:57:18.440";
+    string S_CID = "2022-10-18_16:43:30.313";
+    //string V_CID = "2022-10-15_15:57:18.440";
 
     Server2Verifier_CID_send(S_CID);
-    V_CID = Server2Verifier_CID_recv();
+    string V_CID = Server2Verifier_CID_recv();
 
     Verifier2Server_CID_res_send();
     Verifier2Server_CID_res_recv();
 
     get_data_from_DB(V_CID, cid_queue, hash_DB_queue);
     read_video_data(V_CID, cid_queue);
-    //show_frames(yuv420_queue);
     
     convert_frames(yuv420_queue);
     edge_detection(y_queue);
     make_hash(feature_vector_queue);
-    //show_hash(hash_DB_queue, hash_verifier_queue);
+    show_hash(hash_DB_queue, hash_verifier_queue);
 
-    make_merkle_tree(hash_DB_queue, hash_verifier_queue);
+    //make_merkle_tree(hash_DB_queue, hash_verifier_queue);
     init_all_setting();
     return 0;
 }
