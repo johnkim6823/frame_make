@@ -82,7 +82,7 @@ string getCID();
 string get_table_name();
 void mkdir_func(string str);
 void create_table();
-void insert_port(int ID, int port);
+void insert_port(HEADERPACKET* msg, int port);
 void pop_port(int ID);
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 

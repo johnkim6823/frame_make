@@ -1,10 +1,10 @@
 using namespace std;
 // Logger <--> Web UI                                       //Logger <----> WEbUI
-int camera_cfg_res_send();                                  //Logger(SND)  -> Web UI(RECV)      B
-int camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS);     //Logger(RECV) <- Web UI(SND)       BBI
+void camera_cfg_res_send();                                  //Logger(SND)  -> Web UI(RECV)      B
+void camera_cfg_recv(int &WIDTH, int &HEIGHT, int &FPS);     //Logger(RECV) <- Web UI(SND)       BBI
 
-int Image_Hash_request(string HASH);                        //Logger(RECV) <- Web UI(REQ)       B
-int Image_Hash_send(string HASH);                           //Logger(SND)  -> Web UI(RECV)      ss
+void Image_Hash_request(string HASH);                        //Logger(RECV) <- Web UI(REQ)       B
+void Image_Hash_send(string HASH);                           //Logger(SND)  -> Web UI(RECV)      ss
 int Image_Hash_response();                                  //Logger(RECV) <- Web UI(SND))      B
 
 // Verifier <--> Server                                     //Verifier <-------> Server

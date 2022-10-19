@@ -27,5 +27,5 @@
 #define CONFIG_REQ      0x08
 #define CONFIG_RES      0xf8
 
-
+#define STILL_ALIVE     0xee
 #define TEST_CMD        0xff

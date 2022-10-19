@@ -34,6 +34,10 @@ void reshape_buffer(int type, int datasize){
 	}
 }
 
+int still_alive(HEADERPACKET* msg){
+	
+}
+
 /*------------------public key send & response----------------------------*/
 int public_key_send(HEADERPACKET* msg){
 	reshape_buffer(msg->dataType, msg->dataSize);
@@ -137,8 +141,6 @@ int video_data_send(HEADERPACKET* msg){
 	
 	return 1;
 }
-
-
 int video_data_response(HEADERPACKET* msg){
 	cout << "video data response recv" << endl;
 	return 1;
@@ -218,7 +220,7 @@ int verify_request(HEADERPACKET* msg){
 		}
 
 		map<string, vector<string>>::iterator iter;
-		for (iter = key_CID_map.begin(); iter != key_CID_map.end(); ++iter) { //ê²€ìƒ‰
+		for (iter = key_CID_map.begin(); iter != key_CID_map.end(); ++iter) { //ê²??ƒ‰
 			vector<string> inVect = (*iter).second;
 			int str_size = CID_size * (inVect.size() + 1);
 

@@ -30,6 +30,6 @@ int verified_result_send(HEADERPACKET* msg);	//VER_RSLT_SND
 int verified_result_response(HEADERPACKET* msg);//VER_RSLT_RES
 int configuration_send(HEADERPACKET* msg);		//CONFIG_SND
 int configuration_response(HEADERPACKET* msg);	//CONFIG_RES
-
+int still_alive(HEADERPACKET* msg);				//STILL_ALIVE
 int test(HEADERPACKET* msg);
 #endif

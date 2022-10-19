@@ -93,8 +93,6 @@ int init()
 
     camera_cfg_recv(width, height, fps);
 
-    cout << "    Camera Setting Changes to: " << endl;
-
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width );
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
@@ -156,14 +154,6 @@ void init_queue()
         hash_signed_queue.pop();
     while (!cid_queue.empty())
         cid_queue.pop();
-
-    // yuv420_queue = queue<cv::Mat>();            //for original frame(yuv)Mat queue
-    // bgr_queue = queue<cv::Mat>();               //for original frame(BGR)Mat queue
-    // y_queue = queue<cv::Mat>();                 //for y_frame Mat queue
-    // feature_vector_queue = queue<cv::Mat>();    //for edge detection Canny
-    // hash_queue = queue<string>();               //for hash made by feature vector
-    // cid_queue = queue<string>();                //for CID for frames
-    // hash_signed_queue = queue<string>();        //for hash signed
 }
 
 void *UpdateFrame(void *arg)
@@ -287,7 +277,6 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE)
          << endl;
     queue<cv::Mat> BGR_queue(BGR_QUEUE);
 
-    cout << "bgr_queue's mat size: " << BGR_queue.front().size() << endl;
     while (true)
     {
 

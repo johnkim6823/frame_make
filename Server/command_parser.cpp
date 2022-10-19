@@ -27,6 +27,7 @@ cmdp_desp parser_desp[] =
 	{VER_RSLT_RES				, verified_result_response},
 	// {CONFIG_SND					, configuration_send	},
 	// {CONFIG_RES					, configuration_response},
+	{STILL_ALIVE				, still_alive			},
 
 
 	// Testing command

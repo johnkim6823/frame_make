@@ -96,11 +96,12 @@ string get_table_name(){
     return s_CID;
 }
 
-void insert_port(int ID, int port){
+void insert_port(HEADERPACKET* msg, int port){
 	static mutex m;
 	while(true){
 		if(m.try_lock()){
-			g_pNetwork->client_port_map[ID] = port;
+			int ID = msg->startID;
+			g_pNetwork->client_port_map.insert({ID, port});
 			m.unlock();
 			break;
 		}
@@ -110,11 +111,15 @@ void insert_port(int ID, int port){
 	}
 }
 
-void pop_port(int ID){
+void pop_port(int port){
 	static mutex m;
 	while(true){
 		if(m.try_lock()){
-			g_pNetwork->client_port_map.erase(ID);
+			map<int, int>::iterator iter;
+			for(iter = g_pNetwork->client_port_map.begin(); iter != g_pNetwork->client_port_map.end(); ++iter){
+				if((*iter).second == port)
+					g_pNetwork->client_port_map.erase((*iter).first);
+			}
 			m.unlock();
 			break;
 		}
@@ -332,6 +337,7 @@ static void *ClientServiceThread(void *arg)
 	fd_socket = clientThd->s;
 	fd_max = fd_socket+1;
 	res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
+	insert_port((HEADERPACKET*)buf, fd_socket);
 
 	while( clientThd->timeout > 0 ) {
 		memset(buf, 0, sizeof(buf));
@@ -341,7 +347,6 @@ static void *ClientServiceThread(void *arg)
 		tv.tv_usec = 0;
 
 		//make HEADERPACKET
-		cout << "end time : " << getCID() << endl;
 		res = select( fd_max, &reads, NULL, NULL, &tv );
 		if( res == -1 ) {
 			TRACE_ERR( "connect socket(%d) Select error.\n", fd_socket);
@@ -366,6 +371,7 @@ static void *ClientServiceThread(void *arg)
 			}
 		}
 		retry_cnt = 5;
+		cout << buf << endl;
 		
 		if(cmd_parser(*clientThd, (HEADERPACKET *)buf) == -1) {
 			cout << "cmd_parser return -1" << endl;
@@ -378,7 +384,8 @@ static void *ClientServiceThread(void *arg)
 				TRACE_ERR("connect socket(%d) Command send error\n", fd_socket);
 				goto SERVICE_DONE;
 			}
-			// if (buf[2] == CMD_BACKGROUND) {
+			// if ((HEADERPACKET *)buf->command == CMD_BACKGROUND) {
+			// 	cout << "client still alive" << endl;
 			// 	send_retry_cnt = 5;
 			// 	usleep(10000);
 			// 	continue;
