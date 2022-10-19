@@ -36,8 +36,6 @@ void reshape_buffer(int type, int datasize){
 
 /*------------------public key send & response----------------------------*/
 int public_key_send(HEADERPACKET* msg){
-
-	FILE *file = fopen("PUBKEY.txt", "wb");
 	reshape_buffer(msg->dataType, msg->dataSize);
 	
 	if(recv_binary(&g_pNetwork->port, msg->dataSize, recv_buf) == 0){
@@ -55,15 +53,10 @@ int public_key_send(HEADERPACKET* msg){
 	strcpy(order, sorder.c_str());
 	update_database(order);
 	
-
 	string pk((char*)recv_buf);
 	char *key_value = new char[pk.length() + 1];
 	strcpy(key_value, pk.c_str());
 	insert_pk_database(getCID(), key_value);
-	
-	fwrite(recv_buf, sizeof(char), msg->dataSize, file);
-	fflush(file);
-	fclose(file);
 
 	return 1;
 
@@ -230,17 +223,17 @@ int verify_request(HEADERPACKET* msg){
 			int str_size = CID_size * (inVect.size() + 1);
 
 			makePacket(Verifier, VER_REQ, Uchar, str_size);
-			send_binary(Verifier_port, sizeof(HEADERPACKET), p_packet);
+			//send_binary(Verifier_port, sizeof(HEADERPACKET), p_packet);
 
 			unsigned char *PK = new unsigned char[CID_size];
 			strcpy((char*)PK, (*iter).first.c_str());
 			
-			send_binary(Verifier_port, CID_size, (void*)PK);
+			//send_binary(Verifier_port, CID_size, (void*)PK);
 
 			unsigned char *image_CID = new unsigned char[CID_size];
 			for (int j = 0; j < inVect.size(); j++) {
 				strcpy((char*)image_CID, inVect[j].c_str());
-				send_binary(Verifier_port, CID_size, image_CID);
+				//send_binary(Verifier_port, CID_size, image_CID);
 			}
 		}
 	}

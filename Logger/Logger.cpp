@@ -95,7 +95,7 @@ int init()
 
     cout << "    Camera Setting Changes to: " << endl;
 
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, width);
+    cap.set(cv::CAP_PROP_FRAME_WIDTH, width );
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
