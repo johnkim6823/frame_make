@@ -1,6 +1,7 @@
-#define Logger 0x10
-#define Verifier 0x11
-#define Server 0x12
+#define Logger      0x10
+#define Verifier    0x11
+#define Server      0x12
+#define WebUI       0x13
 
 #define Char 0xa0
 #define Uchar 0xa1

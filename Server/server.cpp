@@ -11,6 +11,9 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <sstream>
+#include <mutex>
+#include <map>
+#include <thread>
 
 #define CMD_BACKGROUND 1
 #define THIS_IS_SERVER
@@ -91,6 +94,34 @@ string get_table_name(){
     s_CID = oss.str();
     
     return s_CID;
+}
+
+void insert_port(int ID, int port){
+	static mutex m;
+	while(true){
+		if(m.try_lock()){
+			g_pNetwork->client_port_map[ID] = port;
+			m.unlock();
+			break;
+		}
+		else{
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	}
+}
+
+void pop_port(int ID){
+	static mutex m;
+	while(true){
+		if(m.try_lock()){
+			g_pNetwork->client_port_map.erase(ID);
+			m.unlock();
+			break;
+		}
+		else{
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+		}
+	}
 }
 
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize)
@@ -300,6 +331,7 @@ static void *ClientServiceThread(void *arg)
 	clientThd->timeout  = 30;
 	fd_socket = clientThd->s;
 	fd_max = fd_socket+1;
+	res = recv( fd_socket, buf, CMD_HDR_SIZE, 0 );
 
 	while( clientThd->timeout > 0 ) {
 		memset(buf, 0, sizeof(buf));

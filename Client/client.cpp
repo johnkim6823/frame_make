@@ -251,7 +251,6 @@ int initClient()
 {
 	cout << "----Client Initializing----" << endl;
 
-
 	g_pNetwork = (NETWORK_CONTEXT*) malloc(sizeof(NETWORK_CONTEXT));
 	g_pNetwork->m_socket = create_socket();
 

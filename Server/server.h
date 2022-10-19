@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include <string>
 #include <iostream>
+#include <map>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -65,6 +66,7 @@ typedef struct
 	u_int32_t networkLoop;
 	u_int32_t recvLoop;
 	u_int32_t m_socket;
+	map<int, int> client_port_map;
 
 	IO_PORT port;
 
@@ -80,6 +82,8 @@ string getCID();
 string get_table_name();
 void mkdir_func(string str);
 void create_table();
+void insert_port(int ID, int port);
+void pop_port(int ID);
 void makePacket(uint8_t destID, uint8_t cmd, uint8_t dataType, uint32_t dataSize);
 
 #endif
