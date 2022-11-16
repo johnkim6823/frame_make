@@ -19,9 +19,6 @@
 #include "Logger_function_list.h"
 #include "sign.cpp"
 #include "../Merkle_Tree/merkle_tree.h"
-#include "../Client/client.cpp"
-#include "../Client/command_define_list.h"
-#include "../msg_queue/msg_queue.cpp"
 
 using namespace std;
 using namespace cv;
@@ -36,14 +33,13 @@ cv::Mat frame(cv::Size(width, height), CV_8UC3);
 pthread_mutex_t frameLocker;
 pthread_t UpdThread;
 
-queue<cv::Mat> bgr_queue;            // for original frame(BGR)Mat queue
-queue<cv::Mat> yuv420_queue;         // for original frame(yuv)Mat queue
 queue<cv::Mat> y_queue;              // for y_frame Mat queue
 queue<cv::Mat> feature_vector_queue; // for edge detection Canny
 queue<string> hash_queue;            // for hash made by feature vector
 queue<string> hash_signed_queue;
 queue<string> cid_queue; // for CID for images
 
+int c = 0;
 int key_generation()
 {
     cout << "----Key Geneartion----" << endl;
@@ -51,34 +47,8 @@ int key_generation()
     publicKey = genPubicRSA(privateRSA);
 
     cout << "PRIKEY and PUBKEY are made" << endl;
-    cout << "public Key = " << endl
-         << publicKey;
 }
 
-int send_pubKey_to_server()
-{
-
-    cout << "----SEND PUBKEY to SERVER----" << endl;
-    int pubKey_bufsize = publicKey.size();
-    std::cout << "pubKey_bufsize: " << pubKey_bufsize << std::endl;
-
-    char *pubKey_buffer = new char[pubKey_bufsize];
-    strcpy(pubKey_buffer, publicKey.c_str());
-
-    makePacket(0x00, 0xa0, strlen(pubKey_buffer));
-    void *p_packet = &sendDataPacket;
-
-    if (!send_binary(&g_pNetwork->port, CMD_HDR_SIZE, p_packet))
-    {
-        cout << "PubKey send Error!!" << endl;
-    }
-
-    if (!send_binary(&g_pNetwork->port, strlen(pubKey_buffer), (void *)pubKey_buffer))
-    {
-        cout << "PubKey send Error!!" << endl;
-    }
-    cout << "----SENDING PUBKEY to SERVER END----" << endl;
-}
 
 int init()
 {
@@ -91,7 +61,7 @@ int init()
     // open selected camera using selected API
     cap.open(deviceID, apiID);
 
-    camera_cfg_recv(width, height, fps);
+    //camera_cfg_recv(width, height, fps);
 
     cap.set(cv::CAP_PROP_FRAME_WIDTH, width );
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
@@ -122,28 +92,11 @@ void init_all_settings()
 {
 
     init_queue();
-
-    cout << endl
-         << "----Initializing all settings." << endl
-         << endl;
-    cout << "    bgr queue size: " << bgr_queue.size() << endl;
-    cout << "    yuv420 queue size: " << yuv420_queue.size() << endl;
-    cout << "    y_frame queue size: " << y_queue.size() << endl;
-    cout << "    feature vector queue size: " << feature_vector_queue.size() << endl;
-    cout << "    hash queue size: " << hash_queue.size() << endl;
-    cout << "    CID queue size: " << cid_queue.size() << endl;
-    cout << endl
-         << "--------------------------------" << endl
-         << endl;
 }
 
 void init_queue()
 {
 
-    while (!yuv420_queue.empty())
-        yuv420_queue.pop();
-    while (!bgr_queue.empty())
-        bgr_queue.pop();
     while (!y_queue.empty())
         y_queue.pop();
     while (!feature_vector_queue.empty())
@@ -160,7 +113,6 @@ void *UpdateFrame(void *arg)
 {
     while (true)
     {
-
         cv::Mat tempFrame(cv::Size(width, height), CV_8UC3);
         cap >> tempFrame;
 
@@ -200,10 +152,16 @@ void capture()
 
         else if (elementmean != 0)
         {
-            bgr_queue.push(currentFrame);
-            // Make CID for FRAMES
+            Mat yuv(Size(640,720), CV_8UC1, Scalar(0));
+            Mat y(Size(640,480), CV_8UC1, Scalar(0));
+            cv::cvtColor(currentFrame, yuv, COLOR_BGR2YUV_I420);
+            cv::cvtColor(yuv, y, COLOR_YUV2GRAY_I420);
+            y_queue.push(y);
+            cout << y_queue.size() << endl;
             string s_cid = getCID();
             cid_queue.push(s_cid);
+            yuv.release();
+            y.release();
         }
 
         else
@@ -211,7 +169,7 @@ void capture()
             cout << "lamping time" << endl;
         }
 
-        if (bgr_queue.size() == DEFAULT_FRAME_COUNT)
+        if (y_queue.size() == DEFAULT_FRAME_COUNT)
         {
 
             int ret = pthread_cancel(UpdThread);
@@ -268,44 +226,40 @@ void capture()
     }
 }
 
-
 void convert_frames(queue<cv::Mat> &BGR_QUEUE)
 {
 
     cout << endl
          << "----Start to convert Frames into YUV420 and Y----" << endl
          << endl;
-    queue<cv::Mat> BGR_queue(BGR_QUEUE);
-
-    while (true)
+    int i = 0;
+    while (i > 1000)
     {
-
-        if (BGR_queue.size() == 0)
+        if (BGR_QUEUE.size() == 0)
         {
             break;
         }
 
-        cv::Mat original = BGR_queue.front();
-        cv::Mat yuv_frame(cv::Size((height * 3 / 2), width), CV_8UC1, Scalar(0));
-        cv::Mat y_frame(cv::Size(height, width), CV_8UC1, Scalar(0));
-        BGR_queue.pop();
-
+        //cv::Mat yuv_frame(cv::Size((height * 3 / 2), width), CV_8UC1, Scalar(0));
+        cv::Mat y_frame;
+ 
         // CONVERT BGR To YUV420 and YUV420 to Y
-        cv::cvtColor(original, yuv_frame, cv::COLOR_BGR2YUV_I420);
-        cv::cvtColor(yuv_frame, y_frame, cv::COLOR_YUV2GRAY_I420);
+        //cv::cvtColor(original, yuv_frame, cv::COLOR_BGR2YUV_I420);
+        cv::cvtColor(BGR_QUEUE.front(), y_frame, COLOR_YUV2GRAY_I420);
 
         // save frames into queue
-        yuv420_queue.push(yuv_frame);
+        //yuv420_queue.push(yuv_frame);
         y_queue.push(y_frame);
 
         // release Mat
-        original.release();
-        yuv_frame.release();
+        //yuv_frame.release();
         y_frame.release();
+        BGR_QUEUE.pop();
+        i++;
     }
 
     cout << "    YUV420 amd Y frame are saved" << endl;
-    cout << "    YUV420 frame: " << yuv420_queue.size() << "    Y frame: " << y_queue.size() << endl
+    cout << "    Y frame: " << y_queue.size() << endl
          << endl;
     cout << "----FRAMES CONVERTED---------" << endl
          << endl;
@@ -313,14 +267,11 @@ void convert_frames(queue<cv::Mat> &BGR_QUEUE)
 
 void edge_detection(queue<cv::Mat> &Y_QUEUE)
 {
-    queue<cv::Mat> Y_queue(Y_QUEUE);
-
     cout << "----Building feature vectors." << endl;
-    int cnt = 0;
 
     while (true)
     {
-        if (Y_queue.size() == 0)
+        if (Y_QUEUE.size() == 0)
         {
             break;
         }
@@ -329,11 +280,10 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE)
         // Canny(img, threshold1, threshold2)
         // threshold1 = Determining whether an edge is in the adjacency with another edge
         // threshold2 = Determine if it is an edge or not
-        cv::Canny(Y_queue.front(), temp, 20, 40);
+        cv::Canny(Y_QUEUE.front(), temp, 20, 40);
 
         feature_vector_queue.push(temp);
-        Y_queue.pop();
-        cnt++;
+        Y_QUEUE.pop();
         temp.release();
     }
     cout << endl
@@ -342,25 +292,18 @@ void edge_detection(queue<cv::Mat> &Y_QUEUE)
 
 void make_hash(queue<cv::Mat> &FV_QUEUE)
 {
-
-    queue<cv::Mat> Feature_Vector_queue(FV_QUEUE);
     cout << endl
          << "----Make HASH from feature vectors." << endl
          << endl;
-
-    int mat_width = Feature_Vector_queue.front().cols;
-    int mat_height = Feature_Vector_queue.front().rows;
-    int mat_channels = Feature_Vector_queue.front().channels();
-    int umat_data_bufsize = mat_width * mat_height * mat_channels;
-
+    int i = 1;
     while (true)
     {
-        if (Feature_Vector_queue.size() == 0)
+        if (FV_QUEUE.size() == 0)
         {
             break;
         }
-        cv::Mat temp = Feature_Vector_queue.front();
-        Feature_Vector_queue.pop();
+        cv::Mat temp = FV_QUEUE.front();
+        FV_QUEUE.pop();
 
         string mat_data = "";
         string sha_result = "";
@@ -379,6 +322,8 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
         sha_result = hash_sha256(mat_data);
         hash_queue.push(sha_result);
         temp.release();
+        cout << i << endl;
+        i++;
     }
     cout << "    hash made : " << hash_queue.size() << endl;
 }
@@ -440,182 +385,186 @@ string getCID()
     return s_CID;
 }
 
-void send_image_hash_to_UI(queue<cv::Mat> &ORI, queue<cv::Mat> &Y)
-{
-    cout << "----SEND BGR, Y frame and hash to WEB----" << endl;
-    cv::Mat ori(Size(width, height), CV_8UC3);
-    cv::Mat y(Size(width, height), CV_8UC3);
-
-    ORI.front().copyTo(ori);
-    Y.front().copyTo(y);
-
-    cv::imwrite(orifile_path, ori);
-    cv::imwrite(yfile_path, y);
-    string hash = hash_queue.front();
-
-    Image_Hash_request(hash);
-
-    ori.release();
-    y.release();
-}
-
-void send_data_to_server(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE, queue<string> &SIGNED_HASH_QUEUE, queue<cv::Mat> &YUV420_QUEUE)
-{
+void save_yimage(queue<string> &CID_QUEUE, queue<cv::Mat> &Y_QUEUE) {
     cout << endl
-         << "----SEND DATA to SERVER" << endl;
+         << "----SAVE Y" << endl;
 
     queue<string> cid_send(CID_QUEUE);
-    queue<cv::Mat> yuv_send(YUV420_QUEUE);
-    queue<string> hash_send(HASH_QUEUE);
-    queue<string> signed_hash_send(SIGNED_HASH_QUEUE);
-
-    int total_data_size = 0;
-    int cid_bufsize = cid_send.front().capacity();
-    int hash_bufsize = hash_send.front().capacity();
-    int signed_hash_bufsize = signed_hash_send.front().capacity();
-
-    int video_rows = yuv_send.front().rows;
-    int video_cols = yuv_send.front().cols;
-    int video_channels = yuv_send.front().channels();
+    queue<Mat> y(Y_QUEUE);
+    int video_rows = y.front().rows;
+    int video_cols = y.front().cols;
+    int video_channels = y.front().channels();
     int video_bufsize = video_rows * video_cols * video_channels;
 
-    total_data_size += cid_bufsize;
-    total_data_size += hash_bufsize;
-    total_data_size += signed_hash_bufsize;
-    total_data_size += video_bufsize;
+    cout << "width: " << video_cols << endl;
+    cout << "height: " << video_rows << endl;
+    cout << "channels: " << video_channels << endl;
+    cout << "video size: " << video_bufsize << endl; 
 
-    cout << "total data size : " << total_data_size << endl;
-    cout << "size of CID data: " << cid_bufsize << endl;
-    cout << "size of hash data: " << hash_bufsize << endl;
-    cout << "size of signed_hash data: " << signed_hash_bufsize << endl;
-    cout << "video size: " << yuv_send.front().size() << endl;
-    cout << "size of video data: " << video_bufsize << endl;
-    cout << endl
-         << "---------------------- " << endl;
+    unsigned char *video_buffer = new unsigned char[video_bufsize];
 
-    int step = 0;
-    while (true)
-    {
-        if (cid_send.size() == 0 && hash_send.size() == 0 && signed_hash_send.size() == 0 && yuv_send.size() == 0)
-        {
-            break;
+    while(true) {
+        if(cid_send.size() == 0 && y.size() == 0) {break;}
+        else{
+
+            FILE *file;
+
+            string file_dir = "./y/" + cid_send.front();
+            const char* file_name = file_dir.c_str();
+            file = fopen(file_name, "wb");
+            memset(video_buffer, 0, video_bufsize);
+
+            memcpy(video_buffer, y.front().data, video_bufsize);
+            fwrite(video_buffer, sizeof(unsigned char), video_bufsize, file);
+            fflush(file);
+            fclose(file);
+
+            cid_send.pop();
+            y.pop();
         }
-        cout << "step : " << ++step << endl;
-
-        char *cid_buffer = new char[cid_bufsize];
-        char *hash_buffer = new char[hash_bufsize];
-        char *signed_hash_buffer = new char[signed_hash_bufsize];
-        unsigned char *video_buffer = new unsigned char[video_bufsize];
-
-        strcpy(cid_buffer, cid_send.front().c_str());
-        strcpy(hash_buffer, hash_send.front().c_str());
-        strcpy(signed_hash_buffer, signed_hash_send.front().c_str());
-        memcpy(video_buffer, yuv_send.front().data, video_bufsize);
-
-        makePacket(VIDEO_DATA_SND, 0xa1, total_data_size);
-
-        // cout << hex << (int)sendDataPacket.startID << endl;
-        // cout << (int)sendDataPacket.destID << endl;
-        // cout << (int)sendDataPacket.command << endl;
-        // cout << (int)sendDataPacket.dataType << endl;
-        // cout << dec << (int)sendDataPacket.dataSize << endl;
-        // cout << endl << "----------------------------------------------------------" << endl << endl;
-        // cout << "video rows: " << video_rows << endl << "video cols: " << video_cols << endl;
-        // cout << "size: " << (strlen((char*)video_buffer)) * sizeof(unsigned char) << endl;
-        // cout << "hash: " << hash_buffer << "size: " << strlen(hash_buffer) * sizeof(char) << endl;
-        // cout << "CID: " << cid_buffer << endl << "size: " << strlen(cid_buffer) * sizeof(char) << endl;
-        // cout << endl << "----------------------------------------------------------" << endl << endl;
-
-        void *p_packet = &sendDataPacket;
-
-        if (!send_binary(&g_pNetwork->port, sizeof(HEADERPACKET), (void **)p_packet))
-        {
-            cout << "Packet send Error!!" << endl;
-            break;
-        }
-
-        if (!send_binary(&g_pNetwork->port, cid_bufsize, (void *)cid_buffer))
-        {
-            cout << "CID send Error!!" << endl;
-        }
-
-        if (!send_binary(&g_pNetwork->port, hash_bufsize, (void *)hash_buffer))
-        {
-            cout << "hash send Error!!" << endl;
-        }
-
-        if (!send_binary(&g_pNetwork->port, signed_hash_bufsize, (void *)signed_hash_buffer))
-        {
-            cout << "signed_hash send Error!!" << endl;
-        }
-
-        if (!send_binary(&g_pNetwork->port, video_bufsize, (void *)video_buffer))
-        {
-            cout << "Image send Error!!" << endl;
-        }
-
-        if (ClientServiceThread((void *)&g_pNetwork->port) == -1)
-        {
-            cout << "ClientServerThread return -1!!" << endl;
-            exit(0);
-        }
-
-        yuv_send.pop();
-        hash_send.pop();
-        signed_hash_send.pop();
-        cid_send.pop();
-        sleep(0.2);
+  
     }
-
-    cout << "----SEND END----------------" << endl;
+    cout << "save y end. " << endl;
 }
+
+void save_fvimage(queue<string> &CID_QUEUE, queue<cv::Mat> &FV_QUEUE) {
+    cout << endl
+         << "----SAVE Feature_vector" << endl;
+
+    queue<string> cid_send(CID_QUEUE);
+    queue<Mat> fv(FV_QUEUE);
+    
+    int video_rows = fv.front().rows;
+    int video_cols = fv.front().cols;
+    int video_channels = fv.front().channels();
+    int video_bufsize = video_rows * video_cols * video_channels;
+
+    unsigned char *video_buffer = new unsigned char[video_bufsize];
+
+    while(true) {
+        if(cid_send.size() == 0 && fv.size() == 0) {break;}
+        else{
+
+            FILE *file;
+
+            string file_dir = "./feature_vector/" + cid_send.front();
+            const char* file_name = file_dir.c_str();
+            file = fopen(file_name, "wb");
+
+            memset(video_buffer, 0, video_bufsize);
+
+            memcpy(video_buffer, fv.front().data, video_bufsize);
+            fwrite(video_buffer, sizeof(unsigned char), video_bufsize, file);
+            fflush(file);
+            fclose(file);
+
+            cid_send.pop();
+            fv.pop();
+        }
+  
+    }
+    cout << "save feature_vector end. " << endl;
+}
+
+void write_hash(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE){
+    cout << "write to file" << endl;
+    ofstream file1("cid+hash.txt", ios::app);
+    ofstream file2("count.txt", ios::app);
+    ofstream file3("cid.txt", ios::app);
+    ofstream file4("hash.txt", ios::app);
+    int CNT = 1;
+    if(file1.is_open()){
+        while(true){
+            if(CID_QUEUE.size() == 0 && HASH_QUEUE.size() == 0) {break;}
+            else{
+                file1 << CNT << "," << CID_QUEUE.front() << "," << HASH_QUEUE.front() << endl;
+                file2 << CNT << endl;
+                file3 << CID_QUEUE.front() << endl;
+                file4 << HASH_QUEUE.front() << endl;
+                CID_QUEUE.pop();
+                HASH_QUEUE.pop(); 
+                CNT++;
+            }
+        }
+        file1.close();
+        file2.close();
+        file3.close();
+        file4.close();
+    }
+    else {
+    }
+    
+}
+
+void read_cid() {
+    ifstream fin;
+    fin.open("cid.txt");
+
+    string line;
+    while (!fin.eof()) {
+        getline(fin, line);
+        cid_queue.push(line);
+    }
+    cout << cid_queue.size() << endl;
+    fin.close();
+}
+
+// void read_y(queue<string>  &CID_QUEUE) {
+//     queue<string> cid(CID_QUEUE);
+//     cout << "start reading yuv" << endl;
+//     while(true) {
+
+//         string file_dir = "./yuv/";
+//         if(cid.size() == 0 ) {break;}
+//         else{
+            
+//             string frame_name = file_dir + cid.front();
+//             ifstream frame_file(frame_name, ifstream::binary);
+
+//             frame_file.seekg(0, frame_file.end);
+//             int size = (int)frame_file.tellg();
+//             frame_file.seekg(0, frame_file.beg);
+
+//             unsigned char *frame_data = (unsigned char *)malloc(size);
+
+//             memset(frame_data, 0,size);
+//             frame_file.read((char *)frame_data, size);
+//             frame_file.close();
+
+//             cv::Mat frame = cv::Mat(cv::Size(640, 720), CV_8UC1, frame_data);
+//             yuv420_queue.push(frame);
+//             frame.release();
+//             cid.pop();
+//         }
+//     }
+//     cout << yuv420_queue.size() << endl;
+// }
 
 int main(int, char **)
 {
-    
     // key GEN
-    key_generation();
+    //key_generation();
 
-    // Init Client
-    if (!initClient())
-    {
-        cout << "init client error!!" << endl;
-        return -1;
+    if (init() == -1) {
+        exit(1);
     }
 
-    send_pubKey_to_server();
-    
-    while (true)
-    {
-        if (init() == -1)
-        {
-            break;
-        }
+    else {
 
-        else
-        {
-            // capture frames
-            capture();
-            // show_frames(bgr_queue);
+        // capture
+        capture();
 
-            // convert frames to YUV420 and Y
-            convert_frames(bgr_queue);
+        // saving y_frame into y folder
+        save_yimage(cid_queue, y_queue);
 
-            // USE Canny Edge Detection with Y_Frames
-            edge_detection(y_queue);
+        // edge_detection
+        edge_detection(y_queue);
 
-            // make Hash by edge_detected datas
-            make_hash(feature_vector_queue);
-            sign_hash(hash_queue);
+        // saving feature_vector frame into feature_vector folder
+        save_fvimage(cid_queue, feature_vector_queue);
 
-            // Send Data to WEB UI
-            send_image_hash_to_UI(bgr_queue, y_queue);
+        make_hash(feature_vector_queue);
+        write_hash(cid_queue, hash_queue);
 
-            // send Datas to Server
-            send_data_to_server(cid_queue, hash_queue, hash_signed_queue, yuv420_queue);
-            // initialize all settings
-            init_all_settings();
-
-        }
     }
 }
