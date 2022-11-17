@@ -23,9 +23,9 @@
 using namespace std;
 using namespace cv;
 
-int width = DEFAULT_WIDTH;
-int height = DEFAULT_HEIGHT;
-int fps = DEFAULT_FPS;
+int width = 640;
+int height = 480;
+double fps = 30;
 
 cv::VideoCapture cap;
 cv::Mat frame(cv::Size(width, height), CV_8UC3);
@@ -39,7 +39,7 @@ queue<string> hash_queue;            // for hash made by feature vector
 queue<string> hash_signed_queue;
 queue<string> cid_queue; // for CID for images
 
-int c = 0;
+int c = 1;
 int key_generation()
 {
     cout << "----Key Geneartion----" << endl;
@@ -123,8 +123,17 @@ void *UpdateFrame(void *arg)
     pthread_exit((void *)0);
 }
 
+void booting(){
+    for(int i  = 0; i < 20; i++) {
+        Mat temp;
+        cap >> temp;
+    }
+    cout << "booting end." << endl;
+}
+
 void capture()
 {
+    int i = 0;
     cout << endl
          << "----Starting Capturing" << endl
          << endl;
@@ -149,7 +158,6 @@ void capture()
         {
             cout << "Frame is empty" << endl;
         }
-
         else if (elementmean != 0)
         {
             Mat yuv(Size(640,720), CV_8UC1, Scalar(0));
@@ -158,10 +166,11 @@ void capture()
             cv::cvtColor(yuv, y, COLOR_YUV2GRAY_I420);
             y_queue.push(y);
             cout << y_queue.size() << endl;
-            string s_cid = getCID();
-            cid_queue.push(s_cid);
+            cid_queue.push(c);
             yuv.release();
             y.release();
+            sleep(0.05);
+            c++;
         }
 
         else
@@ -509,37 +518,6 @@ void read_cid() {
     fin.close();
 }
 
-// void read_y(queue<string>  &CID_QUEUE) {
-//     queue<string> cid(CID_QUEUE);
-//     cout << "start reading yuv" << endl;
-//     while(true) {
-
-//         string file_dir = "./yuv/";
-//         if(cid.size() == 0 ) {break;}
-//         else{
-            
-//             string frame_name = file_dir + cid.front();
-//             ifstream frame_file(frame_name, ifstream::binary);
-
-//             frame_file.seekg(0, frame_file.end);
-//             int size = (int)frame_file.tellg();
-//             frame_file.seekg(0, frame_file.beg);
-
-//             unsigned char *frame_data = (unsigned char *)malloc(size);
-
-//             memset(frame_data, 0,size);
-//             frame_file.read((char *)frame_data, size);
-//             frame_file.close();
-
-//             cv::Mat frame = cv::Mat(cv::Size(640, 720), CV_8UC1, frame_data);
-//             yuv420_queue.push(frame);
-//             frame.release();
-//             cid.pop();
-//         }
-//     }
-//     cout << yuv420_queue.size() << endl;
-// }
-
 int main(int, char **)
 {
     // key GEN
@@ -550,7 +528,7 @@ int main(int, char **)
     }
 
     else {
-
+        booting();
         // capture
         capture();
 

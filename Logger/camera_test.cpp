@@ -24,10 +24,9 @@ int main() {
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     cap.set(cv::CAP_PROP_FPS, fps);
 
+
     cap >> frame;
-    Mat y;
-    
-    cvtColor(frame, y, COLOR_BGR2GRAY);
     imwrite("test.jpg", frame);
+    cout << frame.size() << endl;
     return 0;
 }

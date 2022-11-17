@@ -19,3 +19,4 @@ void save_fvimage(queue<string> &CID_QUEUE, queue<cv::Mat> &FV_QUEUE); // send d
 void write_hash(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE);
 void read_cid();
 void read_y(queue<string>  &CID_QUEUE);
+void booting();
