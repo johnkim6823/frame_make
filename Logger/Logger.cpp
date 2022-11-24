@@ -124,7 +124,7 @@ void *UpdateFrame(void *arg)
 }
 
 void booting(){
-    for(int i  = 0; i < 20; i++) {
+    for(int i  = 0; i < 30; i++) {
         Mat temp;
         cap >> temp;
     }
@@ -154,6 +154,7 @@ void capture()
         int sum3 = (int)sum(currentFrame)[2];
         int elementmean = (sum1 + sum2 + sum3) / 3;
 
+
         if (currentFrame.empty())
         {
             cout << "Frame is empty" << endl;
@@ -162,11 +163,14 @@ void capture()
         {
             Mat yuv(Size(640,720), CV_8UC1, Scalar(0));
             Mat y(Size(640,480), CV_8UC1, Scalar(0));
+
             cv::cvtColor(currentFrame, yuv, COLOR_BGR2YUV_I420);
             cv::cvtColor(yuv, y, COLOR_YUV2GRAY_I420);
+
             y_queue.push(y);
             cout << y_queue.size() << endl;
-            cid_queue.push(c);
+            string s = to_string(c);
+            cid_queue.push(s);
             yuv.release();
             y.release();
             sleep(0.05);
@@ -329,6 +333,7 @@ void make_hash(queue<cv::Mat> &FV_QUEUE)
         }
 
         sha_result = hash_sha256(mat_data);
+        cout << sha_result << endl;
         hash_queue.push(sha_result);
         temp.release();
         cout << i << endl;
@@ -477,17 +482,13 @@ void save_fvimage(queue<string> &CID_QUEUE, queue<cv::Mat> &FV_QUEUE) {
 
 void write_hash(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE){
     cout << "write to file" << endl;
-    ofstream file1("cid+hash.txt", ios::app);
-    ofstream file2("count.txt", ios::app);
     ofstream file3("cid.txt", ios::app);
     ofstream file4("hash.txt", ios::app);
     int CNT = 1;
-    if(file1.is_open()){
+    if(file3.is_open()){
         while(true){
             if(CID_QUEUE.size() == 0 && HASH_QUEUE.size() == 0) {break;}
             else{
-                file1 << CNT << "," << CID_QUEUE.front() << "," << HASH_QUEUE.front() << endl;
-                file2 << CNT << endl;
                 file3 << CID_QUEUE.front() << endl;
                 file4 << HASH_QUEUE.front() << endl;
                 CID_QUEUE.pop();
@@ -495,8 +496,6 @@ void write_hash(queue<string> &CID_QUEUE, queue<string> &HASH_QUEUE){
                 CNT++;
             }
         }
-        file1.close();
-        file2.close();
         file3.close();
         file4.close();
     }
